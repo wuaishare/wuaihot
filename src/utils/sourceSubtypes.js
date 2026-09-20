@@ -979,7 +979,8 @@ export const applyTrendsSourceCatalog = (catalog = {}) => {
       priorityTier: String(source?.priorityTier || "").trim(),
       rankingLabel: String(source?.rankingLabel || "").trim(),
       defaultVariant: String(source?.defaultVariant || "").trim(),
-      publicAvailable: source?.publicAvailable !== false,
+      publicAvailable: source?.publicAvailable === true,
+      displayAvailable: source?.displayAvailable === true,
     }))
     .filter((source) => source.key)
     .sort((left, right) => left.key.localeCompare(right.key));
@@ -1027,12 +1028,12 @@ const normalizeValue = (value) => {
 
 export const getTrendsCatalogSources = () => [...REMOTE_SOURCE_CATALOG.values()].map((source) => ({ ...source }));
 
-export const filterPublicTrendsCatalogManagedSources = (items = []) => {
+export const filterReadableTrendsCatalogManagedSources = (items = []) => {
   if (!REMOTE_SOURCE_CATALOG.size) return Array.isArray(items) ? [...items] : [];
   return (Array.isArray(items) ? items : []).filter((item) => {
     if (!item?.catalogManaged) return true;
     const source = REMOTE_SOURCE_CATALOG.get(String(item?.name || ""));
-    return Boolean(source && source.publicAvailable !== false);
+    return Boolean(source && (source.publicAvailable || source.displayAvailable));
   });
 };
 
@@ -1045,7 +1046,19 @@ export const hasTrendsCatalogSource = (sourceName) => REMOTE_SOURCE_CATALOG.has(
 
 export const hasTrendsPublicCatalogSource = (sourceName) => {
   const source = REMOTE_SOURCE_CATALOG.get(String(sourceName || ""));
-  return Boolean(source && source.publicAvailable !== false);
+  return Boolean(source?.publicAvailable);
+};
+
+export const hasTrendsDisplayCatalogSource = (sourceName) => {
+  const source = REMOTE_SOURCE_CATALOG.get(String(sourceName || ""));
+  return Boolean(source?.displayAvailable);
+};
+
+export const getTrendsCatalogReadSurface = (sourceName) => {
+  const source = REMOTE_SOURCE_CATALOG.get(String(sourceName || ""));
+  if (source?.publicAvailable) return "public";
+  if (source?.displayAvailable) return "display";
+  return null;
 };
 
 export const getSourceSubtypeGroups = (sourceName) =>

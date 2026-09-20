@@ -4,11 +4,13 @@ import assert from "node:assert/strict";
 import {
   applyTrendsSourceCatalog,
   canFallbackTrendsCatalogVariant,
-  filterPublicTrendsCatalogManagedSources,
+  filterReadableTrendsCatalogManagedSources,
   getDefaultSourceSubtype,
   getSourceSubtypeGroups,
+  getTrendsCatalogReadSurface,
   getTrendsCatalogSources,
   hasTrendsCatalogSource,
+  hasTrendsDisplayCatalogSource,
   hasTrendsPublicCatalogSource,
   getSourceSubtypeControlGroups,
   getSourceVariantOption,
@@ -99,6 +101,7 @@ const catalog = {
       variantSelectorEnabled: false,
       variantGroups: [],
       publicAvailable: true,
+      displayAvailable: true,
     },
     {
       key: "bilibili-ai-arena",
@@ -110,6 +113,7 @@ const catalog = {
       variantSelectorEnabled: false,
       variantGroups: [],
       publicAvailable: false,
+      displayAvailable: true,
     },
     {
       key: "xiaohongshu",
@@ -140,20 +144,27 @@ assert.deepEqual(
     rankingLabel: "AI Coding 模型实测榜",
     defaultVariant: "",
     publicAvailable: true,
+    displayAvailable: true,
   },
 );
 assert.equal(hasTrendsPublicCatalogSource("modeldial-radar"), true);
+assert.equal(hasTrendsDisplayCatalogSource("modeldial-radar"), true);
+assert.equal(getTrendsCatalogReadSurface("modeldial-radar"), "public");
 assert.equal(hasTrendsCatalogSource("bilibili-ai-arena"), true);
 assert.equal(hasTrendsPublicCatalogSource("bilibili-ai-arena"), false);
+assert.equal(hasTrendsDisplayCatalogSource("bilibili-ai-arena"), true);
+assert.equal(getTrendsCatalogReadSurface("bilibili-ai-arena"), "display");
 assert.equal(hasTrendsPublicCatalogSource("not-in-catalog"), false);
+assert.equal(hasTrendsDisplayCatalogSource("not-in-catalog"), false);
+assert.equal(getTrendsCatalogReadSurface("not-in-catalog"), null);
 assert.deepEqual(
-  filterPublicTrendsCatalogManagedSources([
+  filterReadableTrendsCatalogManagedSources([
     { name: "weibo", show: true },
     { name: "modeldial-radar", catalogManaged: true, show: true },
     { name: "bilibili-ai-arena", catalogManaged: true, show: true },
     { name: "stale-catalog-source", catalogManaged: true, show: true },
   ]).map((item) => item.name),
-  ["weibo", "modeldial-radar"],
+  ["weibo", "modeldial-radar", "bilibili-ai-arena"],
 );
 assert.deepEqual(
   getSourceSubtypeGroups("weibo").flatMap((group) => group.items.map((item) => item.value)),
@@ -315,8 +326,12 @@ for (const sourceKey of recentTrendsFrontendSources) {
 assert.match(storeSource, /syncTrendsCatalogSources\(\)/, "main store must merge newly admitted catalog sources");
 assert.match(storeSource, /priorityTier === ["']A["'] \|\| source\.priorityTier === ["']B["']/, "catalog auto-discovery must stay limited to Tier A/B sources");
 const apiSource = fs.readFileSync(new URL("../src/api/index.js", import.meta.url).pathname, "utf8");
-assert.match(apiSource, /TRENDS_READ_SOURCES\.has\(type\) \|\| hasTrendsPublicCatalogSource\(type\)/, "only Public Catalog sources may automatically use the Trends anonymous read path");
+assert.match(apiSource, /getTrendsCatalogReadSurface\(type\)/, "catalog-managed sources must resolve an explicit readable surface");
+assert.match(apiSource, /readSurface === "display"/, "Display-only reads must fail closed instead of falling back to legacy full-data endpoints");
+assert.match(apiSource, /TRENDS_DISPLAY_API/, "frontend ranking transport must support the bounded Public Display API");
 const catalogLoaderSource = fs.readFileSync(new URL("../src/api/trendsCatalog.js", import.meta.url).pathname, "utf8");
 assert.match(catalogLoaderSource, /DIRECTORY_API/, "frontend catalog loader must consume the full Trends directory");
-assert.match(catalogLoaderSource, /publicAvailable/, "frontend catalog loader must preserve Public admission separately from directory discovery");
+assert.match(catalogLoaderSource, /DISPLAY_API/, "frontend catalog loader must consume the Public Display catalog");
+assert.match(catalogLoaderSource, /publicAvailable/, "frontend catalog loader must preserve Public Feed admission separately from directory discovery");
+assert.match(catalogLoaderSource, /displayAvailable/, "frontend catalog loader must preserve Public Display admission separately from Public Feed");
 console.log(`[trends-catalog-contract] ${subtypeConsumers.length} runtime UI consumers use the reactive catalog revision contract`);

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { BUILTIN_CATEGORIES as SITE_BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
 import { GAME_DEAL_SOURCE_IDS } from "@/config/topics";
-import { filterPublicTrendsCatalogManagedSources, getTrendsCatalogSources } from "@/utils/sourceSubtypes";
+import { filterReadableTrendsCatalogManagedSources, getTrendsCatalogSources } from "@/utils/sourceSubtypes";
 import {
   MAX_CATEGORY_DEPTH,
   canMoveCategory,
@@ -80,7 +80,8 @@ const trendsCatalogSourceToNewsItem = (source, order) => {
     ...presentation,
     ...(source?.rankingLabel ? { subtype: source.rankingLabel } : {}),
     catalogManaged: true,
-    publicAvailable: source?.publicAvailable !== false,
+    publicAvailable: Boolean(source?.publicAvailable),
+    displayAvailable: Boolean(source?.displayAvailable),
   };
 };
 
@@ -1532,7 +1533,8 @@ export const mainStore = defineStore("mainData", {
         }
         if (defaults.catalogManaged) {
           merged.catalogManaged = true;
-          merged.publicAvailable = defaults.publicAvailable !== false;
+          merged.publicAvailable = Boolean(defaults.publicAvailable);
+          merged.displayAvailable = Boolean(defaults.displayAvailable);
         }
         const categoryMigration = BUILTIN_CATEGORY_MIGRATIONS[item.name];
         if (
@@ -1902,11 +1904,11 @@ export const mainStore = defineStore("mainData", {
     syncTrendsCatalogSources() {
       const catalogSources = getTrendsCatalogSources();
       if (!catalogSources.length) return 0;
-      this.defaultNewsArr = filterPublicTrendsCatalogManagedSources(this.defaultNewsArr);
-      this.newsArr = filterPublicTrendsCatalogManagedSources(this.newsArr);
+      this.defaultNewsArr = filterReadableTrendsCatalogManagedSources(this.defaultNewsArr);
+      this.newsArr = filterReadableTrendsCatalogManagedSources(this.newsArr);
       const candidates = catalogSources.filter(
         (source) =>
-          source.publicAvailable !== false &&
+          (source.publicAvailable || source.displayAvailable) &&
           (source.priorityTier === "A" || source.priorityTier === "B"),
       );
       const known = new Set(this.defaultNewsArr.map((item) => item?.name).filter(Boolean));

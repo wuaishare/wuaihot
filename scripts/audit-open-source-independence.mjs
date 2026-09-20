@@ -30,6 +30,7 @@ const envExample = fs.readFileSync(".env.example", "utf8");
 for (const key of [
   "VITE_TRENDS_DIRECTORY_API",
   "VITE_TRENDS_PUBLIC_API",
+  "VITE_TRENDS_DISPLAY_API",
   "TRENDS_CATALOG_URL",
   "TRENDS_INTELLIGENCE_BASE_URL",
 ]) {

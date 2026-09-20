@@ -1,6 +1,6 @@
 import { applyTrendsSourceCatalog } from "@/utils/sourceSubtypes";
 
-const CACHE_KEY = "dailyhot:trends-source-catalog:v2";
+const CACHE_KEY = "dailyhot:trends-source-catalog:v3";
 const STALE_MS = 24 * 60 * 60 * 1000;
 const REVALIDATE_MS = 5 * 60 * 1000;
 const DIRECTORY_API = String(
@@ -8,6 +8,16 @@ const DIRECTORY_API = String(
 ).replace(/\/$/, "");
 const PUBLIC_API = String(
   import.meta.env.VITE_TRENDS_PUBLIC_API || "",
+).replace(/\/$/, "");
+const deriveDisplayApi = (publicApi, directoryApi) => {
+  if (/\/public\/v1$/.test(publicApi)) {
+    return publicApi.replace(/\/public\/v1$/, "/display/v1");
+  }
+  return directoryApi ? directoryApi + "/display/v1" : "";
+};
+const DISPLAY_API = String(
+  import.meta.env.VITE_TRENDS_DISPLAY_API ||
+    deriveDisplayApi(PUBLIC_API, DIRECTORY_API),
 ).replace(/\/$/, "");
 
 let loadingPromise = null;
@@ -51,40 +61,79 @@ const fetchJsonCatalog = async (url) => {
   }
 };
 
-const mergeDirectoryAndPublicCatalog = (directoryCatalog, publicCatalog) => {
-  const baseCatalog = directoryCatalog || publicCatalog;
+const cachedSurfaceKeys = (surface) =>
+  new Set(
+    (cachedCatalog()?.catalog?.sources || [])
+      .filter((source) => source?.[surface] === true)
+      .map((source) => source.key),
+  );
+
+const mergeCatalogSources = (publicCatalog, displayCatalog) => {
+  const sources = new Map();
+  for (const catalog of [displayCatalog, publicCatalog]) {
+    for (const source of catalog?.sources || []) {
+      if (source?.key) {
+        sources.set(source.key, {
+          ...(sources.get(source.key) || {}),
+          ...source,
+        });
+      }
+    }
+  }
+  return [...sources.values()];
+};
+
+const mergeDirectoryAndReadCatalogs = (
+  directoryCatalog,
+  publicCatalog,
+  displayCatalog,
+) => {
+  const baseCatalog = directoryCatalog || publicCatalog || displayCatalog;
   if (!baseCatalog) return null;
-  const cached = cachedCatalog()?.catalog;
   const publicKeys = publicCatalog
     ? new Set(publicCatalog.sources.map((source) => source.key))
-    : new Set(
-        (cached?.sources || [])
-          .filter((source) => source?.publicAvailable !== false)
-          .map((source) => source.key),
-      );
-  const assumePublic = !directoryCatalog && Boolean(publicCatalog);
+    : cachedSurfaceKeys("publicAvailable");
+  const displayKeys = displayCatalog
+    ? new Set(displayCatalog.sources.map((source) => source.key))
+    : cachedSurfaceKeys("displayAvailable");
+  const sources =
+    directoryCatalog?.sources ||
+    mergeCatalogSources(publicCatalog, displayCatalog);
   return {
     ...baseCatalog,
-    sources: baseCatalog.sources.map((source) => ({
+    sources: sources.map((source) => ({
       ...source,
-      publicAvailable: assumePublic || publicKeys.has(source.key),
+      publicAvailable: publicKeys.has(source.key),
+      displayAvailable: displayKeys.has(source.key),
     })),
   };
 };
 
 const fetchCatalog = async () => {
-  if (!PUBLIC_API && !DIRECTORY_API) return null;
-  const [directoryResult, publicResult] = await Promise.allSettled([
+  if (!PUBLIC_API && !DISPLAY_API && !DIRECTORY_API) return null;
+  const [directoryResult, publicResult, displayResult] = await Promise.allSettled([
     fetchJsonCatalog(DIRECTORY_API ? DIRECTORY_API + "/catalog.json" : ""),
     fetchJsonCatalog(PUBLIC_API ? PUBLIC_API + "/catalog" : ""),
+    fetchJsonCatalog(DISPLAY_API ? DISPLAY_API + "/catalog" : ""),
   ]);
   const directoryCatalog =
     directoryResult.status === "fulfilled" ? directoryResult.value : null;
   const publicCatalog =
     publicResult.status === "fulfilled" ? publicResult.value : null;
-  const catalog = mergeDirectoryAndPublicCatalog(directoryCatalog, publicCatalog);
+  const displayCatalog =
+    displayResult.status === "fulfilled" ? displayResult.value : null;
+  const catalog = mergeDirectoryAndReadCatalogs(
+    directoryCatalog,
+    publicCatalog,
+    displayCatalog,
+  );
   if (!catalog) {
-    throw directoryResult.reason || publicResult.reason || new Error("trends_catalog_unavailable");
+    throw (
+      directoryResult.reason ||
+      publicResult.reason ||
+      displayResult.reason ||
+      new Error("trends_catalog_unavailable")
+    );
   }
   applyTrendsSourceCatalog(catalog);
   persistCatalog(catalog);
