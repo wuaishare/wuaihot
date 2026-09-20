@@ -14,7 +14,7 @@
 
 当前品牌图标位于：
 
-- public/ico/wuaihot.svg：矢量主标
+- public/ico/wuaihot.svg：矢量主标（以 v1-smooth 为当前 canonical 展示版本）
 - public/ico/favicon.png：兼容 favicon / PWA 的 PNG
 - public/favicon.svg、public/favicon.png：根目录兼容资源
 

@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="wuaihot logo" height="120" src="./public/ico/favicon.png" width="120"/>
+  <img alt="wuaihot logo" height="120" src="./public/ico/wuaihot.svg" width="120"/>
   <h1>wuaihot · 吾爱热榜</h1>
   <p><strong>一站看全网</strong></p>
   <p>聚合今日热榜、全网热搜、实时热点与跨平台趋势榜单的开源前端。</p>

@@ -501,7 +501,7 @@ const activeHeaderDropdown = ref("");
 let headerDropdownCloseTimer;
 const { t, locale } = useI18n({ useScope: "global" });
 const timeInterval = ref(null);
-const siteLogoUrl = getPublicAssetUrl("/ico/favicon.png");
+const siteLogoUrl = getPublicAssetUrl("/ico/wuaihot.svg");
 const showRefresh = ref(false);
 const countdownText = ref("");
 const countdownTimer = ref(null);

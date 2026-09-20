@@ -1,17 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="title desc">
-  <title id="title">wuaihot</title>
-  <desc id="desc">A W-shaped rising trend mark for 吾爱热榜</desc>
-  <defs>
-    <linearGradient id="bg" x1="24" y1="18" x2="176" y2="182" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#17171d"/>
-      <stop offset="1" stop-color="#0d0d12"/>
-    </linearGradient>
-    <linearGradient id="hot" x1="42" y1="138" x2="161" y2="55" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ff3d5a"/>
-      <stop offset="1" stop-color="#ff8a3d"/>
-    </linearGradient>
-  </defs>
-  <rect x="8" y="8" width="184" height="184" rx="46" fill="url(#bg)"/>
-  <path d="M42 62 70 138 100 91 128 138 160 56" fill="none" stroke="url(#hot)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m143 58 18-3-3 19" fill="none" stroke="#ff8a3d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="0 0 1254 1254">
+<defs>
+  <linearGradient id="panel" x1="210" y1="150" x2="1035" y2="1085" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#1c293c"/><stop offset=".35" stop-color="#101827"/><stop offset=".72" stop-color="#070b13"/><stop offset="1" stop-color="#030408"/>
+  </linearGradient>
+  <radialGradient id="panelGlow" cx="0" cy="0" r="1" gradientTransform="translate(330 245) rotate(45) scale(560 500)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#34455d" stop-opacity=".32"/><stop offset="1" stop-color="#101725" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="brandBase" x1="240" y1="570" x2="1035" y2="305" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ff254e"/><stop offset=".45" stop-color="#ff4e25"/><stop offset=".72" stop-color="#ff7420"/><stop offset="1" stop-color="#ffc439"/>
+  </linearGradient>
+  <radialGradient id="leftWarm" cx="0" cy="0" r="1" gradientTransform="translate(405 860) rotate(-72) scale(420 270)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#ff8b22" stop-opacity=".58"/><stop offset=".7" stop-color="#ff5a24" stop-opacity=".08"/><stop offset="1" stop-color="#ff5a24" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="arrowGlow" cx="0" cy="0" r="1" gradientTransform="translate(990 305) rotate(138) scale(210 170)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#ffd153" stop-opacity=".78"/><stop offset=".58" stop-color="#ffb12f" stop-opacity=".18"/><stop offset="1" stop-color="#ff9b28" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="foldShade" cx="0" cy="0" r="1" gradientTransform="translate(695 585) rotate(20) scale(245 175)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#d81435" stop-opacity=".44"/><stop offset=".68" stop-color="#e82b2d" stop-opacity=".08"/><stop offset="1" stop-color="#e82b2d" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="bars" x1="760" y1="585" x2="760" y2="945" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ff9b2c"/><stop offset=".46" stop-color="#ff6725"/><stop offset="1" stop-color="#ff3048"/>
+  </linearGradient>
+  <clipPath id="markClip"><path d="M 985.30,289.90 L 981.70,287.10 Q 979.00,285.00 975.61,285.42 L 967.80,286.40 Q 963.00,287.00 958.95,289.65 L 803.76,391.20 Q 801.00,393.00 801.69,396.22 L 803.31,403.78 Q 804.00,407.00 807.17,407.90 L 860.00,423.00 L 744.00,605.00 L 695.58,507.23 Q 692.00,500.00 686.60,494.00 L 679.40,486.00 Q 674.00,480.00 666.52,476.96 L 651.60,470.90 Q 642.00,467.00 631.66,467.72 L 607.30,469.42 Q 599.00,470.00 591.50,473.60 L 581.50,478.40 Q 574.00,482.00 567.99,487.75 L 557.90,497.40 Q 551.00,504.00 545.84,512.03 L 416.00,714.00 L 351.79,539.58 Q 349.00,532.00 342.10,527.80 L 332.90,522.20 Q 326.00,518.00 317.92,518.00 L 257.24,518.00 Q 252.00,518.00 247.20,520.10 L 240.80,522.90 Q 236.00,525.00 233.34,529.52 L 228.13,538.38 Q 226.00,542.00 226.00,546.20 L 226.00,551.80 Q 226.00,556.00 227.60,559.88 L 353.46,865.95 Q 358.00,877.00 368.50,882.70 L 386.65,892.55 Q 393.00,896.00 400.20,895.40 L 409.80,894.60 Q 417.00,894.00 423.13,890.17 L 433.80,883.50 Q 441.00,879.00 445.64,871.89 L 614.00,614.00 L 658.17,694.39 Q 664.00,705.00 673.00,713.10 L 685.00,723.90 Q 694.00,732.00 705.99,733.68 L 738.13,738.19 Q 751.00,740.00 763.04,735.09 L 792.92,722.89 Q 800.00,720.00 805.10,714.30 L 811.90,706.70 Q 817.00,701.00 821.04,694.51 L 967.13,460.03 Q 974.00,449.00 986.71,451.72 L 1024.36,459.79 Q 1030.00,461.00 1035.10,458.30 L 1047.00,452.00 L 989.18,295.21 Q 988.00,292.00 985.30,289.90 Z"/></clipPath>
+  <filter id="iconShadow" x="80" y="90" width="1100" height="1080" filterUnits="userSpaceOnUse">
+    <feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#00040b" flood-opacity=".52"/>
+  </filter>
+  <filter id="markShadow" x="170" y="220" width="940" height="780" filterUnits="userSpaceOnUse">
+    <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".28"/>
+  </filter>
+</defs>
+<g filter="url(#iconShadow)">
+  <rect x="124" y="134" width="1005" height="982" rx="214" fill="url(#panel)"/>
+  <rect x="124" y="134" width="1005" height="982" rx="214" fill="url(#panelGlow)"/>
+  <rect x="125.5" y="135.5" width="1002" height="979" rx="212.5" fill="none" stroke="#607087" stroke-opacity=".20" stroke-width="3"/>
+</g>
+<g filter="url(#markShadow)">
+  <path d="M 985.30,289.90 L 981.70,287.10 Q 979.00,285.00 975.61,285.42 L 967.80,286.40 Q 963.00,287.00 958.95,289.65 L 803.76,391.20 Q 801.00,393.00 801.69,396.22 L 803.31,403.78 Q 804.00,407.00 807.17,407.90 L 860.00,423.00 L 744.00,605.00 L 695.58,507.23 Q 692.00,500.00 686.60,494.00 L 679.40,486.00 Q 674.00,480.00 666.52,476.96 L 651.60,470.90 Q 642.00,467.00 631.66,467.72 L 607.30,469.42 Q 599.00,470.00 591.50,473.60 L 581.50,478.40 Q 574.00,482.00 567.99,487.75 L 557.90,497.40 Q 551.00,504.00 545.84,512.03 L 416.00,714.00 L 351.79,539.58 Q 349.00,532.00 342.10,527.80 L 332.90,522.20 Q 326.00,518.00 317.92,518.00 L 257.24,518.00 Q 252.00,518.00 247.20,520.10 L 240.80,522.90 Q 236.00,525.00 233.34,529.52 L 228.13,538.38 Q 226.00,542.00 226.00,546.20 L 226.00,551.80 Q 226.00,556.00 227.60,559.88 L 353.46,865.95 Q 358.00,877.00 368.50,882.70 L 386.65,892.55 Q 393.00,896.00 400.20,895.40 L 409.80,894.60 Q 417.00,894.00 423.13,890.17 L 433.80,883.50 Q 441.00,879.00 445.64,871.89 L 614.00,614.00 L 658.17,694.39 Q 664.00,705.00 673.00,713.10 L 685.00,723.90 Q 694.00,732.00 705.99,733.68 L 738.13,738.19 Q 751.00,740.00 763.04,735.09 L 792.92,722.89 Q 800.00,720.00 805.10,714.30 L 811.90,706.70 Q 817.00,701.00 821.04,694.51 L 967.13,460.03 Q 974.00,449.00 986.71,451.72 L 1024.36,459.79 Q 1030.00,461.00 1035.10,458.30 L 1047.00,452.00 L 989.18,295.21 Q 988.00,292.00 985.30,289.90 Z" fill="url(#brandBase)"/>
+  <g clip-path="url(#markClip)">
+    <rect x="185" y="400" width="420" height="560" fill="url(#leftWarm)"/>
+    <rect x="560" y="400" width="310" height="390" fill="url(#foldShade)"/>
+    <rect x="800" y="220" width="320" height="310" fill="url(#arrowGlow)"/>
+  </g>
+  <path d="M 569.40,806.40 L 564.60,809.60 Q 561.00,812.00 558.29,815.37 L 533.02,846.77 Q 528.00,853.00 528.00,861.00 L 528.00,925.34 Q 528.00,929.00 530.10,932.00 L 533.46,936.80 Q 535.00,939.00 537.40,940.20 L 540.60,941.80 Q 543.00,943.00 545.68,942.97 L 627.00,942.03 Q 630.00,942.00 632.40,940.20 L 635.60,937.80 Q 638.00,936.00 639.24,933.27 L 641.50,928.30 Q 643.00,925.00 642.97,921.38 L 642.03,819.83 Q 642.00,817.00 640.50,814.60 L 638.50,811.40 Q 637.00,809.00 634.53,807.63 L 630.70,805.50 Q 628.00,804.00 624.91,804.00 L 577.33,804.00 Q 573.00,804.00 569.40,806.40 Z" fill="url(#bars)"/>
+  <path d="M 694.76,782.92 L 689.70,790.80 Q 687.00,795.00 687.00,799.99 L 687.00,923.72 Q 687.00,926.00 687.90,928.10 L 689.10,930.90 Q 690.00,933.00 691.81,934.39 L 699.10,940.00 Q 703.00,943.00 707.92,942.89 L 786.66,941.05 Q 789.00,941.00 790.80,939.50 L 793.20,937.50 Q 795.00,936.00 795.97,933.87 L 798.50,928.30 Q 800.00,925.00 800.00,921.38 L 800.00,797.95 Q 800.00,795.00 798.80,792.30 L 797.20,788.70 Q 796.00,786.00 793.61,784.26 L 788.30,780.40 Q 785.00,778.00 780.92,778.00 L 705.28,778.00 Q 703.00,778.00 700.90,778.90 L 698.10,780.10 Q 696.00,781.00 694.76,782.92 Z" fill="url(#bars)"/>
+  <path d="M 940.70,602.60 L 936.30,603.40 Q 933.00,604.00 930.49,606.23 L 926.70,609.60 Q 924.00,612.00 921.95,614.97 L 852.76,715.01 Q 850.00,719.00 848.20,723.50 L 845.80,729.50 Q 844.00,734.00 844.00,738.85 L 844.00,922.05 Q 844.00,925.00 845.20,927.70 L 846.80,931.30 Q 848.00,934.00 850.43,935.68 L 857.10,940.30 Q 861.00,943.00 865.74,943.00 L 942.26,943.00 Q 947.00,943.00 950.90,940.30 L 957.11,936.00 Q 960.00,934.00 961.20,930.70 L 962.80,926.30 Q 964.00,923.00 964.00,919.49 L 964.00,627.57 Q 964.00,623.00 962.20,618.80 L 959.80,613.20 Q 958.00,609.00 953.91,606.96 L 947.00,603.50 Q 944.00,602.00 940.70,602.60 Z" fill="url(#bars)"/>
+</g>
 </svg>
