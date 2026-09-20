@@ -326,7 +326,7 @@ export default defineConfig(async ({ mode }) => {
           icons: [
             {
               src: versionPublicAsset("/ico/favicon.png"),
-              sizes: "200x200",
+              sizes: "256x256",
               type: "image/png",
             },
           ],

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { BUILTIN_CATEGORIES as SITE_BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
 import { GAME_DEAL_SOURCE_IDS } from "@/config/topics";
-import { getTrendsCatalogSources } from "@/utils/sourceSubtypes";
+import { filterPublicTrendsCatalogManagedSources, getTrendsCatalogSources } from "@/utils/sourceSubtypes";
 import {
   MAX_CATEGORY_DEPTH,
   canMoveCategory,
@@ -1900,10 +1900,15 @@ export const mainStore = defineStore("mainData", {
       }
     },
     syncTrendsCatalogSources() {
-      const candidates = getTrendsCatalogSources().filter((source) =>
-        source.priorityTier === "A" || source.priorityTier === "B",
+      const catalogSources = getTrendsCatalogSources();
+      if (!catalogSources.length) return 0;
+      this.defaultNewsArr = filterPublicTrendsCatalogManagedSources(this.defaultNewsArr);
+      this.newsArr = filterPublicTrendsCatalogManagedSources(this.newsArr);
+      const candidates = catalogSources.filter(
+        (source) =>
+          source.publicAvailable !== false &&
+          (source.priorityTier === "A" || source.priorityTier === "B"),
       );
-      if (!candidates.length) return 0;
       const known = new Set(this.defaultNewsArr.map((item) => item?.name).filter(Boolean));
       let nextOrder = this.defaultNewsArr.reduce(
         (max, item) => Math.max(max, Number(item?.order) || 0),
