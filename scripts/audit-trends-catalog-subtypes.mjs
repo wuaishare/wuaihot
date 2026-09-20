@@ -8,8 +8,9 @@ import {
 } from "../src/utils/sourceSubtypes.js";
 
 const base = String(
-  process.env.TRENDS_PUBLIC_API || "https://api.wpbetter.cn/trends/public/v1",
+  process.env.TRENDS_PUBLIC_API || "",
 ).replace(/\/$/, "");
+assert.ok(base, "TRENDS_PUBLIC_API is required for the live catalog audit");
 const response = await fetch(`${base}/catalog`, {
   headers: { Accept: "application/json" },
 });

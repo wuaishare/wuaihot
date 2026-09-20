@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.1 — 开源独立部署修正
+
+- 移除运行时代码、构建脚本中对 `api.wpbetter.cn` 的硬编码默认值。
+- 官方示例站通过 Vercel 环境变量注入 Trends Directory、Public Feed、Catalog 与 Intelligence 上游。
+- 第三方部署不配置 Trends 后端时仍可使用静态来源定义独立构建，不会自动连接吾爱热榜或 WP Better 服务。
+- 新增 `audit:open-source-independence`，阻止官方/私有热榜域名重新进入开源运行时配置。
+- `.env.example` 补齐可替换后端配置，并将反馈默认身份统一为 `吾爱热榜 / wuaihot`。
+
 ## v1.5.0 — wuaihot 独立品牌基线
 
 - 项目从 DailyHot 长期二次开发版迁移为独立开源品牌 `wuaihot · 吾爱热榜`。

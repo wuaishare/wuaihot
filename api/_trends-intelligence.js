@@ -12,7 +12,7 @@ const ALLOWED_SOURCES = new Set([
 ]);
 
 const ALLOWED_WINDOWS = new Set(["1h", "6h", "24h", "7d"]);
-const DEFAULT_BASE_URL = "https://api.wpbetter.cn/trends/v1";
+const DEFAULT_BASE_URL = "";
 const REQUEST_TIMEOUT_MS = 12000;
 const EDGE_FRESH_SECONDS = 20;
 const EDGE_STALE_SECONDS = 60;
@@ -60,7 +60,7 @@ const handleTrendsIntelligenceProxy = async ({
     .replace(/\/$/, "");
   const licenseKey = String(process.env.TRENDS_INTELLIGENCE_LICENSE_KEY || "").trim();
   const siteUrl = String(process.env.TRENDS_INTELLIGENCE_SITE_URL || "").trim();
-  if (!licenseKey || !siteUrl) {
+  if (!baseUrl || !licenseKey || !siteUrl) {
     sendJson(res, 503, { code: 503, message: "Trend intelligence is not configured" });
     return true;
   }

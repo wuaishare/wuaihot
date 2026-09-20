@@ -12,7 +12,11 @@ const verify = process.env.VERIFY || process.env.VITE_BUILD_NUMBER || "subtype-a
 const timeoutMs = Number(process.env.AUDIT_TIMEOUT_MS || 20000);
 const concurrency = Number(process.env.SUBTYPE_AUDIT_CONCURRENCY || 4);
 const dataSourceEnv = process.env.SUBTYPE_DATA_SOURCES || "";
-const trendsPublicApi = (process.env.TRENDS_PUBLIC_API || "https://api.wpbetter.cn/trends/public/v1").replace(/\/+$/, "");
+const trendsPublicApi = (process.env.TRENDS_PUBLIC_API || "").replace(/\/+$/, "");
+
+if (!trendsPublicApi) {
+  throw new Error("TRENDS_PUBLIC_API is required for the live subtype audit");
+}
 
 const DEFAULT_DATA_SOURCES = [
   "bilibili",

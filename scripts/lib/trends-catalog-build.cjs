@@ -1,7 +1,7 @@
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
-const DEFAULT_CATALOG_URL = "https://api.wpbetter.cn/trends/catalog.json";
+const DEFAULT_CATALOG_URL = "";
 
 const fetchCatalog = async () => {
   const url = String(

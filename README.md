@@ -59,8 +59,12 @@ pnpm build
 
 ## 主要环境变量
 
-- VITE_GLOBAL_API：主热榜 API
+- VITE_GLOBAL_API：主热榜 API，可指向你自己的兼容后端
 - VITE_GLOBAL_API2：备用热榜 API
+- VITE_TRENDS_DIRECTORY_API：可选来源目录服务；留空时使用仓库静态来源定义
+- VITE_TRENDS_PUBLIC_API：可选公开榜单服务；留空不会连接官方演示后端
+- TRENDS_CATALOG_URL：构建期可选 Catalog；留空时 SEO 使用静态来源回退
+- TRENDS_INTELLIGENCE_BASE_URL：可选服务端趋势智能上游，需与对应授权配置配套
 - VITE_SITE_URL：站点线上地址
 - VITE_DIR：部署路径
 - VITE_ICP：ICP备案号
@@ -73,6 +77,8 @@ pnpm build
 - PRERENDER：是否启用预渲染
 
 公开仓库或浏览器端环境变量中不要放置 Token、Cookie、API Key、OAuth Secret、管理密钥或数据库凭据。
+
+wuaihot 核心代码**不硬编码 WP Better 或吾爱热榜生产 API**。官方示例站的动态目录与榜单后端由部署环境变量注入；第三方自部署可以使用自己的兼容服务，也可以在不配置 Trends 后端时以静态来源配置构建。
 
 ## SEO 与路由
 

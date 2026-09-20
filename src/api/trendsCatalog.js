@@ -3,17 +3,11 @@ import { applyTrendsSourceCatalog } from "@/utils/sourceSubtypes";
 const CACHE_KEY = "dailyhot:trends-source-catalog:v2";
 const STALE_MS = 24 * 60 * 60 * 1000;
 const REVALIDATE_MS = 5 * 60 * 1000;
-const DEFAULT_DIRECTORY_API = import.meta.env.PROD
-  ? "https://api.wpbetter.cn/trends"
-  : "";
-const DEFAULT_PUBLIC_API = import.meta.env.PROD
-  ? "https://api.wpbetter.cn/trends/public/v1"
-  : "";
 const DIRECTORY_API = String(
-  import.meta.env.VITE_TRENDS_DIRECTORY_API || DEFAULT_DIRECTORY_API,
+  import.meta.env.VITE_TRENDS_DIRECTORY_API || "",
 ).replace(/\/$/, "");
 const PUBLIC_API = String(
-  import.meta.env.VITE_TRENDS_PUBLIC_API || DEFAULT_PUBLIC_API,
+  import.meta.env.VITE_TRENDS_PUBLIC_API || "",
 ).replace(/\/$/, "");
 
 let loadingPromise = null;
