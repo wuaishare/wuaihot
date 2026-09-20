@@ -22,6 +22,7 @@ const categoryRail = fs.readFileSync("src/components/CategorySourceRail.vue", "u
 const hotList = fs.readFileSync("src/components/HotList.vue", "utf8");
 const contextToolbar = fs.readFileSync("src/components/ContextToolbar.vue", "utf8");
 const listView = fs.readFileSync("src/views/List.vue", "utf8");
+const readableTitles = fs.readFileSync("src/utils/readableTitles.js", "utf8");
 const sourceLogos = fs.readFileSync("src/utils/sourceLogos.js", "utf8");
 const sharedBadges = fs.readFileSync("src/components/RankingBadgeGroup.vue", "utf8");
 const subtypeBar = fs.readFileSync("src/components/SubtypeBar.vue", "utf8");
@@ -131,6 +132,23 @@ assert.doesNotMatch(template, /category-stream__media is-logo/);
 assert.doesNotMatch(template, /category-stream__toc-children/);
 assert.match(component, /const currentPageSource = computed/);
 assert.match(component, /const currentVariantLabel = computed/);
+const rawSourceAssignmentIndex = component.indexOf("sourceResults[source.name] = result;");
+const readableEnhancementIndex = component.indexOf("void enhanceReadableResultTitles(result, locale.value");
+assert.ok(
+  rawSourceAssignmentIndex !== -1 &&
+    readableEnhancementIndex > rawSourceAssignmentIndex,
+  "CategoryStream must publish provider data before readable-title enhancement",
+);
+assert.match(
+  component,
+  /sourceRequestVersions\[source\.name\] === requestVersion[\s\S]{0,180}sourceResults\[source\.name\] === result/,
+  "late readable-title enhancement must not overwrite a newer source request",
+);
+assert.match(
+  readableTitles,
+  /ENTITY_TITLE_SOURCE_NAMES[\s\S]{0,800}"vscode-marketplace"/,
+  "VS Code Marketplace extension names must stay protected as entity titles",
+);
 assert.match(component, /const minimalMode = computed\(\(\) => !showImages\.value && !showDescriptions\.value\)/);
 assert.match(component, /const PAGE_SIZE_VALUES = \[20, 30, 50, 100\]/);
 assert.match(component, /grid-template-columns: 280px minmax\(520px, 720px\) 280px;[\s\S]{0,120}gap: 16px/);

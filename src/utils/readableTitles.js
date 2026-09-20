@@ -21,6 +21,7 @@ const ENTITY_TITLE_SOURCE_NAMES = new Set([
   "clawhub-skills",
   "clawhub-plugins",
   "hf-models",
+  "vscode-marketplace",
   "producthunt-ai",
   "sse",
   "szse",

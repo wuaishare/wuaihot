@@ -458,6 +458,7 @@ const copy = computed(() => COPY[locale.value] || COPY["zh-CN"]);
 
 const sourceResults = reactive({});
 const sourceStates = reactive({});
+const sourceRequestVersions = Object.create(null);
 
 const API_LOCALIZED_SOURCE_NAMES = new Set([
   "designarena",
@@ -788,6 +789,8 @@ const sourcePathFor = (source) =>
 
 const loadSource = async (source, force = false) => {
   if (!force && sourceResults[source.name]) return;
+  const requestVersion = (sourceRequestVersions[source.name] || 0) + 1;
+  sourceRequestVersions[source.name] = requestVersion;
   sourceStates[source.name] = "loading";
   const useApi2 =
     source?.useApi2 || source?.api === 2 || source?.api === "api2";
@@ -801,6 +804,7 @@ const loadSource = async (source, force = false) => {
         forceNoCache: force,
       },
     );
+    if (sourceRequestVersions[source.name] !== requestVersion) return;
     if (response?.usedFallback && response?.fallbackSuccess && !useApi2) {
       store.setSourceApi2(source.name, true);
     }
@@ -810,23 +814,33 @@ const loadSource = async (source, force = false) => {
       return;
     }
 
-    let result = response.result;
-    if (shouldUseReadableTitleTranslation(source.name, locale.value)) {
-      try {
-        result = await enhanceReadableResultTitles(result, locale.value, {
-          includeDescriptions: false,
-          limit: Math.min(50, Math.max(20, rankTo.value)),
-          offset: 0,
-          sourceName: source.name,
-        });
-      } catch {
-        // Provider data is already useful; readable titles are best effort.
-      }
-    }
+    const result = response.result;
     sourceResults[source.name] = result;
     sourceStates[source.name] = "loaded";
     store.markAvailable(source.name);
+
+    if (shouldUseReadableTitleTranslation(source.name, locale.value)) {
+      void enhanceReadableResultTitles(result, locale.value, {
+        includeDescriptions: false,
+        limit: Math.min(50, Math.max(20, rankTo.value)),
+        offset: 0,
+        sourceName: source.name,
+      })
+        .then((enhancedResult) => {
+          if (
+            sourceRequestVersions[source.name] === requestVersion &&
+            sourceResults[source.name] === result &&
+            enhancedResult !== result
+          ) {
+            sourceResults[source.name] = enhancedResult;
+          }
+        })
+        .catch(() => {
+          // Provider data is already visible; readable titles are best effort.
+        });
+    }
   } catch {
+    if (sourceRequestVersions[source.name] !== requestVersion) return;
     sourceStates[source.name] = "failed";
     store.markUnavailable(source.name);
   }
