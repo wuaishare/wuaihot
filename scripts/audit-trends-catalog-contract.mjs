@@ -331,6 +331,11 @@ assert.match(apiSource, /readSurface === "display"/, "Display-only reads must fa
 assert.match(apiSource, /TRENDS_DISPLAY_API/, "frontend ranking transport must support the bounded Public Display API");
 const catalogLoaderSource = fs.readFileSync(new URL("../src/api/trendsCatalog.js", import.meta.url).pathname, "utf8");
 assert.match(catalogLoaderSource, /DIRECTORY_API/, "frontend catalog loader must consume the full Trends directory");
+const listViewSource = fs.readFileSync(new URL("../src/views/List.vue", import.meta.url).pathname, "utf8");
+assert.match(listViewSource, /const ensureRouteSourceExists = \(\) =>/, "rank pages must guard removed catalog-managed source routes");
+assert.match(listViewSource, /changeType\(fallbackSource\.name, true\)/, "removed source routes must replace history with a readable fallback");
+assert.match(listViewSource, /const navigate = replace \? router\.replace : router\.push/, "source navigation must support replace semantics for stale routes");
+assert.match(listViewSource, /if \(!ensureRouteSourceExists\(\)\) return;\s*getHotListsData\(listType\.value\)/, "initial rank mount must validate the route source before loading data");
 assert.match(catalogLoaderSource, /DISPLAY_API/, "frontend catalog loader must consume the Public Display catalog");
 assert.match(catalogLoaderSource, /publicAvailable/, "frontend catalog loader must preserve Public Feed admission separately from directory discovery");
 assert.match(catalogLoaderSource, /displayAvailable/, "frontend catalog loader must preserve Public Display admission separately from Public Feed");

@@ -841,16 +841,28 @@ const trackMarketTableItemClick = (item, index) =>
     },
   });
 
-const changeType = (type) => {
+const changeType = (type, replace = false) => {
   if (!type) return;
   const nextSubtype = resolveSourceSubtype(
     getSourceSubtypeOptions(type),
     readSourceSubtype(type),
   );
-  router.push({
+  const navigate = replace ? router.replace : router.push;
+  navigate({
     path: buildRankPath(getLocaleFromRoute(route), type, nextSubtype || ""),
     query: queryValue(route.query.q) ? { q: queryValue(route.query.q) } : {},
   });
+};
+
+const ensureRouteSourceExists = () => {
+  const knownSource = store.newsArr.find(
+    (item) => item.name === listType.value,
+  );
+  if (knownSource) return true;
+  const fallbackSource = availableNews.value[0];
+  if (!fallbackSource) return false;
+  changeType(fallbackSource.name, true);
+  return false;
 };
 
 const changeMarketRankDirection = (direction) => {
@@ -973,8 +985,8 @@ watch(
     // Hidden sources remain valid direct routes. Hiding the source from the
     // navigation/aggregates must not redirect the page behind an open settings
     // modal. Only fall back when the source no longer exists at all.
-    if (!knownSource && availableNews.value[0]) {
-      changeType(availableNews.value[0].name);
+    if (!knownSource) {
+      ensureRouteSourceExists();
       return;
     }
     if ((visibleSource || knownSource) && !listData.value) {
@@ -1003,6 +1015,7 @@ onMounted(() => {
     window.addEventListener(DATA_REFRESH_EVENT, handleDataRefresh);
   }
   listSubType.value = resolveSubType(router.currentRoute.value);
+  if (!ensureRouteSourceExists()) return;
   getHotListsData(listType.value);
 });
 
