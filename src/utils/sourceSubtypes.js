@@ -1027,6 +1027,15 @@ const normalizeValue = (value) => {
 
 export const getTrendsCatalogSources = () => [...REMOTE_SOURCE_CATALOG.values()].map((source) => ({ ...source }));
 
+export const filterPublicTrendsCatalogManagedSources = (items = []) => {
+  if (!REMOTE_SOURCE_CATALOG.size) return Array.isArray(items) ? [...items] : [];
+  return (Array.isArray(items) ? items : []).filter((item) => {
+    if (!item?.catalogManaged) return true;
+    const source = REMOTE_SOURCE_CATALOG.get(String(item?.name || ""));
+    return Boolean(source && source.publicAvailable !== false);
+  });
+};
+
 export const getTrendsCatalogSource = (sourceName) => {
   const source = REMOTE_SOURCE_CATALOG.get(String(sourceName || ""));
   return source ? { ...source } : null;

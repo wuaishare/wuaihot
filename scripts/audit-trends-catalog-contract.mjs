@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   applyTrendsSourceCatalog,
   canFallbackTrendsCatalogVariant,
+  filterPublicTrendsCatalogManagedSources,
   getDefaultSourceSubtype,
   getSourceSubtypeGroups,
   getTrendsCatalogSources,
@@ -145,6 +146,15 @@ assert.equal(hasTrendsPublicCatalogSource("modeldial-radar"), true);
 assert.equal(hasTrendsCatalogSource("bilibili-ai-arena"), true);
 assert.equal(hasTrendsPublicCatalogSource("bilibili-ai-arena"), false);
 assert.equal(hasTrendsPublicCatalogSource("not-in-catalog"), false);
+assert.deepEqual(
+  filterPublicTrendsCatalogManagedSources([
+    { name: "weibo", show: true },
+    { name: "modeldial-radar", catalogManaged: true, show: true },
+    { name: "bilibili-ai-arena", catalogManaged: true, show: true },
+    { name: "stale-catalog-source", catalogManaged: true, show: true },
+  ]).map((item) => item.name),
+  ["weibo", "modeldial-radar"],
+);
 assert.deepEqual(
   getSourceSubtypeGroups("weibo").flatMap((group) => group.items.map((item) => item.value)),
   ["hot", "entertainment", "life", "social"],
