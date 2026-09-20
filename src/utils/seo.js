@@ -24,9 +24,9 @@ import {
 const DEFAULT_SEO = {
   title: "吾爱热榜 - 今日热榜、全网热搜与实时热点聚合",
   description:
-    "吾爱热榜聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜与实时热搜，支持分类浏览、榜单切换和自动刷新，一站掌握全网热点。",
+    "wuaihot 吾爱热榜以「一站看全网」为目标，聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜、全网热搜与实时热点，支持分类浏览、榜单切换和自动刷新。",
   keywords:
-    "吾爱热榜,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
+    "wuaihot,吾爱热榜,一站看全网,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
   ogImage: "/ico/favicon.png",
   siteName: "吾爱热榜",
   locale: "zh_CN",
@@ -69,11 +69,11 @@ const CATEGORY_SEO_MAP = {
   },
   游戏: {
     en: {
-      title: "Game Deals & Rankings - Steam sales, Epic freebies and game trends | DailyHot",
+      title: "Game Deals & Rankings - Steam sales, Epic freebies and game trends | wuaihot",
       description:
         "Game Deals & Rankings combine Steam official sales, Epic free games, Xiaoheihe historical lows, GG.deals freebies and bundles with gaming news and community trends.",
       keywords:
-        "game deals,Steam sales,Epic free games,historical low game prices,Xiaoheihe,GG.deals,game bundles,game rankings,DailyHot",
+        "game deals,Steam sales,Epic free games,historical low game prices,Xiaoheihe,GG.deals,game bundles,game rankings,wuaihot",
     },
     "zh-TW": {
       title: "遊戲優惠與熱榜 - Steam 特惠、Epic 免費遊戲與史低情報 | 吾愛熱榜",
@@ -83,18 +83,18 @@ const CATEGORY_SEO_MAP = {
         "遊戲優惠,Steam特惠,Epic免費遊戲,遊戲史低,小黑盒,GG.deals,遊戲包,遊戲熱榜,吾愛熱榜",
     },
     ja: {
-      title: "ゲームセール・ランキング - Steam セール、Epic 無料配布、史上最安 | DailyHot",
+      title: "ゲームセール・ランキング - Steam セール、Epic 無料配布、史上最安 | wuaihot",
       description:
         "Steam 公式セール、Epic 無料ゲーム、Xiaoheihe の史上最安・高割引、GG.deals の無料配布・バンドルとゲームニュースをまとめます。",
       keywords:
-        "ゲームセール,Steamセール,Epic無料ゲーム,史上最安,Xiaoheihe,GG.deals,ゲームバンドル,ゲームランキング,DailyHot",
+        "ゲームセール,Steamセール,Epic無料ゲーム,史上最安,Xiaoheihe,GG.deals,ゲームバンドル,ゲームランキング,wuaihot",
     },
     ko: {
-      title: "게임 할인·랭킹 - Steam 세일, Epic 무료 게임, 역대 최저가 | DailyHot",
+      title: "게임 할인·랭킹 - Steam 세일, Epic 무료 게임, 역대 최저가 | wuaihot",
       description:
         "Steam 공식 세일, Epic 무료 게임, Xiaoheihe 역대 최저가·고할인, GG.deals 무료 배포·번들과 게임 뉴스 및 커뮤니티 트렌드를 함께 제공합니다.",
       keywords:
-        "게임 할인,Steam 세일,Epic 무료 게임,역대 최저가,Xiaoheihe,GG.deals,게임 번들,게임 랭킹,DailyHot",
+        "게임 할인,Steam 세일,Epic 무료 게임,역대 최저가,Xiaoheihe,GG.deals,게임 번들,게임 랭킹,wuaihot",
     },
   },
   "财经": {
@@ -321,11 +321,11 @@ const CATEGORY_SEO_MAP = {
 const CATEGORY_LOCALE_SEO_MAP = {
   "羊毛": {
     en: {
-      title: "Deals & Freebies - Coupons, giveaways and limited-time offers | DailyHot",
+      title: "Deals & Freebies - Coupons, giveaways and limited-time offers | wuaihot",
       description:
         "Deals & Freebies aggregates time-sensitive offers from Super Deals, 0818 Deals, NodeLoc Deals and ITHome Free Games, including coupons, free credits, giveaways, discounts and limited-time freebies.",
       keywords:
-        "deals,freebies,coupons,giveaways,discounts,free credits,limited-time offers,0818 Deals,NodeLoc Deals,ITHome Free Games,DailyHot",
+        "deals,freebies,coupons,giveaways,discounts,free credits,limited-time offers,0818 Deals,NodeLoc Deals,ITHome Free Games,wuaihot",
     },
     "zh-TW": {
       title: "優惠情報 - 限免、優惠券、免費福利與即時線報 | 吾愛熱榜",
@@ -334,25 +334,25 @@ const CATEGORY_LOCALE_SEO_MAP = {
       keywords: "優惠情報,限免,免費福利,優惠券,抽獎,折扣,0818團,NodeLoc優惠,喜加一,吾愛熱榜",
     },
     ja: {
-      title: "お得情報 - 無料配布、クーポン、キャンペーン速報 | DailyHot",
+      title: "お得情報 - 無料配布、クーポン、キャンペーン速報 | wuaihot",
       description:
         "スーパーお得情報、0818、NodeLoc、ITHome の無料配布やクーポン、無料クレジット、抽選、割引など、行動価値の高いお得情報をまとめて確認できます。",
-      keywords: "お得情報,無料配布,クーポン,キャンペーン,割引,無料クレジット,0818,NodeLoc,ITHome,DailyHot",
+      keywords: "お得情報,無料配布,クーポン,キャンペーン,割引,無料クレジット,0818,NodeLoc,ITHome,wuaihot",
     },
     ko: {
-      title: "혜택 정보 - 무료 배포, 쿠폰, 할인 및 이벤트 | DailyHot",
+      title: "혜택 정보 - 무료 배포, 쿠폰, 할인 및 이벤트 | wuaihot",
       description:
         "Super Deals, 0818, NodeLoc, ITHome에서 제공하는 무료 배포, 쿠폰, 무료 크레딧, 경품, 할인 등 시의성 높은 혜택 정보를 한곳에서 확인합니다.",
-      keywords: "혜택,무료 배포,쿠폰,할인,경품,무료 크레딧,0818,NodeLoc,ITHome,DailyHot",
+      keywords: "혜택,무료 배포,쿠폰,할인,경품,무료 크레딧,0818,NodeLoc,ITHome,wuaihot",
     },
   },
   "财经": {
     en: {
-      title: "Finance Rankings - Live market news, stocks, ETFs and global indexes | DailyHot",
+      title: "Finance Rankings - Live market news, stocks, ETFs and global indexes | wuaihot",
       description:
         "Finance Rankings combine 24/7 market flashes from major Chinese financial outlets with Xueqiu investor trends, official exchange activity rankings and major global stock indexes across Asia, the U.S. and Europe.",
       keywords:
-        "finance rankings,global market indexes,Shanghai Composite,CSI 300,Hang Seng Index,Hang Seng TECH,Nasdaq Composite,Nasdaq-100,NIFTY 50,SENSEX,stock turnover,ETF turnover,HKEX,Nasdaq,Xueqiu,DailyHot",
+        "finance rankings,global market indexes,Shanghai Composite,CSI 300,Hang Seng Index,Hang Seng TECH,Nasdaq Composite,Nasdaq-100,NIFTY 50,SENSEX,stock turnover,ETF turnover,HKEX,Nasdaq,Xueqiu,wuaihot",
     },
     "zh-TW": {
       title: "財經熱榜 - 7×24快訊、股票、ETF與全球股指聚合 | 吾愛熱榜",
@@ -362,26 +362,26 @@ const CATEGORY_LOCALE_SEO_MAP = {
         "財經熱榜,股票成交額榜,ETF成交額榜,上海證券交易所,深圳證券交易所,香港交易所,Nasdaq,NIFTY 50,SENSEX,美股,港股,雪球熱門股票,熱門基金,A股熱榜,證券市場,吾愛熱榜",
     },
     ja: {
-      title: "金融ランキング - 24時間速報、株式、ETF、世界株価指数 | DailyHot",
+      title: "金融ランキング - 24時間速報、株式、ETF、世界株価指数 | wuaihot",
       description:
         "主要金融メディアの24時間速報、Xueqiu の投資トレンド、上海・深圳・香港など主要取引所の公式市場データ、世界主要株価指数を一体で追跡します。",
       keywords:
-        "金融ランキング,株式売買代金,ETF売買代金,上海証券取引所,深圳証券取引所,香港取引所,Nasdaq,NIFTY 50,SENSEX,米国株,香港株,Xueqiu,人気ファンド,A株,DailyHot",
+        "金融ランキング,株式売買代金,ETF売買代金,上海証券取引所,深圳証券取引所,香港取引所,Nasdaq,NIFTY 50,SENSEX,米国株,香港株,Xueqiu,人気ファンド,A株,wuaihot",
     },
     ko: {
-      title: "금융 랭킹 - 24시간 속보, 주식, ETF, 글로벌 지수 | DailyHot",
+      title: "금융 랭킹 - 24시간 속보, 주식, ETF, 글로벌 지수 | wuaihot",
       description:
         "주요 금융 매체의 24시간 속보, Xueqiu 투자 동향, 상하이·선전·홍콩 등 주요 거래소 공식 시장 데이터와 글로벌 주요 주가지수를 함께 추적합니다.",
       keywords:
-        "금융 랭킹,주식 거래대금,ETF 거래대금,상하이증권거래소,선전증권거래소,홍콩거래소,Nasdaq,NIFTY 50,SENSEX,미국 주식,홍콩 주식,Xueqiu,인기 펀드,A주,DailyHot",
+        "금융 랭킹,주식 거래대금,ETF 거래대금,상하이증권거래소,선전증권거래소,홍콩거래소,Nasdaq,NIFTY 50,SENSEX,미국 주식,홍콩 주식,Xueqiu,인기 펀드,A주,wuaihot",
     },
   },
   "实时快讯": {
     en: {
-      title: "Live Finance News - 24/7 market flashes and breaking updates | DailyHot",
+      title: "Live Finance News - 24/7 market flashes and breaking updates | wuaihot",
       description:
         "Live Finance News aggregates CLS Telegraph, Eastmoney, Jin10, Tonghuashun, WallstreetCN, Sina Finance and Yicai for fast-moving stock, macro, company and global market updates.",
-      keywords: "live finance news,market flash,breaking finance news,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,DailyHot",
+      keywords: "live finance news,market flash,breaking finance news,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,wuaihot",
     },
     "zh-TW": {
       title: "財經即時快訊 - 7×24市場消息與重大事件聚合 | 吾愛熱榜",
@@ -390,24 +390,24 @@ const CATEGORY_LOCALE_SEO_MAP = {
       keywords: "財經快訊,7×24快訊,財聯社,東方財富,金十,同花順,華爾街見聞,新浪財經,第一財經,吾愛熱榜",
     },
     ja: {
-      title: "金融速報 - 24時間マーケットニュース・重要イベント | DailyHot",
+      title: "金融速報 - 24時間マーケットニュース・重要イベント | wuaihot",
       description:
         "CLS、Eastmoney、Jin10、Tonghuashun、WallstreetCN、Sina Finance、Yicai の速報を集約し、株式・マクロ・企業・世界市場の動きを追跡します。",
-      keywords: "金融速報,市場ニュース,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,DailyHot",
+      keywords: "金融速報,市場ニュース,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,wuaihot",
     },
     ko: {
-      title: "금융 실시간 속보 - 24시간 시장 뉴스와 주요 이벤트 | DailyHot",
+      title: "금융 실시간 속보 - 24시간 시장 뉴스와 주요 이벤트 | wuaihot",
       description:
         "CLS, Eastmoney, Jin10, Tonghuashun, WallstreetCN, Sina Finance, Yicai의 속보를 모아 주식·거시경제·기업·글로벌 시장 변화를 추적합니다.",
-      keywords: "금융 속보,시장 뉴스,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,DailyHot",
+      keywords: "금융 속보,시장 뉴스,CLS,Eastmoney,Jin10,Tonghuashun,WallstreetCN,Sina Finance,Yicai,wuaihot",
     },
   },
   "市场热度": {
     en: {
-      title: "Market Trends - Popular stocks, funds, and investor topics | DailyHot",
+      title: "Market Trends - Popular stocks, funds, and investor topics | wuaihot",
       description:
         "Market Trends tracks Xueqiu investor discussions, popular stocks and popular funds to surface changes in attention and short-term market sentiment.",
-      keywords: "market trends,Xueqiu,popular stocks,popular funds,investor topics,market sentiment,DailyHot",
+      keywords: "market trends,Xueqiu,popular stocks,popular funds,investor topics,market sentiment,wuaihot",
     },
     "zh-TW": {
       title: "市場熱度 - 熱門股票、基金與投資話題趨勢 | 吾愛熱榜",
@@ -415,22 +415,22 @@ const CATEGORY_LOCALE_SEO_MAP = {
       keywords: "市場熱度,雪球,熱門股票,熱門基金,投資話題,市場情緒,吾愛熱榜",
     },
     ja: {
-      title: "市場トレンド - 人気株・ファンド・投資テーマ | DailyHot",
+      title: "市場トレンド - 人気株・ファンド・投資テーマ | wuaihot",
       description: "Xueqiu の人気投資テーマ、注目株、人気ファンドを集約し、投資家の関心と短期的な市場センチメントを可視化します。",
-      keywords: "市場トレンド,Xueqiu,人気株,人気ファンド,投資テーマ,市場センチメント,DailyHot",
+      keywords: "市場トレンド,Xueqiu,人気株,人気ファンド,投資テーマ,市場センチメント,wuaihot",
     },
     ko: {
-      title: "시장 동향 - 인기 종목·펀드·투자 이슈 | DailyHot",
+      title: "시장 동향 - 인기 종목·펀드·투자 이슈 | wuaihot",
       description: "Xueqiu의 인기 투자 이슈, 종목, 펀드를 모아 투자자 관심과 단기 시장 심리 변화를 보여줍니다.",
-      keywords: "시장 동향,Xueqiu,인기 종목,인기 펀드,투자 이슈,시장 심리,DailyHot",
+      keywords: "시장 동향,Xueqiu,인기 종목,인기 펀드,투자 이슈,시장 심리,wuaihot",
     },
   },
   "全球股指": {
     en: {
-      title: "Global Stock Indexes - Major market performance across regions | DailyHot",
+      title: "Global Stock Indexes - Major market performance across regions | wuaihot",
       description:
         "Global Stock Indexes tracks major benchmarks across China, Hong Kong, Japan, Korea, India, the U.S., Canada, Australia, Brazil and Europe with current levels and percentage moves.",
-      keywords: "global stock indexes,Shanghai Composite,Hang Seng,Nikkei 225,Nasdaq,S&P 500,NIFTY 50,European indexes,DailyHot",
+      keywords: "global stock indexes,Shanghai Composite,Hang Seng,Nikkei 225,Nasdaq,S&P 500,NIFTY 50,European indexes,wuaihot",
     },
     "zh-TW": {
       title: "全球股指 - 亞洲、美國與歐洲主要股票指數行情 | 吾愛熱榜",
@@ -438,22 +438,22 @@ const CATEGORY_LOCALE_SEO_MAP = {
       keywords: "全球股指,上證指數,恆生指數,日經225,納斯達克,標普500,NIFTY 50,歐洲股指,吾愛熱榜",
     },
     ja: {
-      title: "世界株価指数 - アジア・米国・欧州の主要指数 | DailyHot",
+      title: "世界株価指数 - アジア・米国・欧州の主要指数 | wuaihot",
       description: "中国、香港、日本、韓国、インド、米国、カナダ、豪州、ブラジル、欧州の主要株価指数を現在値と騰落率で一覧できます。",
-      keywords: "世界株価指数,上海総合,ハンセン,日経225,Nasdaq,S&P 500,NIFTY 50,欧州株,DailyHot",
+      keywords: "世界株価指数,上海総合,ハンセン,日経225,Nasdaq,S&P 500,NIFTY 50,欧州株,wuaihot",
     },
     ko: {
-      title: "글로벌 주가지수 - 아시아·미국·유럽 주요 지수 | DailyHot",
+      title: "글로벌 주가지수 - 아시아·미국·유럽 주요 지수 | wuaihot",
       description: "중국, 홍콩, 일본, 한국, 인도, 미국, 캐나다, 호주, 브라질, 유럽 주요 주가지수의 현재 수준과 등락률을 한곳에서 확인합니다.",
-      keywords: "글로벌 주가지수,상하이종합,항셍,닛케이225,Nasdaq,S&P 500,NIFTY 50,유럽 지수,DailyHot",
+      keywords: "글로벌 주가지수,상하이종합,항셍,닛케이225,Nasdaq,S&P 500,NIFTY 50,유럽 지수,wuaihot",
     },
   },
   "交易所": {
     en: {
-      title: "Exchange Market Rankings - Official activity from major exchanges | DailyHot",
+      title: "Exchange Market Rankings - Official activity from major exchanges | wuaihot",
       description:
         "Exchange Market Rankings aggregate official market activity from SSE, SZSE, HKEX, Nasdaq, NYSE, TWSE, NSE India and ASX, including active stocks and ETF turnover lists.",
-      keywords: "stock exchanges,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,stock turnover,ETF turnover,DailyHot",
+      keywords: "stock exchanges,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,stock turnover,ETF turnover,wuaihot",
     },
     "zh-TW": {
       title: "交易所市場榜 - 滬深港、美股、臺灣、印度與澳洲官方榜單 | 吾愛熱榜",
@@ -461,53 +461,53 @@ const CATEGORY_LOCALE_SEO_MAP = {
       keywords: "交易所,上交所,深交所,港交所,Nasdaq,NYSE,TWSE,NSE India,ASX,成交額榜,吾愛熱榜",
     },
     ja: {
-      title: "取引所ランキング - 世界主要取引所の公式市場データ | DailyHot",
+      title: "取引所ランキング - 世界主要取引所の公式市場データ | wuaihot",
       description: "SSE、SZSE、HKEX、Nasdaq、NYSE、TWSE、NSE India、ASX の公式市場アクティビティや株式・ETF売買代金ランキングを集約します。",
-      keywords: "取引所,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,売買代金,DailyHot",
+      keywords: "取引所,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,売買代金,wuaihot",
     },
     ko: {
-      title: "거래소 시장 랭킹 - 주요 거래소 공식 활동 데이터 | DailyHot",
+      title: "거래소 시장 랭킹 - 주요 거래소 공식 활동 데이터 | wuaihot",
       description: "SSE, SZSE, HKEX, Nasdaq, NYSE, TWSE, NSE India, ASX의 공식 시장 활동과 주식·ETF 거래대금 랭킹을 모아 제공합니다.",
-      keywords: "거래소,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,거래대금,DailyHot",
+      keywords: "거래소,SSE,SZSE,HKEX,Nasdaq,NYSE,TWSE,NSE India,ASX,거래대금,wuaihot",
     },
   },
   "模型评测": {
-    en: { title: "AI Model Benchmarks - Leaderboards, capability and price comparisons | DailyHot", description: "Compare leading AI models across OpenRouter, Artificial Analysis, Arena AI, DesignArena and LLM Stats, including capability, coding, vision, agent and pricing signals.", keywords: "AI model benchmarks,AI leaderboard,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,DailyHot" },
+    en: { title: "AI Model Benchmarks - Leaderboards, capability and price comparisons | wuaihot", description: "Compare leading AI models across OpenRouter, Artificial Analysis, Arena AI, DesignArena and LLM Stats, including capability, coding, vision, agent and pricing signals.", keywords: "AI model benchmarks,AI leaderboard,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,wuaihot" },
     "zh-TW": { title: "AI模型評測 - 大模型排行榜、能力與價格比較 | 吾愛熱榜", description: "彙整 OpenRouter、Artificial Analysis、Arena AI、DesignArena 與 LLM Stats，追蹤主流大模型能力、編程、視覺、Agent、價格與熱度排名。", keywords: "AI模型評測,大模型排行榜,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,吾愛熱榜" },
-    ja: { title: "AIモデル評価 - ランキング、性能、価格比較 | DailyHot", description: "OpenRouter、Artificial Analysis、Arena AI、DesignArena、LLM Stats を集約し、主要モデルの性能、コーディング、画像、Agent、価格を比較します。", keywords: "AIモデル評価,AIランキング,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,DailyHot" },
-    ko: { title: "AI 모델 평가 - 순위, 성능, 가격 비교 | DailyHot", description: "OpenRouter, Artificial Analysis, Arena AI, DesignArena, LLM Stats를 모아 주요 모델의 성능, 코딩, 비전, Agent, 가격 신호를 비교합니다.", keywords: "AI 모델 평가,AI 순위,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,DailyHot" },
+    ja: { title: "AIモデル評価 - ランキング、性能、価格比較 | wuaihot", description: "OpenRouter、Artificial Analysis、Arena AI、DesignArena、LLM Stats を集約し、主要モデルの性能、コーディング、画像、Agent、価格を比較します。", keywords: "AIモデル評価,AIランキング,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,wuaihot" },
+    ko: { title: "AI 모델 평가 - 순위, 성능, 가격 비교 | wuaihot", description: "OpenRouter, Artificial Analysis, Arena AI, DesignArena, LLM Stats를 모아 주요 모델의 성능, 코딩, 비전, Agent, 가격 신호를 비교합니다.", keywords: "AI 모델 평가,AI 순위,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,wuaihot" },
   },
   "产品生态": {
-    en: { title: "AI Products & Ecosystem - Apps, Agent Skills and tool trends | DailyHot", description: "Track AI product popularity, Agent Skills, plugins and new tools through AICPB, Skills Rank, ClawHub and Product Hunt AI.", keywords: "AI products,AI tools,Agent Skills,ClawHub,Product Hunt AI,AICPB,AI apps,DailyHot" },
+    en: { title: "AI Products & Ecosystem - Apps, Agent Skills and tool trends | wuaihot", description: "Track AI product popularity, Agent Skills, plugins and new tools through AICPB, Skills Rank, ClawHub and Product Hunt AI.", keywords: "AI products,AI tools,Agent Skills,ClawHub,Product Hunt AI,AICPB,AI apps,wuaihot" },
     "zh-TW": { title: "AI產品生態 - AI應用、Agent Skills與工具趨勢 | 吾愛熱榜", description: "彙整 AICPB、Skills Rank、ClawHub 與 Product Hunt AI，追蹤AI應用、Agent Skills、插件與新品熱度。", keywords: "AI產品,AI工具,Agent Skills,ClawHub,Product Hunt AI,AICPB,吾愛熱榜" },
-    ja: { title: "AI製品・エコシステム - アプリ、Agent Skills、ツール動向 | DailyHot", description: "AICPB、Skills Rank、ClawHub、Product Hunt AI からAIアプリ、Agent Skills、プラグイン、新製品の人気を追跡します。", keywords: "AI製品,AIツール,Agent Skills,ClawHub,Product Hunt AI,AICPB,DailyHot" },
-    ko: { title: "AI 제품·생태계 - 앱, Agent Skills, 도구 트렌드 | DailyHot", description: "AICPB, Skills Rank, ClawHub, Product Hunt AI를 통해 AI 앱, Agent Skills, 플러그인과 신규 도구의 인기를 추적합니다.", keywords: "AI 제품,AI 도구,Agent Skills,ClawHub,Product Hunt AI,AICPB,DailyHot" },
+    ja: { title: "AI製品・エコシステム - アプリ、Agent Skills、ツール動向 | wuaihot", description: "AICPB、Skills Rank、ClawHub、Product Hunt AI からAIアプリ、Agent Skills、プラグイン、新製品の人気を追跡します。", keywords: "AI製品,AIツール,Agent Skills,ClawHub,Product Hunt AI,AICPB,wuaihot" },
+    ko: { title: "AI 제품·생태계 - 앱, Agent Skills, 도구 트렌드 | wuaihot", description: "AICPB, Skills Rank, ClawHub, Product Hunt AI를 통해 AI 앱, Agent Skills, 플러그인과 신규 도구의 인기를 추적합니다.", keywords: "AI 제품,AI 도구,Agent Skills,ClawHub,Product Hunt AI,AICPB,wuaihot" },
   },
   "官方动态": {
-    en: { title: "Official AI Updates - OpenAI, Anthropic, DeepMind and more | DailyHot", description: "Follow official news and blogs from OpenAI, Anthropic, DeepMind, Meta AI, Mistral, Cohere, Perplexity, xAI and Hugging Face for model launches, product updates and research progress.", keywords: "official AI updates,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,AI news,DailyHot" },
+    en: { title: "Official AI Updates - OpenAI, Anthropic, DeepMind and more | wuaihot", description: "Follow official news and blogs from OpenAI, Anthropic, DeepMind, Meta AI, Mistral, Cohere, Perplexity, xAI and Hugging Face for model launches, product updates and research progress.", keywords: "official AI updates,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,AI news,wuaihot" },
     "zh-TW": { title: "AI官方動態 - OpenAI、Anthropic、DeepMind等官方更新 | 吾愛熱榜", description: "彙整 OpenAI、Anthropic、DeepMind、Meta AI、Mistral、Cohere、Perplexity、xAI 與 Hugging Face 官方新聞與博客。", keywords: "AI官方動態,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,AI新聞,吾愛熱榜" },
-    ja: { title: "AI公式アップデート - OpenAI、Anthropic、DeepMindなど | DailyHot", description: "OpenAI、Anthropic、DeepMind、Meta AI、Mistral、Cohere、Perplexity、xAI、Hugging Face の公式ニュースとブログをまとめます。", keywords: "AI公式アップデート,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,DailyHot" },
-    ko: { title: "AI 공식 업데이트 - OpenAI, Anthropic, DeepMind 등 | DailyHot", description: "OpenAI, Anthropic, DeepMind, Meta AI, Mistral, Cohere, Perplexity, xAI, Hugging Face의 공식 뉴스와 블로그를 모아 제공합니다.", keywords: "AI 공식 업데이트,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,DailyHot" },
+    ja: { title: "AI公式アップデート - OpenAI、Anthropic、DeepMindなど | wuaihot", description: "OpenAI、Anthropic、DeepMind、Meta AI、Mistral、Cohere、Perplexity、xAI、Hugging Face の公式ニュースとブログをまとめます。", keywords: "AI公式アップデート,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,wuaihot" },
+    ko: { title: "AI 공식 업데이트 - OpenAI, Anthropic, DeepMind 등 | wuaihot", description: "OpenAI, Anthropic, DeepMind, Meta AI, Mistral, Cohere, Perplexity, xAI, Hugging Face의 공식 뉴스와 블로그를 모아 제공합니다.", keywords: "AI 공식 업데이트,OpenAI,Anthropic,DeepMind,Meta AI,Mistral,Hugging Face,wuaihot" },
   },
   "研究社区": {
-    en: { title: "AI Research & Community - Papers, open source and developer discussions | DailyHot", description: "Track Papers with Code, Hacker News AI discussions and Reddit communities including LocalLLaMA, MachineLearning and artificial for research, open models and developer debate.", keywords: "AI research,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,open models,AI community,DailyHot" },
+    en: { title: "AI Research & Community - Papers, open source and developer discussions | wuaihot", description: "Track Papers with Code, Hacker News AI discussions and Reddit communities including LocalLLaMA, MachineLearning and artificial for research, open models and developer debate.", keywords: "AI research,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,open models,AI community,wuaihot" },
     "zh-TW": { title: "AI研究社群 - 論文代碼、開源模型與技術討論 | 吾愛熱榜", description: "彙整 Papers with Code、Hacker News AI 與 LocalLLaMA、MachineLearning、artificial 等 Reddit 社群，追蹤論文代碼、開源模型與技術討論。", keywords: "AI研究,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,開源模型,AI社群,吾愛熱榜" },
-    ja: { title: "AI研究・コミュニティ - 論文、オープンモデル、技術議論 | DailyHot", description: "Papers with Code、Hacker News AI、LocalLLaMA、MachineLearning、artificial などを集約し、論文コード、オープンモデル、開発者議論を追跡します。", keywords: "AI研究,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,オープンモデル,DailyHot" },
-    ko: { title: "AI 연구·커뮤니티 - 논문, 오픈 모델, 개발자 토론 | DailyHot", description: "Papers with Code, Hacker News AI, LocalLLaMA, MachineLearning, artificial 등을 모아 논문 코드, 오픈 모델, 개발자 토론을 추적합니다.", keywords: "AI 연구,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,오픈 모델,DailyHot" },
+    ja: { title: "AI研究・コミュニティ - 論文、オープンモデル、技術議論 | wuaihot", description: "Papers with Code、Hacker News AI、LocalLLaMA、MachineLearning、artificial などを集約し、論文コード、オープンモデル、開発者議論を追跡します。", keywords: "AI研究,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,オープンモデル,wuaihot" },
+    ko: { title: "AI 연구·커뮤니티 - 논문, 오픈 모델, 개발자 토론 | wuaihot", description: "Papers with Code, Hacker News AI, LocalLLaMA, MachineLearning, artificial 등을 모아 논문 코드, 오픈 모델, 개발자 토론을 추적합니다.", keywords: "AI 연구,Papers with Code,Hacker News AI,LocalLLaMA,MachineLearning,오픈 모델,wuaihot" },
   },
   "中文AI资讯": {
-    en: { title: "Chinese AI News - QbitAI and Sina AI trends | DailyHot", description: "Follow Chinese-language AI developments through QbitAI and Sina AI, covering domestic models, products, startups, industry events and fast-rising topics.", keywords: "Chinese AI news,QbitAI,Sina AI,China AI,AI models,AI startups,AI industry,DailyHot" },
+    en: { title: "Chinese AI News - QbitAI and Sina AI trends | wuaihot", description: "Follow Chinese-language AI developments through QbitAI and Sina AI, covering domestic models, products, startups, industry events and fast-rising topics.", keywords: "Chinese AI news,QbitAI,Sina AI,China AI,AI models,AI startups,AI industry,wuaihot" },
     "zh-TW": { title: "中文AI資訊 - 量子位與新浪AI熱點聚合 | 吾愛熱榜", description: "彙整量子位與新浪 AI 熱榜，追蹤國內大模型、AI產品、創業公司、產業事件與熱門話題。", keywords: "中文AI資訊,量子位,新浪AI,國內AI新聞,大模型新聞,AI產業,吾愛熱榜" },
-    ja: { title: "中国語AIニュース - QbitAI・Sina AIトレンド | DailyHot", description: "QbitAI と Sina AI から中国語圏のAIモデル、製品、スタートアップ、業界イベント、注目トピックを追跡します。", keywords: "中国語AIニュース,QbitAI,Sina AI,中国AI,AIモデル,AIスタートアップ,DailyHot" },
-    ko: { title: "중국어 AI 뉴스 - QbitAI·Sina AI 트렌드 | DailyHot", description: "QbitAI와 Sina AI를 통해 중국어권 AI 모델, 제품, 스타트업, 산업 이벤트와 급상승 이슈를 추적합니다.", keywords: "중국어 AI 뉴스,QbitAI,Sina AI,중국 AI,AI 모델,AI 스타트업,DailyHot" },
+    ja: { title: "中国語AIニュース - QbitAI・Sina AIトレンド | wuaihot", description: "QbitAI と Sina AI から中国語圏のAIモデル、製品、スタートアップ、業界イベント、注目トピックを追跡します。", keywords: "中国語AIニュース,QbitAI,Sina AI,中国AI,AIモデル,AIスタートアップ,wuaihot" },
+    ko: { title: "중국어 AI 뉴스 - QbitAI·Sina AI 트렌드 | wuaihot", description: "QbitAI와 Sina AI를 통해 중국어권 AI 모델, 제품, 스타트업, 산업 이벤트와 급상승 이슈를 추적합니다.", keywords: "중국어 AI 뉴스,QbitAI,Sina AI,중국 AI,AI 모델,AI 스타트업,wuaihot" },
   },
   AI: {
     en: {
-      title: "AI Hot Rankings - AI model leaderboards, AI news, and tool trends | DailyHot",
+      title: "AI Hot Rankings - AI model leaderboards, AI news, and tool trends | wuaihot",
       description:
         "AI Hot Rankings aggregate model benchmarks, official updates, product ecosystems, research communities, and Chinese AI news from sources including OpenRouter, Artificial Analysis, OpenAI, Anthropic, Hugging Face, Product Hunt, Hacker News, QbitAI, and Sina AI.",
       keywords:
-        "AI rankings,AI model leaderboard,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AI news,AI tools,DailyHot",
+        "AI rankings,AI model leaderboard,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AI news,AI tools,wuaihot",
     },
     "zh-TW": {
       title: "AI熱榜 - AI模型排行榜、AI資訊與熱門工具榜單聚合 | 吾愛熱榜",
@@ -517,18 +517,18 @@ const CATEGORY_LOCALE_SEO_MAP = {
         "AI熱榜,AI模型排行榜,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AI資訊,AI工具,吾愛熱榜",
     },
     ja: {
-      title: "AIランキング - AIモデル評価、AIニュース、人気ツール動向の集約 | DailyHot",
+      title: "AIランキング - AIモデル評価、AIニュース、人気ツール動向の集約 | wuaihot",
       description:
         "AIランキングはモデル評価、公式アップデート、製品エコシステム、研究コミュニティ、中国語AIニュースをまとめ、OpenRouter、Artificial Analysis、OpenAI、Anthropic、Hugging Face、Hacker News、QbitAI などを追跡します。",
       keywords:
-        "AIランキング,AIモデルランキング,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AIニュース,AIツール,DailyHot",
+        "AIランキング,AIモデルランキング,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AIニュース,AIツール,wuaihot",
     },
     ko: {
-      title: "AI 랭킹 - AI 모델 순위, AI 뉴스, 인기 도구 트렌드 | DailyHot",
+      title: "AI 랭킹 - AI 모델 순위, AI 뉴스, 인기 도구 트렌드 | wuaihot",
       description:
         "AI 랭킹은 모델 평가, 공식 업데이트, 제품 생태계, 연구 커뮤니티, 중국어 AI 뉴스를 함께 모아 OpenRouter, Artificial Analysis, OpenAI, Anthropic, Hugging Face, Hacker News, QbitAI 등의 흐름을 추적합니다.",
       keywords:
-        "AI 랭킹,AI 모델 순위,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AI 뉴스,AI 도구,DailyHot",
+        "AI 랭킹,AI 모델 순위,OpenRouter,Artificial Analysis,Arena AI,DesignArena,LLM Stats,OpenAI,Anthropic,Hugging Face,AI 뉴스,AI 도구,wuaihot",
     },
   },
 };
@@ -1566,7 +1566,7 @@ const getHomeJsonLd = (siteUrl, title, description, locale) => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: i18n.global.t("common.siteName", {}, { locale }) || DEFAULT_SEO.siteName,
-  ...(locale === "zh-CN" ? { alternateName: "今日热榜" } : {}),
+  ...(locale === "zh-CN" ? { alternateName: "wuaihot" } : {}),
   url: siteUrl || "/",
   description,
   inLanguage: getLocaleMeta(locale)?.htmlLang || "zh-CN",

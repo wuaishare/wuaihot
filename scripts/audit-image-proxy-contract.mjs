@@ -132,4 +132,4 @@ for (const path of coverConsumerPaths) {
   assert.match(source, /COVER_REFERRER_POLICY/, `${path} must apply the shared cover referrer policy`);
 }
 
-console.log("PASS: DailyHot image proxy client/server contract");
+console.log("PASS: wuaihot image proxy client/server contract");

@@ -778,7 +778,7 @@ async function main() {
       alternateLinks: buildAlternateLinks("/", supportedLocales),
       jsonLd: buildWebsiteJsonLd({
         siteName,
-        alternateName: locale === "zh-CN" ? "今日热榜" : undefined,
+        alternateName: locale === "zh-CN" ? "wuaihot" : undefined,
         title,
         description,
         canonical,

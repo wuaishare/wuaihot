@@ -5,8 +5,8 @@ export const FEEDBACK_PROVIDERS = Object.freeze([
   "url",
 ]);
 
-const DEFAULT_PRODUCT_NAME = "DailyHot";
-const DEFAULT_PRODUCT_KEY = "dailyhot";
+const DEFAULT_PRODUCT_NAME = "吾爱热榜";
+const DEFAULT_PRODUCT_KEY = "wuaihot";
 
 const normalizeText = (value, fallback) => {
   const normalized = String(value || "").trim();

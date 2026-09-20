@@ -326,11 +326,11 @@ export const WOOL_TOPIC_METADATA = {
       deal: "Other Deals",
     },
     seoTitle:
-      "Live Deals & Freebies - Red Packets, Coupons, Delivery & Ride Vouchers | DailyHot",
+      "Live Deals & Freebies - Red Packets, Coupons, Delivery & Ride Vouchers | wuaihot",
     seoDescription:
       "Live consumer deals from Super Deals, Douban, 0818 and NodeLoc, covering red packets, coupons, delivery and instant-retail vouchers, ride coupons, freebies, giveaways and AI credits.",
     seoKeywords:
-      "live deals,red packets,coupons,delivery vouchers,instant retail vouchers,ride coupons,freebies,giveaways,free AI credits,Super Deals,Douban,0818,NodeLoc,DailyHot",
+      "live deals,red packets,coupons,delivery vouchers,instant retail vouchers,ride coupons,freebies,giveaways,free AI credits,Super Deals,Douban,0818,NodeLoc,wuaihot",
   },
   "zh-TW": {
     eyebrow: "即時機會",
@@ -386,11 +386,11 @@ export const WOOL_TOPIC_METADATA = {
       deal: "その他",
     },
     seoTitle:
-      "リアルタイムお得情報 - 紅包・クーポン・デリバリー・配車特典 | DailyHot",
+      "リアルタイムお得情報 - 紅包・クーポン・デリバリー・配車特典 | wuaihot",
     seoDescription:
       "Super Deals、Douban、0818、NodeLoc などから、紅包、クーポン、デリバリー/即時小売、配車、無料特典、抽選、AIクレジットをまとめます。",
     seoKeywords:
-      "お得情報,紅包,クーポン,デリバリークーポン,即時小売,配車クーポン,無料特典,抽選,AIクレジット,Douban,0818,NodeLoc,DailyHot",
+      "お得情報,紅包,クーポン,デリバリークーポン,即時小売,配車クーポン,無料特典,抽選,AIクレジット,Douban,0818,NodeLoc,wuaihot",
   },
   ko: {
     eyebrow: "실시간 혜택",
@@ -416,11 +416,11 @@ export const WOOL_TOPIC_METADATA = {
       ai: "AI 크레딧",
       deal: "기타 혜택",
     },
-    seoTitle: "실시간 혜택 - 홍바오·쿠폰·배달·택시 혜택 | DailyHot",
+    seoTitle: "실시간 혜택 - 홍바오·쿠폰·배달·택시 혜택 | wuaihot",
     seoDescription:
       "Super Deals, Douban, 0818, NodeLoc 등의 홍바오, 쿠폰, 배달/즉시소매 쿠폰, 택시 쿠폰, 무료 혜택, 경품, AI 크레딧을 한곳에서 확인합니다.",
     seoKeywords:
-      "실시간 혜택,홍바오,쿠폰,배달 쿠폰,즉시소매,택시 쿠폰,무료 혜택,경품,AI 크레딧,Douban,0818,NodeLoc,DailyHot",
+      "실시간 혜택,홍바오,쿠폰,배달 쿠폰,즉시소매,택시 쿠폰,무료 혜택,경품,AI 크레딧,Douban,0818,NodeLoc,wuaihot",
   },
 };
 
@@ -446,11 +446,11 @@ export const GAME_DEALS_TOPIC_METADATA = {
     open: "View game deals",
     empty: "No game deals match this filter.",
     seoTitle:
-      "Live Game Deals & Historical Lows - Steam Sales, Epic Free Games | DailyHot",
+      "Live Game Deals & Historical Lows - Steam Sales, Epic Free Games | wuaihot",
     seoDescription:
       "Track Steam sales, Epic free games, GOG deals, Xiaoheihe historical lows, GG.deals and ITHome for free games, deep discounts and low-price offers.",
     seoKeywords:
-      "game deals,historical low,Steam sales,Epic free games,GOG deals,Xiaoheihe,GG.deals,free games,90% discount,cheap PC games,DailyHot",
+      "game deals,historical low,Steam sales,Epic free games,GOG deals,Xiaoheihe,GG.deals,free games,90% discount,cheap PC games,wuaihot",
   },
   "zh-TW": {
     title: "即時遊戲優惠與史低",
@@ -472,11 +472,11 @@ export const GAME_DEALS_TOPIC_METADATA = {
     feedTitle: "ゲームセールレーダー",
     open: "ゲームセールを見る",
     empty: "条件に一致するゲームセールはありません",
-    seoTitle: "ゲームセール・史上最安 - Steamセール、Epic無料ゲーム | DailyHot",
+    seoTitle: "ゲームセール・史上最安 - Steamセール、Epic無料ゲーム | wuaihot",
     seoDescription:
       "Steamセール、Epic無料ゲーム、GOGセール、Xiaoheihe史上最安、GG.deals、ITHomeをリアルタイム集約し、無料配布や大幅割引を追跡します。",
     seoKeywords:
-      "ゲームセール,史上最安,Steamセール,Epic無料ゲーム,GOGセール,Xiaoheihe,GG.deals,無料配布,90%オフ,格安ゲーム,DailyHot",
+      "ゲームセール,史上最安,Steamセール,Epic無料ゲーム,GOGセール,Xiaoheihe,GG.deals,無料配布,90%オフ,格安ゲーム,wuaihot",
   },
   ko: {
     title: "실시간 게임 할인·역대 최저가",
@@ -485,11 +485,11 @@ export const GAME_DEALS_TOPIC_METADATA = {
     feedTitle: "게임 할인 레이더",
     open: "게임 할인 보기",
     empty: "조건에 맞는 게임 할인이 없습니다",
-    seoTitle: "게임 할인·역대 최저가 - Steam 할인, Epic 무료 게임 | DailyHot",
+    seoTitle: "게임 할인·역대 최저가 - Steam 할인, Epic 무료 게임 | wuaihot",
     seoDescription:
       "Steam 할인, Epic 무료 게임, GOG 할인, Xiaoheihe 역대 최저가, GG.deals, ITHome을 실시간으로 모아 무료 배포와 초특가를 추적합니다.",
     seoKeywords:
-      "게임 할인,역대 최저가,Steam 할인,Epic 무료 게임,GOG 할인,Xiaoheihe,GG.deals,무료 배포,90% 할인,저가 게임,DailyHot",
+      "게임 할인,역대 최저가,Steam 할인,Epic 무료 게임,GOG 할인,Xiaoheihe,GG.deals,무료 배포,90% 할인,저가 게임,wuaihot",
   },
 };
 
@@ -516,11 +516,11 @@ export const AI_TOPIC_METADATA = {
     degraded:
       "Some AI sources are temporarily unavailable. Events from the remaining sources are still shown.",
     seoTitle:
-      "AI Trends - Major Model Releases, AI Events & Breakout Projects | DailyHot",
+      "AI Trends - Major Model Releases, AI Events & Breakout Projects | wuaihot",
     seoDescription:
       "Track major AI events, model releases, developer breakouts and cross-source signals across OpenAI, Anthropic, DeepMind, Meta AI, Hugging Face, Hacker News, Reddit, Product Hunt and GitHub Trending.",
     seoKeywords:
-      "AI trends,AI news,major AI events,model releases,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,AI projects,DailyHot",
+      "AI trends,AI news,major AI events,model releases,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,AI projects,wuaihot",
   },
   "zh-TW": {
     title: "AI 熱點與趨勢雷達",
@@ -544,11 +544,11 @@ export const AI_TOPIC_METADATA = {
     degraded:
       "一部のAI情報源が一時利用できません。利用可能な情報源の最新イベントを表示しています。",
     seoTitle:
-      "AIトレンド - 主要モデル公開・重大イベント・急上昇プロジェクト | DailyHot",
+      "AIトレンド - 主要モデル公開・重大イベント・急上昇プロジェクト | wuaihot",
     seoDescription:
       "主要AIイベント、モデル公開、開発者コミュニティで急上昇するプロジェクト、複数ソースの共振を追跡します。",
     seoKeywords:
-      "AIトレンド,AIニュース,モデル公開,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,DailyHot",
+      "AIトレンド,AIニュース,モデル公開,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,wuaihot",
   },
   ko: {
     title: "AI 트렌드·시그널 레이더",
@@ -558,11 +558,11 @@ export const AI_TOPIC_METADATA = {
     empty: "현재 조건에 맞는 AI 이벤트가 없습니다",
     degraded:
       "일부 AI 출처를 일시적으로 사용할 수 없습니다. 나머지 출처의 최신 이벤트를 표시합니다.",
-    seoTitle: "AI 트렌드 - 주요 모델 출시·AI 사건·급상승 프로젝트 | DailyHot",
+    seoTitle: "AI 트렌드 - 주요 모델 출시·AI 사건·급상승 프로젝트 | wuaihot",
     seoDescription:
       "주요 AI 사건, 모델 출시, 개발자 급상승 프로젝트, 독립 다중 출처 신호를 실시간으로 추적합니다.",
     seoKeywords:
-      "AI 트렌드,AI 뉴스,모델 출시,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,DailyHot",
+      "AI 트렌드,AI 뉴스,모델 출시,OpenAI,Anthropic,Claude,Gemini,DeepSeek,GitHub AI Trending,LocalLLaMA,Hugging Face,wuaihot",
   },
 };
 
@@ -588,11 +588,11 @@ export const CHIGUA_TOPIC_METADATA = {
     empty: "No entertainment events match this filter.",
     degraded:
       "Some entertainment sources are temporarily unavailable. Fresh events from the remaining sources are still shown.",
-    seoTitle: "Entertainment Buzz - Celebrity Gossip & Showbiz Trends | DailyHot",
+    seoTitle: "Entertainment Buzz - Celebrity Gossip & Showbiz Trends | wuaihot",
     seoDescription:
       "Track celebrity gossip, showbiz, film, TV, variety, music and creator trends with cross-platform evidence.",
     seoKeywords:
-      "celebrity gossip,entertainment trends,showbiz,film,TV,variety,music,creators,Douyin,Weibo,DailyHot",
+      "celebrity gossip,entertainment trends,showbiz,film,TV,variety,music,creators,Douyin,Weibo,wuaihot",
   },
   "zh-TW": {
     title: "全網娛樂吃瓜雷達",
@@ -615,11 +615,11 @@ export const CHIGUA_TOPIC_METADATA = {
     empty: "条件に一致する話題はありません",
     degraded:
       "一部のエンタメ情報源が一時利用できません。利用可能な情報源の最新話題を表示しています。",
-    seoTitle: "話題レーダー - 中国主要プラットフォームのトレンド | DailyHot",
+    seoTitle: "話題レーダー - 中国主要プラットフォームのトレンド | wuaihot",
     seoDescription:
       "中国主要プラットフォームのトレンドを横断集約し、複数サービスで同時に盛り上がる出来事を追跡します。",
     seoKeywords:
-      "トレンド,話題,Weibo,Zhihu,Douyin,Baidu,Bilibili,中国SNS,DailyHot",
+      "トレンド,話題,Weibo,Zhihu,Douyin,Baidu,Bilibili,中国SNS,wuaihot",
   },
   ko: {
     title: "엔터테인먼트 화제 레이더",
@@ -629,10 +629,10 @@ export const CHIGUA_TOPIC_METADATA = {
     empty: "현재 조건에 맞는 화제가 없습니다",
     degraded:
       "일부 엔터테인먼트 출처를 일시적으로 사용할 수 없습니다. 나머지 출처의 최신 이슈를 표시합니다.",
-    seoTitle: "화제 레이더 - 중국 주요 플랫폼 실시간 트렌드 | DailyHot",
+    seoTitle: "화제 레이더 - 중국 주요 플랫폼 실시간 트렌드 | wuaihot",
     seoDescription:
       "중국 주요 플랫폼의 인기 주제를 묶어 여러 서비스에서 동시에 상승하는 사건을 추적합니다.",
     seoKeywords:
-      "실시간 화제,트렌드,Weibo,Zhihu,Douyin,Baidu,Bilibili,중국 SNS,DailyHot",
+      "실시간 화제,트렌드,Weibo,Zhihu,Douyin,Baidu,Bilibili,중국 SNS,wuaihot",
   },
 };

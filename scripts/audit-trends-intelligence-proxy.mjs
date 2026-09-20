@@ -120,7 +120,7 @@ try {
   });
   assert.equal(missingRes.statusCode, 503);
 
-  console.log("PASS: DailyHot Trends Intelligence server-only proxy contract");
+  console.log("PASS: wuaihot Trends Intelligence server-only proxy contract");
 } finally {
   const restore = (key, value) => {
     if (value === undefined) delete process.env[key];

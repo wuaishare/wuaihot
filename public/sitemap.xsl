@@ -10,7 +10,7 @@
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>DailyHot Sitemap</title>
+        <title>wuaihot · 吾爱热榜 Sitemap</title>
         <style>
           :root {
             color-scheme: light;
@@ -134,7 +134,7 @@
       <body>
         <main>
           <header>
-            <h1>DailyHot Sitemap</h1>
+            <h1>wuaihot · 吾爱热榜 Sitemap</h1>
             <p>用于运维核查的站点地图视图。搜索引擎读取的仍是同一份标准 XML 数据。</p>
           </header>
 

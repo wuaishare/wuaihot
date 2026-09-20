@@ -105,7 +105,7 @@ const handleTrendsIntelligenceProxy = async ({
       const upstreamServer = response.headers.get("server") || "";
       const via = response.headers.get("via") || "";
       console.warn(
-        "[DailyHot Trends Intelligence] upstream_non_json",
+        "[wuaihot Trends Intelligence] upstream_non_json",
         JSON.stringify({
           status: response.status,
           contentType,

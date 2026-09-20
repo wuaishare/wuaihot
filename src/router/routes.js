@@ -16,14 +16,14 @@ const routes = [
       title: "首页",
       seoTitle: "吾爱热榜 - 今日热榜、全网热搜与实时热点聚合",
       description:
-        "吾爱热榜聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜与实时热搜，支持分类浏览、榜单切换和自动刷新，一站掌握全网热点。",
+        "wuaihot 吾爱热榜以「一站看全网」为目标，聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜、全网热搜与实时热点，支持分类浏览、榜单切换和自动刷新。",
       keywords:
-        "吾爱热榜,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
+        "wuaihot,吾爱热榜,一站看全网,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
       jsonLd: ({ siteUrl, description }) => ({
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "吾爱热榜",
-        alternateName: "今日热榜",
+        alternateName: "wuaihot",
         url: siteUrl || "/",
         description,
         inLanguage: "zh-CN",
@@ -38,14 +38,14 @@ const routes = [
       title: "首页",
       seoTitle: "吾爱热榜 - 今日热榜、全网热搜与实时热点聚合",
       description:
-        "吾爱热榜聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜与实时热搜，支持分类浏览、榜单切换和自动刷新，一站掌握全网热点。",
+        "wuaihot 吾爱热榜以「一站看全网」为目标，聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜、全网热搜与实时热点，支持分类浏览、榜单切换和自动刷新。",
       keywords:
-        "吾爱热榜,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
+        "wuaihot,吾爱热榜,一站看全网,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
       jsonLd: ({ siteUrl, description }) => ({
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "吾爱热榜",
-        alternateName: "今日热榜",
+        alternateName: "wuaihot",
         url: siteUrl || "/",
         description,
         inLanguage: "zh-CN",

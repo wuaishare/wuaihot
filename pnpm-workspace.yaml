@@ -1,0 +1,6 @@
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: true
+  puppeteer: false
+  scrollreveal: false
+  vue-demi: true

@@ -1,6 +1,6 @@
 {
-  "name": "dailyhot",
-  "description": "今日热榜",
+  "name": "wuaihot",
+  "description": "wuaihot 吾爱热榜：一站看全网，聚合今日热榜、全网热搜、实时热点与跨平台趋势榜单。",
   "author": {
     "name": "吾爱分享网",
     "url": "https://www.wuaishare.cn/"
@@ -8,10 +8,10 @@
   "homepage": "https://hot.wuaishare.cn/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/wuaishare/DailyHot.git"
+    "url": "https://github.com/wuaishare/wuaihot.git"
   },
   "bugs": {
-    "url": "https://github.com/wuaishare/DailyHot/issues"
+    "url": "https://github.com/wuaishare/wuaihot/issues"
   },
   "version": "1.4.9",
   "private": true,
@@ -68,5 +68,6 @@
     "vite": "^4.5.5",
     "vite-plugin-prerender": "^1.0.8",
     "vite-plugin-pwa": "^0.14.7"
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }

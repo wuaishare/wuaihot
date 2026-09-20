@@ -6,8 +6,8 @@ assert.equal(disabled.provider, "off");
 assert.equal(disabled.enabled, false);
 assert.equal(disabled.url, "");
 assert.equal(disabled.portalUrl, "");
-assert.equal(disabled.productName, "DailyHot");
-assert.equal(disabled.productKey, "dailyhot");
+assert.equal(disabled.productName, "吾爱热榜");
+assert.equal(disabled.productKey, "wuaihot");
 
 const quackback = resolveFeedbackConfig({
   VITE_FEEDBACK_PROVIDER: "quackback",

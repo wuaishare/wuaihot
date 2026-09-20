@@ -2,7 +2,7 @@ export const messages = {
   "zh-CN": {
     common: {
       siteName: "吾爱热榜",
-      siteTagline: "汇聚今日热榜与全网热点，热门尽览无余",
+      siteTagline: "一站看全网",
       home: "首页",
       settings: "全局设置",
       selectLanguage: "语言切换",
@@ -54,7 +54,7 @@ export const messages = {
       privacy: "隐私说明",
       feedback: "反馈建议",
       poweredBy: "Powered by",
-      releaseLabel: "DailyHot 二次开发版 {version}",
+      releaseLabel: "wuaihot {version}",
     },
     feedback: {
       launcher: "反馈建议",
@@ -334,9 +334,9 @@ export const messages = {
     seo: {
       homeTitle: "吾爱热榜 - 今日热榜、全网热搜与实时热点聚合",
       homeDescription:
-        "吾爱热榜聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜与实时热搜，支持分类浏览、榜单切换和自动刷新，一站掌握全网热点。",
+        "wuaihot 吾爱热榜以「一站看全网」为目标，聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜、全网热搜与实时热点，支持分类浏览、榜单切换和自动刷新。",
       homeKeywords:
-        "吾爱热榜,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
+        "wuaihot,吾爱热榜,一站看全网,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
       listTitle: "平台热榜详情页 - 吾爱热榜",
       listDescription:
         "按平台查看实时热榜排行与榜单详情，支持子分类切换、分页浏览、自动刷新与原站直达。",
@@ -369,8 +369,8 @@ export const messages = {
   },
   en: {
     common: {
-      siteName: "DailyHot",
-      siteTagline: "All trending topics in one place",
+      siteName: "wuaihot",
+      siteTagline: "One place for what’s trending across the web",
       home: "Home",
       settings: "Settings",
       selectLanguage: "Language",
@@ -414,7 +414,7 @@ export const messages = {
       ai: "AI",
     },
     footer: {
-      description: "DailyHot",
+      description: "wuaihot",
       author: "Wuaishare",
       autoRefresh: "Auto refresh script",
       community: "Wuaishare Community",
@@ -422,7 +422,7 @@ export const messages = {
       privacy: "Privacy",
       feedback: "Feedback",
       poweredBy: "Powered by",
-      releaseLabel: "DailyHot Fork {version}",
+      releaseLabel: "wuaihot {version}",
     },
     feedback: {
       launcher: "Feedback",
@@ -708,46 +708,46 @@ export const messages = {
       importSuccess: "Settings imported",
     },
     seo: {
-      homeTitle: "DailyHot - Cross-platform trending rankings and real-time hot topics",
+      homeTitle: "wuaihot - Cross-platform trending rankings and real-time hot topics",
       homeDescription:
-        "DailyHot aggregates trending topics from Weibo, Zhihu, Douyin, Bilibili, Toutiao and more, helping you browse cross-platform trends in one place.",
+        "wuaihot aggregates trending topics from Weibo, Zhihu, Douyin, Bilibili, Toutiao and more, helping you browse cross-platform trends in one place.",
       homeKeywords:
-        "DailyHot,trending topics,hot lists,Weibo,Zhihu,Douyin,Bilibili,real-time trends",
-      listTitle: "Platform Ranking Details - DailyHot",
+        "wuaihot,trending topics,hot lists,Weibo,Zhihu,Douyin,Bilibili,real-time trends",
+      listTitle: "Platform Ranking Details - wuaihot",
       listDescription:
         "Browse real-time ranking pages by platform with quick access to trending content and category filters.",
       listKeywords:
         "rankings,hot list,trending topics,real-time ranking,Weibo,Zhihu,Douyin,Bilibili",
-      categoryTitle: "{category} Hot Rankings - DailyHot",
+      categoryTitle: "{category} Hot Rankings - wuaihot",
       categoryDescription:
         "Browse the latest trending topics inside the {category} category.",
       categoryKeywords:
-        "{category},rankings,trending topics,real-time ranking,DailyHot",
+        "{category},rankings,trending topics,real-time ranking,wuaihot",
       sourceDescription:
         "Browse the latest {label} updates with quick pagination and ranking navigation.",
       sourceSubtypeDescription:
         "Browse the latest {label} updates for {subtype} with quick pagination and ranking navigation.",
-      sourceKeywords: "{label},rankings,trending topics,real-time ranking,DailyHot",
+      sourceKeywords: "{label},rankings,trending topics,real-time ranking,wuaihot",
       sourceSubtypeKeywords:
-        "{label},{subtype},rankings,trending topics,real-time ranking,DailyHot",
-      settingTitle: "Settings - DailyHot",
+        "{label},{subtype},rankings,trending topics,real-time ranking,wuaihot",
+      settingTitle: "Settings - wuaihot",
       settingDescription:
         "Manage theme, categories, auto refresh, privacy preferences, and reading experience.",
-      analyticsTitle: "Analytics - DailyHot",
+      analyticsTitle: "Analytics - wuaihot",
       analyticsDescription:
-        "Diagnostics and analytics panel entry for DailyHot.",
-      privacyTitle: "Privacy - DailyHot",
+        "Diagnostics and analytics panel entry for wuaihot.",
+      privacyTitle: "Privacy - wuaihot",
       privacyDescription:
-        "Read DailyHot privacy, analytics, and advertising preference details.",
-      testTitle: "Test Page - DailyHot",
-      testDescription: "Internal test page for validating DailyHot features.",
-      forbiddenTitle: "403 - DailyHot",
+        "Read wuaihot privacy, analytics, and advertising preference details.",
+      testTitle: "Test Page - wuaihot",
+      testDescription: "Internal test page for validating wuaihot features.",
+      forbiddenTitle: "403 - wuaihot",
       forbiddenDescription:
         "You do not have permission to access this page.",
-      notFoundTitle: "404 - DailyHot",
+      notFoundTitle: "404 - wuaihot",
       notFoundDescription:
         "Sorry, the page you requested could not be found.",
-      serverErrorTitle: "500 - DailyHot",
+      serverErrorTitle: "500 - wuaihot",
       serverErrorDescription:
         "The site is temporarily unavailable. Please try again later.",
     },
@@ -755,7 +755,7 @@ export const messages = {
   "zh-TW": {
     common: {
       siteName: "吾愛熱榜",
-      siteTagline: "彙聚全網熱點，熱門一覽無遺",
+      siteTagline: "一站看全網",
       home: "首頁",
       settings: "全域設定",
       selectLanguage: "語言切換",
@@ -807,7 +807,7 @@ export const messages = {
       privacy: "隱私說明",
       feedback: "意見回饋",
       poweredBy: "Powered by",
-      releaseLabel: "DailyHot 二次開發版 {version}",
+      releaseLabel: "wuaihot {version}",
     },
     feedback: {
       launcher: "意見回饋",
@@ -1121,8 +1121,8 @@ export const messages = {
   },
   ja: {
     common: {
-      siteName: "DailyHot",
-      siteTagline: "主要プラットフォームの話題を一箇所に集約",
+      siteName: "wuaihot",
+      siteTagline: "ウェブのトレンドをひとつに",
       home: "ホーム",
       settings: "設定",
       selectLanguage: "言語切替",
@@ -1166,7 +1166,7 @@ export const messages = {
       ai: "AI",
     },
     footer: {
-      description: "DailyHot",
+      description: "wuaihot",
       author: "Wuaishare",
       autoRefresh: "自動更新スクリプト",
       community: "Wuaishare コミュニティ",
@@ -1174,7 +1174,7 @@ export const messages = {
       privacy: "プライバシー",
       feedback: "フィードバック",
       poweredBy: "Powered by",
-      releaseLabel: "DailyHot Fork {version}",
+      releaseLabel: "wuaihot {version}",
     },
     feedback: {
       launcher: "フィードバック",
@@ -1458,55 +1458,55 @@ export const messages = {
       importSuccess: "設定を読み込みました",
     },
     seo: {
-      homeTitle: "DailyHot - 複数プラットフォームの最新トレンド",
+      homeTitle: "wuaihot - 複数プラットフォームの最新トレンド",
       homeDescription:
         "微博、知乎、抖音、Bilibili、Toutiao などの人気ランキングをまとめて確認できるトレンド集約サイトです。",
       homeKeywords:
-        "DailyHot,トレンド,ランキング,微博,知乎,抖音,Bilibili,リアルタイム",
-      listTitle: "ランキング一覧 - DailyHot",
+        "wuaihot,トレンド,ランキング,微博,知乎,抖音,Bilibili,リアルタイム",
+      listTitle: "ランキング一覧 - wuaihot",
       listDescription:
         "プラットフォーム別にリアルタイムの人気ランキングを閲覧できます。",
       listKeywords:
         "ランキング,トレンド,人気,リアルタイム,微博,知乎,抖音,Bilibili",
-      categoryTitle: "{category} ランキング - DailyHot",
+      categoryTitle: "{category} ランキング - wuaihot",
       categoryDescription:
         "{category} カテゴリの最新トレンドと人気トピックを確認できます。",
       categoryKeywords:
-        "{category},ランキング,トレンド,リアルタイム,DailyHot",
+        "{category},ランキング,トレンド,リアルタイム,wuaihot",
       sourceDescription:
         "{label}の最新ランキングをすばやく閲覧できる一覧ページです。",
       sourceSubtypeDescription:
         "{label}の{subtype}をすばやく閲覧できる一覧ページです。",
       sourceKeywords:
-        "{label},ランキング,トレンド,リアルタイム,DailyHot",
+        "{label},ランキング,トレンド,リアルタイム,wuaihot",
       sourceSubtypeKeywords:
-        "{label},{subtype},ランキング,トレンド,リアルタイム,DailyHot",
-      settingTitle: "設定 - DailyHot",
+        "{label},{subtype},ランキング,トレンド,リアルタイム,wuaihot",
+      settingTitle: "設定 - wuaihot",
       settingDescription:
         "テーマ、カテゴリ、自動更新、プライバシー、閲覧体験を管理します。",
-      analyticsTitle: "分析 - DailyHot",
+      analyticsTitle: "分析 - wuaihot",
       analyticsDescription:
-        "DailyHot の診断用および分析パネルへの入口です。",
-      privacyTitle: "プライバシー - DailyHot",
+        "wuaihot の診断用および分析パネルへの入口です。",
+      privacyTitle: "プライバシー - wuaihot",
       privacyDescription:
-        "DailyHot のプライバシー、分析、広告設定の詳細を確認できます。",
-      testTitle: "テストページ - DailyHot",
-      testDescription: "DailyHot の動作確認用テストページです。",
-      forbiddenTitle: "403 - DailyHot",
+        "wuaihot のプライバシー、分析、広告設定の詳細を確認できます。",
+      testTitle: "テストページ - wuaihot",
+      testDescription: "wuaihot の動作確認用テストページです。",
+      forbiddenTitle: "403 - wuaihot",
       forbiddenDescription:
         "このページにアクセスする権限がありません。",
-      notFoundTitle: "404 - DailyHot",
+      notFoundTitle: "404 - wuaihot",
       notFoundDescription:
         "お探しのページは見つからないか、移動された可能性があります。",
-      serverErrorTitle: "500 - DailyHot",
+      serverErrorTitle: "500 - wuaihot",
       serverErrorDescription:
         "一時的にサイトで問題が発生しています。しばらくしてから再度お試しください。",
     },
   },
   ko: {
     common: {
-      siteName: "DailyHot",
-      siteTagline: "주요 플랫폼의 인기 이슈를 한곳에서",
+      siteName: "wuaihot",
+      siteTagline: "웹 트렌드를 한곳에서",
       home: "홈",
       settings: "설정",
       selectLanguage: "언어 전환",
@@ -1550,7 +1550,7 @@ export const messages = {
       ai: "AI",
     },
     footer: {
-      description: "DailyHot",
+      description: "wuaihot",
       author: "Wuaishare",
       autoRefresh: "자동 새로고침 스크립트",
       community: "Wuaishare 커뮤니티",
@@ -1558,7 +1558,7 @@ export const messages = {
       privacy: "개인정보",
       feedback: "피드백",
       poweredBy: "Powered by",
-      releaseLabel: "DailyHot Fork {version}",
+      releaseLabel: "wuaihot {version}",
     },
     feedback: {
       launcher: "피드백",
@@ -1844,47 +1844,47 @@ export const messages = {
       importSuccess: "설정을 가져왔습니다",
     },
     seo: {
-      homeTitle: "DailyHot - 여러 플랫폼의 실시간 인기 이슈",
+      homeTitle: "wuaihot - 여러 플랫폼의 실시간 인기 이슈",
       homeDescription:
         "Weibo, Zhihu, Douyin, Bilibili, Toutiao 등 여러 플랫폼의 인기 랭킹을 한곳에서 확인할 수 있습니다.",
       homeKeywords:
-        "DailyHot,트렌드,랭킹,Weibo,Zhihu,Douyin,Bilibili,실시간",
-      listTitle: "랭킹 목록 - DailyHot",
+        "wuaihot,트렌드,랭킹,Weibo,Zhihu,Douyin,Bilibili,실시간",
+      listTitle: "랭킹 목록 - wuaihot",
       listDescription:
         "플랫폼별 실시간 인기 랭킹과 카테고리 흐름을 빠르게 확인할 수 있습니다.",
       listKeywords:
         "랭킹,트렌드,실시간,Weibo,Zhihu,Douyin,Bilibili",
-      categoryTitle: "{category} 랭킹 - DailyHot",
+      categoryTitle: "{category} 랭킹 - wuaihot",
       categoryDescription:
         "{category} 카테고리의 최신 인기 이슈와 트렌드를 확인할 수 있습니다.",
       categoryKeywords:
-        "{category},랭킹,트렌드,실시간,DailyHot",
+        "{category},랭킹,트렌드,실시간,wuaihot",
       sourceDescription:
         "{label}의 최신 랭킹을 빠르게 탐색할 수 있는 페이지입니다.",
       sourceSubtypeDescription:
         "{label} · {subtype} 페이지에서 최신 흐름을 빠르게 확인할 수 있습니다.",
       sourceKeywords:
-        "{label},랭킹,트렌드,실시간,DailyHot",
+        "{label},랭킹,트렌드,실시간,wuaihot",
       sourceSubtypeKeywords:
-        "{label},{subtype},랭킹,트렌드,실시간,DailyHot",
-      settingTitle: "설정 - DailyHot",
+        "{label},{subtype},랭킹,트렌드,실시간,wuaihot",
+      settingTitle: "설정 - wuaihot",
       settingDescription:
         "테마, 카테고리, 자동 새로고침, 개인정보 및 읽기 환경을 관리합니다.",
-      analyticsTitle: "분석 - DailyHot",
+      analyticsTitle: "분석 - wuaihot",
       analyticsDescription:
-        "DailyHot 진단 및 분석 패널 진입 페이지입니다.",
-      privacyTitle: "개인정보 - DailyHot",
+        "wuaihot 진단 및 분석 패널 진입 페이지입니다.",
+      privacyTitle: "개인정보 - wuaihot",
       privacyDescription:
-        "DailyHot의 개인정보, 분석, 광고 설정 안내를 확인할 수 있습니다.",
-      testTitle: "테스트 페이지 - DailyHot",
-      testDescription: "DailyHot 기능 확인을 위한 내부 테스트 페이지입니다.",
-      forbiddenTitle: "403 - DailyHot",
+        "wuaihot의 개인정보, 분석, 광고 설정 안내를 확인할 수 있습니다.",
+      testTitle: "테스트 페이지 - wuaihot",
+      testDescription: "wuaihot 기능 확인을 위한 내부 테스트 페이지입니다.",
+      forbiddenTitle: "403 - wuaihot",
       forbiddenDescription:
         "이 페이지에 접근할 권한이 없습니다.",
-      notFoundTitle: "404 - DailyHot",
+      notFoundTitle: "404 - wuaihot",
       notFoundDescription:
         "요청한 페이지를 찾을 수 없거나 이동되었을 수 있습니다.",
-      serverErrorTitle: "500 - DailyHot",
+      serverErrorTitle: "500 - wuaihot",
       serverErrorDescription:
         "사이트에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.",
     },

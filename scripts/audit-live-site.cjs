@@ -23,7 +23,7 @@ const request = (url, options = {}, redirectCount = 0) =>
       {
         method: options.method || "GET",
         headers: {
-          "user-agent": "DailyHot live audit",
+          "user-agent": "wuaihot live audit",
           ...(body
             ? {
                 "content-type": options.contentType || "application/json",
@@ -204,10 +204,10 @@ const assertHtml = async (path, expectations) => {
 addCheck("localized home SEO shells include hreflang and JSON-LD", async () => {
   const cases = [
     ["/", "zh-CN", "吾爱热榜", "/"],
-    ["/en/", "en", "DailyHot - Cross-platform", "/en/"],
+    ["/en/", "en", "wuaihot - Cross-platform", "/en/"],
     ["/zh-tw/", "zh-TW", "吾愛熱榜", "/zh-tw/"],
-    ["/ja/", "ja", "DailyHot - 複数", "/ja/"],
-    ["/ko/", "ko", "DailyHot - 여러", "/ko/"],
+    ["/ja/", "ja", "wuaihot - 複数", "/ja/"],
+    ["/ko/", "ko", "wuaihot - 여러", "/ko/"],
   ];
   const results = [];
   for (const [path, htmlLang, titleIncludes, canonical] of cases) {

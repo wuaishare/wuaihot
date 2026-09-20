@@ -6,15 +6,15 @@ product
 
 ## Users
 
-DailyHot serves readers who need to scan current rankings quickly, content operators who compare attention signals across sources, and developers who deploy or extend the public project. Their primary task is to understand what is popular, which metric drives the current ranking, and whether an item is worth opening without losing their place in the list.
+wuaihot serves readers who need to scan current rankings quickly, content operators who compare attention signals across sources, and developers who deploy or extend the public project. Their primary task is to understand what is popular, which metric drives the current ranking, and whether an item is worth opening without losing their place in the list.
 
 ## Product Purpose
 
-DailyHot is a public, provider-neutral realtime ranking frontend and reference implementation. It brings replaceable data sources into a fast, legible and resilient browsing experience that remains useful without private repositories, commercial accounts or proprietary infrastructure. Success means users can identify ranking context and freshness quickly, while maintainers can add or replace providers through stable public contracts.
+wuaihot is a public, provider-neutral realtime ranking frontend and reference implementation. It brings replaceable data sources into a fast, legible and resilient browsing experience that remains useful without private repositories, commercial accounts or proprietary infrastructure. Success means users can identify ranking context and freshness quickly, while maintainers can add or replace providers through stable public contracts.
 
 ## Brand Personality
 
-Restrained, clear and trustworthy. The interface should feel focused and calm under dense information, with enough personality to remain recognizably DailyHot but no decoration that competes with ranking content.
+Restrained, clear and trustworthy. The interface should feel focused and calm under dense information, with enough personality to remain recognizably wuaihot · 吾爱热榜 but no decoration that competes with ranking content.
 
 ## Anti-references
 

@@ -29,7 +29,7 @@ assert.ok(liveWeiboVariants.length > 0, "live Trends catalog must expose Weibo v
 assert.deepEqual(
   weibo.flatMap((group) => group.items.map((item) => item.value)),
   liveWeiboVariants,
-  "DailyHot must project every live Weibo variant without a static cap",
+  "wuaihot must project every live Weibo variant without a static cap",
 );
 assert.equal(getDefaultSourceSubtype("weibo"), "hot");
 assert.equal(resolveTrendsCatalogVariant("weibo", { type: "life" }), "life");

@@ -117,7 +117,7 @@ const fetchJson = async (url, attempts = 3) => {
     try {
       const response = await fetch(url, {
         headers: {
-          "user-agent": "DailyHot subtype audit",
+          "user-agent": "wuaihot subtype audit",
         },
         signal: controller.signal,
       });

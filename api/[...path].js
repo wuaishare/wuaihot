@@ -177,7 +177,7 @@ const WEIBO_COMMON_HEADERS = {
   Accept: "application/json",
   Referer: `${WEIBO_WEB_BASE_URL}/hot/search`,
   "User-Agent":
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 DailyHot/1.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 wuaihot/1.0",
 };
 const BILIBILI_API_BASE_URL = "https://api.bilibili.com";
 const BILIBILI_WEB_BASE_URL = "https://www.bilibili.com";
@@ -200,7 +200,7 @@ const BILIBILI_COMMON_HEADERS = {
   Accept: "application/json",
   Referer: `${BILIBILI_WEB_BASE_URL}/`,
   "User-Agent":
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 DailyHot/1.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 wuaihot/1.0",
   Cookie: "buvid3=00000000-0000-4000-8000-000000000000infoc",
 };
 const BILIBILI_DIRECT_FETCH_ATTEMPTS = 3;
@@ -1157,7 +1157,7 @@ const fetchWeiboZhisouSummary = async (title, { forceNoCache = false } = {}) => 
         Origin: "https://m.s.weibo.com",
         Referer: "https://m.s.weibo.com/zhisou/zhisoushare/",
         "User-Agent":
-          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 DailyHot/1.0",
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 wuaihot/1.0",
       },
       body,
     },
@@ -1620,7 +1620,7 @@ const fetchIthomeOfficialRanking = async (type) => {
     method: "GET",
     headers: {
       Accept: "text/html,application/xhtml+xml",
-      "User-Agent": "DailyHot-ITHome/1.0",
+      "User-Agent": "wuaihot-ITHome/1.0",
     },
   });
   if (!response.ok) throw new Error(`ITHome official ${response.status}`);
@@ -1647,7 +1647,7 @@ const fetchIthomeXcvtsRanking = async (type, forceNoCache = false) => {
     method: "GET",
     headers: {
       Accept: "application/json",
-      "User-Agent": "DailyHot-ITHome/1.0",
+      "User-Agent": "wuaihot-ITHome/1.0",
     },
   });
   if (!response.ok) throw new Error(`ITHome xcvts ${response.status}`);
@@ -2129,7 +2129,7 @@ const fetchDesignArenaLeaderboard = async (type, meta, locale = "zh-CN") => {
       "Content-Type": "application/json",
       Origin: DESIGNARENA_BASE_URL,
       Referer: `${DESIGNARENA_BASE_URL}/leaderboard`,
-      "User-Agent": "DailyHot-DesignArena/1.0",
+      "User-Agent": "wuaihot-DesignArena/1.0",
     },
     body: JSON.stringify({
       category: meta.category,
@@ -2159,7 +2159,7 @@ const fetchDesignArenaSignals = async (type, meta, locale = "zh-CN") => {
     headers: {
       Accept: "application/json",
       Referer: `${DESIGNARENA_BASE_URL}/leaderboard`,
-      "User-Agent": "DailyHot-DesignArena/1.0",
+      "User-Agent": "wuaihot-DesignArena/1.0",
     },
   });
   if (!response.ok) {
@@ -2434,7 +2434,7 @@ const fetchArtificialAnalysisProxyResult = async (type, locale = "zh-CN") => {
     {
       headers: {
         Accept: "application/json",
-        "User-Agent": "DailyHot-ArtificialAnalysis/1.0",
+        "User-Agent": "wuaihot-ArtificialAnalysis/1.0",
       },
     },
     ARTIFICIALANALYSIS_TIMEOUT_MS
@@ -2652,7 +2652,7 @@ const fetchArtificialAnalysisHtml = async (path = "/") => {
     {
       headers: {
         Accept: "text/html",
-        "User-Agent": "DailyHot-ArtificialAnalysis/1.0",
+        "User-Agent": "wuaihot-ArtificialAnalysis/1.0",
       },
     },
     ARTIFICIALANALYSIS_TIMEOUT_MS
@@ -2782,7 +2782,7 @@ const fetchProxyTarget = async ({ targetUrl, req, body, proxyToken }) => {
       Accept: "application/json",
       "Content-Type": req.headers["content-type"] || "application/json",
       Authorization: req.headers.authorization || "",
-      "User-Agent": "DailyHot-Internal-Proxy/1.0",
+      "User-Agent": "wuaihot-Internal-Proxy/1.0",
       ...(proxyToken ? { "X-Internal-Proxy-Token": proxyToken } : {}),
     },
     body,
@@ -2840,7 +2840,7 @@ const handleImageProxy = async (req, res) => {
         Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
         Referer: getImageProxyReferer(target),
         "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 DailyHot/1.0",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 wuaihot/1.0",
       },
       signal: controller.signal,
     });

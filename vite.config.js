@@ -212,7 +212,7 @@ export default defineConfig(async ({ mode }) => {
             {
               headers: {
                 Accept: "application/vnd.github+json",
-                "User-Agent": "DailyHot-build-version",
+                "User-Agent": "wuaihot-build-version",
               },
               signal: controller.signal,
             }
@@ -249,7 +249,7 @@ export default defineConfig(async ({ mode }) => {
     },
     plugins: [
       {
-        name: "dailyhot-public-asset-versions",
+        name: "wuaihot-public-asset-versions",
         transformIndexHtml(html) {
           return html.replaceAll(
             "/ico/favicon.png",
@@ -316,9 +316,9 @@ export default defineConfig(async ({ mode }) => {
           ],
         },
         manifest: {
-          name: "今日热榜",
-          short_name: "DailyHot",
-          description: "汇聚全网热点，热门尽览无余_吾爱分享网",
+          name: "吾爱热榜 · wuaihot",
+          short_name: "吾爱热榜",
+          description: "一站看全网：聚合今日热榜、全网热搜、实时热点与跨平台趋势榜单。",
           display: "standalone",
           start_url: "/",
           theme_color: "#101014",
