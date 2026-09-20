@@ -2,4 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: 吾爱热榜产品反馈中心
     url: https://feedback.wuaishare.cn/
-    about: 反馈 hot.wuaishare.cn 的内容、数据源、体验问题与产品建议。
+    about: 反馈 hot.wuaishare.cn 的内容、线上数据、体验问题与产品建议。
+  - name: 安全问题
+    url: https://github.com/wuaishare/wuaihot/security
+    about: 涉及凭据泄露或可被直接利用的安全问题，请先查看 SECURITY.md，不要公开敏感细节。

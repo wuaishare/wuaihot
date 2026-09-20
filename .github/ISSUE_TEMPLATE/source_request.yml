@@ -1,0 +1,50 @@
+name: 数据源建议
+description: 提议新的平台、榜单或子榜单来源
+title: "[Source] "
+labels:
+  - source
+body:
+  - type: markdown
+    attributes:
+      value: |
+        wuaihot 会把“能访问”与“适合公开展示 / Public Feed / 商业 API”分开评估。请尽量提供官方来源与可核验依据。
+  - type: input
+    id: source
+    attributes:
+      label: 平台 / 来源名称
+      placeholder: 例如：某应用商店、音乐榜、游戏榜
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 官方榜单或接口地址
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: 用户价值
+      description: 说明这个来源为什么值得接入、主要服务什么用户场景。
+    validations:
+      required: true
+  - type: textarea
+    id: access
+    attributes:
+      label: 获取方式
+      description: 说明是否为官方开放 API、RSS、公开网页、需登录、需 Token 或存在反自动化限制。
+    validations:
+      required: true
+  - type: textarea
+    id: terms
+    attributes:
+      label: 许可 / 平台条款 / 证据
+      description: 如有开发者条款、开放许可、robots、官方说明，请附链接和必要摘要。
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: 边界确认
+      options:
+        - label: 我理解接入采集层不代表自动获得公开展示、Public Feed 或商业 API 权限。
+          required: true

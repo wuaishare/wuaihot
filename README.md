@@ -32,6 +32,9 @@
 - Slogan：**一站看全网**
 - 官方示例站：https://hot.wuaishare.cn/
 - 品牌与图标规范：[docs/governance/brand.md](./docs/governance/brand.md)
+- 项目路线图：[ROADMAP.md](./ROADMAP.md)
+- 贡献指南：[CONTRIBUTING.md](./CONTRIBUTING.md)
+- 安全策略：[SECURITY.md](./SECURITY.md)
 
 ## 开源来源与许可
 

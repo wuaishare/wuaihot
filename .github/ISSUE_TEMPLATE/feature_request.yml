@@ -20,7 +20,7 @@ body:
     id: proposal
     attributes:
       label: 建议方案
-      description: 描述你希望 DailyHot 提供什么行为或能力。
+      description: 描述你希望 wuaihot 提供什么行为或能力。
       placeholder: 希望新增……
     validations:
       required: true
