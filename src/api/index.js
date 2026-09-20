@@ -4,7 +4,7 @@ import { getAdminToken } from "@/utils/adminAuth";
 import { getRankingItemTimestamp } from "@/utils/rankingItemMeta";
 import {
   canFallbackTrendsCatalogVariant,
-  hasTrendsPublicCatalogSource,
+  getTrendsCatalogReadSurface,
   resolveTrendsCatalogVariant,
 } from "@/utils/sourceSubtypes";
 
@@ -103,8 +103,19 @@ const analyticsApiBases = import.meta.env.PROD
 const DEFAULT_TRENDS_SHADOW_SOURCES = import.meta.env.PROD
   ? "ithome,weibo,baidu,github,zhihu,bilibili,36kr,douyin,xiaohongshu,kuaishou,toutiao,qq-news,sina-news,netease-news,thepaper,tieba,hupu,smzdm,juejin,huxiu,sspai,geekpark,52pojie,51cto,csdn,dgtle,nodeseek,v2ex,hackernews,guokr,hellogithub,producthunt,newsmth,ngabbs,zhihu-daily,acfun,history,earthquake,weatheralarm,yystv,sina,douban-group,gameres,ithome-xijiayi,nytimes,google-trends"
   : "";
+const TRENDS_DIRECTORY_API = String(
+  import.meta.env.VITE_TRENDS_DIRECTORY_API || "",
+).replace(/\/$/, "");
 const TRENDS_PUBLIC_API = String(
   import.meta.env.VITE_TRENDS_PUBLIC_API || "",
+).replace(/\/$/, "");
+const TRENDS_DISPLAY_API = String(
+  import.meta.env.VITE_TRENDS_DISPLAY_API ||
+    (/\/public\/v1$/.test(TRENDS_PUBLIC_API)
+      ? TRENDS_PUBLIC_API.replace(/\/public\/v1$/, "/display/v1")
+      : TRENDS_DIRECTORY_API
+        ? TRENDS_DIRECTORY_API + "/display/v1"
+        : ""),
 ).replace(/\/$/, "");
 const TRENDS_SHADOW_SOURCES = new Set(
   String(
@@ -194,11 +205,14 @@ const getTrendsShadowVariant = (source, params = {}) => {
   return legacyVariant === legacyDefault ? trendsVariant : null;
 };
 
-const normalizeTrendsRankingResult = (payload) => {
+const normalizeTrendsRankingResult = (payload, readSurface = "public") => {
   const feed = payload?.data || {};
   const source = feed?.source || {};
   const items = Array.isArray(feed?.items) ? feed.items : [];
-  const updateTime = feed?.updatedAt || payload?.observation?.observedAt || new Date().toISOString();
+  const updateTime =
+    feed?.updatedAt ||
+    payload?.observation?.observedAt ||
+    new Date().toISOString();
   return {
     code: 200,
     name: source?.key || "",
@@ -210,6 +224,7 @@ const normalizeTrendsRankingResult = (payload) => {
     updateTime,
     variant: feed?.variant || "",
     centralized: true,
+    readSurface,
     observationId: payload?.observation?.id || null,
     data: items.map((item, index) => ({
       ...item,
@@ -286,12 +301,18 @@ export const getTopicFeed = async (
   }
 };
 
-const requestTrendsRanking = async (source, params = {}) => {
-  if (!TRENDS_PUBLIC_API) throw new Error("trends_public_api_unavailable");
+const requestTrendsRanking = async (
+  source,
+  params = {},
+  readSurface = "public",
+) => {
+  const apiBase =
+    readSurface === "display" ? TRENDS_DISPLAY_API : TRENDS_PUBLIC_API;
+  if (!apiBase) throw new Error(`trends_${readSurface}_api_unavailable`);
   const variant = getTrendsShadowVariant(source, params);
   if (variant === null) throw new Error("trends_variant_not_enabled");
-  const url = new URL(`${TRENDS_PUBLIC_API}/rankings/${encodeURIComponent(source)}`);
-  url.searchParams.set("limit", "100");
+  const url = new URL(`${apiBase}/rankings/${encodeURIComponent(source)}`);
+  url.searchParams.set("limit", readSurface === "display" ? "20" : "100");
   if (variant) url.searchParams.set("variant", variant);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
@@ -302,12 +323,12 @@ const requestTrendsRanking = async (source, params = {}) => {
       headers: { Accept: "application/json" },
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error(`trends_http_${response.status}`);
+    if (!response.ok) throw new Error(`trends_${readSurface}_http_${response.status}`);
     const payload = await response.json();
     if (!payload?.data?.source || !Array.isArray(payload?.data?.items)) {
-      throw new Error("trends_invalid_payload");
+      throw new Error(`trends_${readSurface}_invalid_payload`);
     }
-    return normalizeTrendsRankingResult(payload);
+    return normalizeTrendsRankingResult(payload, readSurface);
   } finally {
     clearTimeout(timer);
   }
@@ -541,10 +562,14 @@ export const getHotListsWithFallback = async (
   params,
   options = {},
 ) => {
-  if (TRENDS_READ_SOURCES.has(type) || hasTrendsPublicCatalogSource(type)) {
+  const catalogReadSurface = getTrendsCatalogReadSurface(type);
+  const readSurface = TRENDS_READ_SOURCES.has(type)
+    ? "public"
+    : catalogReadSurface;
+  if (readSurface) {
     const startedAt = performance.now();
     try {
-      const result = await requestTrendsRanking(type, params);
+      const result = await requestTrendsRanking(type, params, readSurface);
       void requestAnalytics({
         method: "POST",
         url: "/analytics",
@@ -552,6 +577,7 @@ export const getHotListsWithFallback = async (
           event: "trends_read_success",
           source: type,
           meta: {
+            surface: readSurface,
             observationId: result.observationId,
             itemCount: result.total,
             latencyMs: Math.round(performance.now() - startedAt),
@@ -564,6 +590,7 @@ export const getHotListsWithFallback = async (
         usedFallback: false,
         fallbackSuccess: false,
         usedTrends: true,
+        trendsSurface: readSurface,
       };
     } catch (error) {
       const catalogVariant = resolveTrendsCatalogVariant(type, params);
@@ -574,12 +601,14 @@ export const getHotListsWithFallback = async (
           event: "trends_read_fallback",
           source: type,
           meta: {
+            surface: readSurface,
             kind: error?.message || "request_failed",
             latencyMs: Math.round(performance.now() - startedAt),
           },
         },
       }).catch(() => {});
       if (
+        readSurface === "display" ||
         catalogVariant === null ||
         (catalogVariant !== undefined &&
           !canFallbackTrendsCatalogVariant(type, catalogVariant))

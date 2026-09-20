@@ -62,7 +62,8 @@ pnpm build
 - VITE_GLOBAL_API：主热榜 API，可指向你自己的兼容后端
 - VITE_GLOBAL_API2：备用热榜 API
 - VITE_TRENDS_DIRECTORY_API：可选来源目录服务；留空时使用仓库静态来源定义
-- VITE_TRENDS_PUBLIC_API：可选公开榜单服务；留空不会连接官方演示后端
+- VITE_TRENDS_PUBLIC_API：可选 Public Feed 榜单服务；留空不会连接官方演示后端
+- VITE_TRENDS_DISPLAY_API：可选 Public Display Top N 服务；留空时可从 Public API 或 Directory API 推导
 - TRENDS_CATALOG_URL：构建期可选 Catalog；留空时 SEO 使用静态来源回退
 - TRENDS_INTELLIGENCE_BASE_URL：可选服务端趋势智能上游，需与对应授权配置配套
 - VITE_SITE_URL：站点线上地址
