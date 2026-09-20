@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1254" height="1254" viewBox="0 0 1254 1254">
+<defs>
+  <linearGradient id="panel" x1="210" y1="150" x2="1035" y2="1085" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#1c293c"/><stop offset=".35" stop-color="#101827"/><stop offset=".72" stop-color="#070b13"/><stop offset="1" stop-color="#030408"/>
+  </linearGradient>
+  <radialGradient id="panelGlow" cx="0" cy="0" r="1" gradientTransform="translate(330 245) rotate(45) scale(560 500)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#34455d" stop-opacity=".32"/><stop offset="1" stop-color="#101725" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="brandBase" x1="240" y1="570" x2="1035" y2="305" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ff254e"/><stop offset=".45" stop-color="#ff4e25"/><stop offset=".72" stop-color="#ff7420"/><stop offset="1" stop-color="#ffc439"/>
+  </linearGradient>
+  <radialGradient id="leftWarm" cx="0" cy="0" r="1" gradientTransform="translate(405 860) rotate(-72) scale(420 270)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#ff8b22" stop-opacity=".58"/><stop offset=".7" stop-color="#ff5a24" stop-opacity=".08"/><stop offset="1" stop-color="#ff5a24" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="arrowGlow" cx="0" cy="0" r="1" gradientTransform="translate(990 305) rotate(138) scale(210 170)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#ffd153" stop-opacity=".78"/><stop offset=".58" stop-color="#ffb12f" stop-opacity=".18"/><stop offset="1" stop-color="#ff9b28" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="foldShade" cx="0" cy="0" r="1" gradientTransform="translate(695 585) rotate(20) scale(245 175)" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#d81435" stop-opacity=".44"/><stop offset=".68" stop-color="#e82b2d" stop-opacity=".08"/><stop offset="1" stop-color="#e82b2d" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="bars" x1="760" y1="585" x2="760" y2="945" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#ff9b2c"/><stop offset=".46" stop-color="#ff6725"/><stop offset="1" stop-color="#ff3048"/>
+  </linearGradient>
+  <clipPath id="markClip"><path d="M 988,292 L 979,285 L 968,285 L 963,287 L 814,383 L 801,393 L 800,401 L 804,407 L 811,410 L 856,420 L 860,423 L 744,605 L 740,600 L 692,500 L 674,480 L 660,472 L 642,467 L 621,466 L 599,470 L 574,482 L 551,504 L 416,714 L 414,712 L 355,543 L 349,532 L 341,524 L 326,518 L 252,518 L 242,521 L 236,525 L 229,534 L 226,542 L 226,556 L 336,829 L 358,877 L 370,888 L 380,893 L 393,896 L 417,894 L 430,888 L 441,879 L 533,741 L 614,614 L 664,705 L 681,724 L 694,732 L 707,737 L 723,740 L 751,740 L 767,737 L 783,731 L 800,720 L 817,701 L 945,499 L 974,449 L 977,446 L 1030,461 L 1042,459 L 1047,452 L 1047,445 Z"/></clipPath>
+  <filter id="iconShadow" x="80" y="90" width="1100" height="1080" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="18" stdDeviation="28" flood-color="#00040b" flood-opacity=".52"/></filter>
+  <filter id="markShadow" x="170" y="220" width="940" height="780" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity=".28"/></filter>
+</defs>
+<g filter="url(#iconShadow)">
+  <rect x="124" y="134" width="1005" height="982" rx="214" fill="url(#panel)"/>
+  <rect x="124" y="134" width="1005" height="982" rx="214" fill="url(#panelGlow)"/>
+  <rect x="125.5" y="135.5" width="1002" height="979" rx="212.5" fill="none" stroke="#607087" stroke-opacity=".20" stroke-width="3"/>
+</g>
+<g filter="url(#markShadow)">
+  <path d="M 988,292 L 979,285 L 968,285 L 963,287 L 814,383 L 801,393 L 800,401 L 804,407 L 811,410 L 856,420 L 860,423 L 744,605 L 740,600 L 692,500 L 674,480 L 660,472 L 642,467 L 621,466 L 599,470 L 574,482 L 551,504 L 416,714 L 414,712 L 355,543 L 349,532 L 341,524 L 326,518 L 252,518 L 242,521 L 236,525 L 229,534 L 226,542 L 226,556 L 336,829 L 358,877 L 370,888 L 380,893 L 393,896 L 417,894 L 430,888 L 441,879 L 533,741 L 614,614 L 664,705 L 681,724 L 694,732 L 707,737 L 723,740 L 751,740 L 767,737 L 783,731 L 800,720 L 817,701 L 945,499 L 974,449 L 977,446 L 1030,461 L 1042,459 L 1047,452 L 1047,445 Z" fill="url(#brandBase)"/>
+  <g clip-path="url(#markClip)">
+    <rect x="185" y="400" width="420" height="560" fill="url(#leftWarm)"/>
+    <rect x="560" y="400" width="310" height="390" fill="url(#foldShade)"/>
+    <rect x="800" y="220" width="320" height="310" fill="url(#arrowGlow)"/>
+  </g>
+  <path d="M 573,804 L 561,812 L 531,847 L 528,853 L 528,929 L 535,939 L 543,943 L 630,942 L 638,936 L 643,925 L 642,817 L 637,809 L 628,804 Z" fill="url(#bars)"/>
+  <path d="M 696,781 L 691,786 L 687,795 L 687,926 L 690,933 L 695,939 L 703,943 L 784,943 L 789,941 L 795,936 L 800,925 L 800,795 L 796,786 L 785,778 L 703,778 Z" fill="url(#bars)"/>
+  <path d="M 944,602 L 933,604 L 924,612 L 850,719 L 844,734 L 844,925 L 848,934 L 854,940 L 861,943 L 947,943 L 955,939 L 960,934 L 964,923 L 964,623 L 962,615 L 958,609 L 953,605 Z" fill="url(#bars)"/>
+</g>
+</svg>
