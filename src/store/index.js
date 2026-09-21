@@ -41,6 +41,7 @@ const TRENDS_SOURCE_PRESENTATION = {
   "fanqie-books": { category: "生活", categoryIds: ["life"], order: 17.2 },
   "qimao-books": { category: "生活", categoryIds: ["life"], order: 17.3 },
   "jjwxc-books": { category: "生活", categoryIds: ["life"], order: 17.4 },
+  "apple-music": { category: "生活", categoryIds: ["life"], order: 17.45 },
   "qq-music": { category: "生活", categoryIds: ["life"], order: 17.5 },
   "netease-music": { category: "生活", categoryIds: ["life"], order: 17.6 },
   "kugou-music": { category: "生活", categoryIds: ["life"], order: 17.7 },
