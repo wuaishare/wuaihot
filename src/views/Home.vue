@@ -62,7 +62,7 @@
       class="news-grid"
       :class="{ 'is-compact': store.compactMode }"
       :style="{ '--home-grid-columns': String(desktopColumns) }"
-      item-key="name"
+      item-key="cardKey"
       :animation="180"
       :disabled="cardDragDisabled"
       handle=".card-drag-handle"
@@ -80,7 +80,7 @@
         <div
           class="news-card"
           :class="{ 'with-entrance': enableCardEntrance }"
-          :key="`${store.activeCategory}-${item.name}`"
+          :key="`${store.activeCategory}-${item.cardKey}`"
           :style="{ animationDelay: index / 10 + 0.2 + 's' }"
         >
           <HotList :hotData="item" />
@@ -157,9 +157,32 @@ const desktopColumns = computed(() =>
   }),
 );
 const renderNews = computed(() => {
-  return store.newsArr
+  const baseSources = store.newsArr
     .filter((item) => item.show)
-    .sort((a, b) => a.order - b.order);
+    .map((item) => ({
+      ...item,
+      cardKey: `source:${item.name}`,
+    }));
+  const baseByName = new Map(baseSources.map((item) => [item.name, item]));
+  const promoted = (store.promotedRankings || [])
+    .slice()
+    .sort((left, right) => Number(left?.order || 0) - Number(right?.order || 0))
+    .map((projection, index) => {
+      const base = baseByName.get(projection?.sourceName);
+      if (!base) return null;
+      return {
+        ...base,
+        order: Number(base.order || 0) + 0.001 * (index + 1),
+        cardKey: `projection:${projection.id}`,
+        projectionInstanceId: projection.id,
+        projectionVariant: projection.variant,
+        projectionLabel: projection.label,
+      };
+    })
+    .filter(Boolean);
+  return [...baseSources, ...promoted].sort(
+    (left, right) => Number(left.order || 0) - Number(right.order || 0),
+  );
 });
 const forcedCategoryName = computed(() =>
   getCategoryNameBySlug(route.params?.categorySlug, store.categories),
@@ -195,6 +218,8 @@ const sourceMatchesSearch = (item) => {
     item.label,
     item.category,
     item.subtype,
+    item.projectionLabel,
+    item.projectionVariant,
     ...categoryNames,
     getSourceDisplayLabel(item.name, locale.value, item.label || item.name),
   ]
@@ -306,7 +331,7 @@ const cardDragDisabled = computed(() => isSubtypeInteracting.value);
 let subtypeInteractionTimer = null;
 
 watch(
-  () => filteredNews.value.map((item) => item.name).join("|"),
+  () => filteredNews.value.map((item) => item.cardKey).join("|"),
   () => {
     if (!isCardDragging.value) syncSortableNews();
   },
@@ -368,16 +393,35 @@ const startCardDrag = () => {
 };
 
 const saveCardOrder = () => {
-  const scopedNames = filteredNews.value.map((item) => item.name);
-  const orderedNames = sortableNews.value.map((item) => item.name);
-  store.reorderVisibleNews(orderedNames, scopedNames);
+  const scopedBaseNames = filteredNews.value
+    .filter((item) => !item.projectionInstanceId)
+    .map((item) => item.name);
+  const orderedBaseNames = sortableNews.value
+    .filter((item) => !item.projectionInstanceId)
+    .map((item) => item.name);
+  store.reorderVisibleNews(orderedBaseNames, scopedBaseNames);
+  store.reorderPromotedRankings(
+    sortableNews.value
+      .filter((item) => item.projectionInstanceId)
+      .map((item) => item.projectionInstanceId),
+  );
   isCardDragging.value = false;
   syncSortableNews();
 };
 
-const saveStreamOrder = (orderedNames = []) => {
-  const scopedNames = scopedNews.value.map((item) => item.name);
-  store.reorderVisibleNews(orderedNames, scopedNames);
+const saveStreamOrder = (orderedKeys = []) => {
+  const baseNames = orderedKeys
+    .filter((key) => String(key).startsWith("source:"))
+    .map((key) => String(key).slice("source:".length));
+  const scopedBaseNames = scopedNews.value
+    .filter((item) => !item.projectionInstanceId)
+    .map((item) => item.name);
+  store.reorderVisibleNews(baseNames, scopedBaseNames);
+  store.reorderPromotedRankings(
+    orderedKeys
+      .filter((key) => String(key).startsWith("projection:"))
+      .map((key) => String(key).slice("projection:".length)),
+  );
 };
 
 // 重置

@@ -3,7 +3,7 @@
     :header-style="{ padding: store.compactMode ? '10px 12px' : '16px' }"
     :content-style="{ padding: store.compactMode ? '0 12px' : '0 16px' }"
     :footer-style="{ padding: store.compactMode ? '10px 12px' : '16px' }"
-    :id="`hot-list-${hotData.name}`"
+    :id="cardDomId"
     class="hot-list"
     :class="{ 'is-compact': store.compactMode }"
     hoverable
@@ -58,6 +58,34 @@
             {{ cardSubtitle }}
           </n-text>
           <n-skeleton v-else-if="!hotListData" width="60px" text round />
+          <n-button
+            v-if="canPromoteCurrentRanking"
+            class="projection-action no-card-drag"
+            text
+            circle
+            size="tiny"
+            :title="projectionActionCopy.promote"
+            :aria-label="projectionActionCopy.promote"
+            @click.stop="promoteCurrentRanking"
+          >
+            <template #icon>
+              <n-icon :component="Pushpin" />
+            </template>
+          </n-button>
+          <n-button
+            v-else-if="isProjectionInstance"
+            class="projection-action no-card-drag"
+            text
+            circle
+            size="tiny"
+            :title="projectionActionCopy.remove"
+            :aria-label="projectionActionCopy.remove"
+            @click.stop="removeProjectionInstance"
+          >
+            <template #icon>
+              <n-icon :component="CloseOne" />
+            </template>
+          </n-button>
         </div>
       </div>
     </template>
@@ -87,7 +115,7 @@
         <div v-else-if="!hotListData || listLoading" class="loading">
           <n-skeleton text round :repeat="10" height="20px" />
         </div>
-        <div v-else class="lists" :id="hotData.name + 'Lists'">
+        <div v-else class="lists" :id="listDomId">
           <div v-if="isIndexOverviewSource && !visibleItems.length" class="index-empty">
             {{ t("hotList.indexRegionEmpty") }}
           </div>
@@ -275,7 +303,7 @@
             <div class="loading">
               <n-skeleton text round />
             </div>
-            <n-popover>
+            <n-popover v-if="!isProjectionInstance">
               <template #trigger>
                 <span
                   class="card-drag-handle"
@@ -317,7 +345,7 @@
                 </template>
                 {{ t("hotList.viewMore") }}
               </n-popover>
-              <n-popover>
+              <n-popover v-if="!isProjectionInstance">
                 <template #trigger>
                   <span
                     class="card-drag-handle"
@@ -435,7 +463,7 @@
 </template>
 
 <script setup>
-import { Drag, Fire, Refresh, More } from "@icon-park/vue-next";
+import { CloseOne, Drag, Fire, More, Pushpin, Refresh } from "@icon-park/vue-next";
 import { getSharedRanking } from "@/utils/rankingCollection";
 import { formatTime } from "@/utils/getTime";
 import {
@@ -464,6 +492,7 @@ import {
   buildSourceSubtypeParams,
   getDefaultSourceSubtype,
   getSourceSubtypeControlGroups,
+  getSourceVariantOption,
   getSourceVariantOptions,
   persistSourceSubtype,
   readSourceSubtype,
@@ -524,6 +553,18 @@ const props = defineProps({
     default: false,
   },
 });
+const isProjectionInstance = computed(() =>
+  Boolean(props.hotData?.projectionInstanceId),
+);
+const projectionVariant = computed(() =>
+  String(props.hotData?.projectionVariant || "").trim(),
+);
+const instanceKey = computed(() =>
+  String(props.hotData?.projectionInstanceId || props.hotData?.name || "ranking"),
+);
+const cardDomId = computed(() => `hot-list-${instanceKey.value}`);
+const listDomId = computed(() => `${instanceKey.value}Lists`);
+const refreshStorageKey = computed(() => `${instanceKey.value}Btn`);
 
 // 更新时间
 const updateTime = ref(null);
@@ -531,7 +572,7 @@ const updateTime = ref(null);
 // 刷新按钮数据
 const lastClickTime = ref(
   typeof localStorage !== "undefined"
-    ? localStorage.getItem(`${props.hotData.name}Btn`) || 0
+    ? localStorage.getItem(refreshStorageKey.value) || 0
     : 0
 );
 
@@ -564,7 +605,7 @@ const linkTarget = computed(() =>
   store.linkOpenType === "open" ? "_blank" : "_self"
 );
 const previewTextOnlyWidth = 340;
-const previewTooltipId = computed(() => `hot-item-preview-${props.hotData.name}`);
+const previewTooltipId = computed(() => `hot-item-preview-${instanceKey.value}`);
 const showCardImages = computed(() =>
   store.showImages !== false && store.showCardImages !== false,
 );
@@ -595,9 +636,17 @@ const API_LOCALIZED_SOURCE_NAMES = new Set([
 const shouldReloadForLocaleChange = (name = "") =>
   API_LOCALIZED_SOURCE_NAMES.has(name);
 const READABLE_TRANSLATION_FALLBACK_MS = 3000;
-const sourceLabel = computed(() =>
-  getSourceDisplayLabel(props.hotData.name, locale.value, props.hotData.label)
-);
+const sourceLabel = computed(() => {
+  const base = getSourceDisplayLabel(
+    props.hotData.name,
+    locale.value,
+    props.hotData.label,
+  );
+  const projectionLabel = String(props.hotData?.projectionLabel || "").trim();
+  return isProjectionInstance.value && projectionLabel
+    ? `${base} · ${projectionLabel}`
+    : base;
+});
 const isIndexOverviewSource = computed(() => props.hotData.name === "global-indexes");
 const isSortableMarketSource = computed(() => isMarketListSortable(props.hotData.name));
 const cardSubtitle = computed(() => {
@@ -746,8 +795,8 @@ const getMarketQuoteHoverTitle = (item) => {
 const syncReadableTitleDom = (items = []) => {
   nextTick(() => {
     const root =
-      document.getElementById(`${props.hotData.name}Lists`)?.closest(".hot-list") ||
-      document.getElementById(`hot-list-${props.hotData.name}`);
+      document.getElementById(listDomId.value)?.closest(".hot-list") ||
+      document.getElementById(cardDomId.value);
     if (!root) return;
     const links = root.querySelectorAll(".lists .item .text");
     const titles = root.querySelectorAll(".lists .item .title-text");
@@ -769,18 +818,56 @@ const subtypeOptions = computed(() => {
   subtypeCatalogRevision.value;
   return getSourceVariantOptions(props.hotData.name);
 });
-const resolveActiveSubtype = (preferred = readSourceSubtype(props.hotData.name)) =>
-  subtypeOptions.value.length
+const resolveActiveSubtype = (preferred = readSourceSubtype(props.hotData.name)) => {
+  if (isProjectionInstance.value && projectionVariant.value) {
+    return projectionVariant.value;
+  }
+  return subtypeOptions.value.length
     ? resolveSourceSubtype(subtypeOptions.value, preferred)
     : getDefaultSourceSubtype(props.hotData.name);
+};
 const activeSubType = ref(resolveActiveSubtype());
 const subtypeGroups = computed(() => {
   subtypeCatalogRevision.value;
+  if (isProjectionInstance.value) return [];
   return localizeSubtypeGroups(
     getSourceSubtypeControlGroups(props.hotData.name, activeSubType.value),
     locale.value,
   );
 });
+const activeVariantOption = computed(() =>
+  getSourceVariantOption(props.hotData.name, activeSubType.value),
+);
+const projectionActionCopy = computed(() => {
+  const copies = {
+    "zh-CN": { promote: "独立显示当前榜单", remove: "移除独立榜单" },
+    "zh-TW": { promote: "獨立顯示目前榜單", remove: "移除獨立榜單" },
+    en: { promote: "Show as a separate ranking", remove: "Remove separate ranking" },
+    ja: { promote: "このランキングを独立表示", remove: "独立ランキングを削除" },
+    ko: { promote: "현재 랭킹을 별도로 표시", remove: "별도 랭킹 제거" },
+  };
+  return copies[locale.value] || copies["zh-CN"];
+});
+const canPromoteCurrentRanking = computed(() => {
+  if (isProjectionInstance.value || !activeSubType.value) return false;
+  if (subtypeOptions.value.length < 2) return false;
+  const id = `${props.hotData.name}::${activeSubType.value}`;
+  return !(store.promotedRankings || []).some((item) => item?.id === id);
+});
+const promoteCurrentRanking = () => {
+  const label =
+    activeVariantOption.value?.label ||
+    activeVariantOption.value?.value ||
+    activeSubType.value;
+  if (store.promoteRanking(props.hotData.name, activeSubType.value, label)) {
+    $message?.success?.(projectionActionCopy.value.promote);
+  }
+};
+const removeProjectionInstance = () => {
+  if (store.removePromotedRanking(props.hotData?.projectionInstanceId)) {
+    $message?.success?.(projectionActionCopy.value.remove);
+  }
+};
 const variantRuntime = reactive({});
 const runtimeKey = (variant = activeSubType.value) => variant || "__default__";
 const variantRuntimeEntry = (variant = activeSubType.value) =>
@@ -848,7 +935,7 @@ const requestHotListResult = (item, isNew, shouldTranslate, useApi2, targetVaria
 
 const getReadableTranslationPriority = () => {
   if (!isClient || typeof document === "undefined") return 0;
-  const listDom = document.getElementById(`hot-list-${props.hotData.name}`);
+  const listDom = document.getElementById(cardDomId.value);
   const scrollRoot = listDom?.closest(".n-scrollbar-container");
   if (!listDom || !scrollRoot) return 0;
   const cardRect = listDom.getBoundingClientRect();
@@ -1045,7 +1132,7 @@ const getNewData = () => {
     // 更新最后一次点击时间
     lastClickTime.value = now;
     if (typeof localStorage !== "undefined") {
-      localStorage.setItem(`${props.hotData.name}Btn`, now);
+      localStorage.setItem(refreshStorageKey.value, now);
     }
   } else {
     // 不执行点击事件
@@ -1380,7 +1467,7 @@ const checkListShow = () => {
     consumePendingDataRefresh();
     return;
   }
-  const listDom = document.getElementById(`hot-list-${props.hotData.name}`);
+  const listDom = document.getElementById(cardDomId.value);
   if (!listDom || typeof IntersectionObserver === "undefined") {
     isNearViewport.value = true;
     if (!hotListData.value) void getHotListsData(props.hotData.name);
@@ -1421,7 +1508,7 @@ const checkTranslationVisibility = () => {
     consumePendingReadableTranslation();
     return;
   }
-  const listDom = document.getElementById(`hot-list-${props.hotData.name}`);
+  const listDom = document.getElementById(cardDomId.value);
   if (!listDom || typeof IntersectionObserver === "undefined") {
     isInViewport.value = true;
     consumePendingReadableTranslation();
@@ -1630,6 +1717,15 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .projection-action {
+      flex: 0 0 auto;
+      color: var(--n-text-color-2);
+
+      &:hover {
+        color: var(--n-text-color);
+      }
     }
   }
 
