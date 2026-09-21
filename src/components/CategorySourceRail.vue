@@ -87,7 +87,7 @@
                 <Drag />
               </button>
               <button
-                v-else
+                v-else-if="source.projectionRemovable !== false"
                 type="button"
                 class="category-source-section__tool"
                 :title="copy.removeProjection"

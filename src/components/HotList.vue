@@ -73,7 +73,7 @@
             </template>
           </n-button>
           <n-button
-            v-else-if="isProjectionInstance"
+            v-else-if="isRemovableProjection"
             class="projection-action no-card-drag"
             text
             circle
@@ -555,6 +555,11 @@ const props = defineProps({
 });
 const isProjectionInstance = computed(() =>
   Boolean(props.hotData?.projectionInstanceId),
+);
+const isRemovableProjection = computed(
+  () =>
+    isProjectionInstance.value &&
+    props.hotData?.projectionRemovable !== false,
 );
 const projectionVariant = computed(() =>
   String(props.hotData?.projectionVariant || "").trim(),

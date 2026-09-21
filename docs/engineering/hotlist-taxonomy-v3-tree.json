@@ -1,0 +1,416 @@
+{
+  "version": 3,
+  "status": "production-canonical",
+  "maxDepth": 3,
+  "principles": [
+    "综合仅为聚合视图，不作为来源真实领域归属",
+    "羊毛迁入生活/优惠省钱；羊毛专题继续独立存在",
+    "文娱与游戏保持一级导航，避免生活成为大杂烩",
+    "来源平台与榜单 variant 分层；跨领域子榜通过 projection 映射",
+    "同一榜单允许多分类交叉投影，但 provider 保持单一 canonical source"
+  ],
+  "nodes": [
+    {
+      "id": "general",
+      "name": "综合",
+      "slug": "general",
+      "parentId": null,
+      "navigation": false,
+      "navOrder": 0,
+      "role": "aggregate-view"
+    },
+    {
+      "id": "news",
+      "name": "新闻",
+      "slug": "news",
+      "parentId": null,
+      "navOrder": 10
+    },
+    {
+      "id": "news-domestic",
+      "name": "国内资讯",
+      "slug": "domestic-news",
+      "parentId": "news"
+    },
+    {
+      "id": "news-world",
+      "name": "国际资讯",
+      "slug": "world-news",
+      "parentId": "news"
+    },
+    {
+      "id": "news-depth",
+      "name": "深度与观点",
+      "slug": "news-depth",
+      "parentId": "news"
+    },
+    {
+      "id": "tech",
+      "name": "科技",
+      "slug": "tech",
+      "parentId": null,
+      "navOrder": 20
+    },
+    {
+      "id": "tech-digital",
+      "name": "数码与应用",
+      "slug": "digital-tech",
+      "parentId": "tech"
+    },
+    {
+      "id": "tech-industry",
+      "name": "互联网与产业",
+      "slug": "tech-industry",
+      "parentId": "tech"
+    },
+    {
+      "id": "tech-developer",
+      "name": "开发者",
+      "slug": "developer",
+      "parentId": "tech"
+    },
+    {
+      "id": "tech-developer-security",
+      "name": "网络安全",
+      "slug": "security",
+      "parentId": "tech-developer"
+    },
+    {
+      "id": "tech-science",
+      "name": "科学与前沿",
+      "slug": "science",
+      "parentId": "tech"
+    },
+    {
+      "id": "tech-design",
+      "name": "设计",
+      "slug": "design",
+      "parentId": "tech"
+    },
+    {
+      "id": "finance",
+      "name": "财经",
+      "slug": "finance",
+      "parentId": null,
+      "navOrder": 40
+    },
+    {
+      "id": "finance-flash",
+      "name": "实时快讯",
+      "slug": "finance-flash",
+      "parentId": "finance"
+    },
+    {
+      "id": "finance-market",
+      "name": "市场热度",
+      "slug": "market-trends",
+      "parentId": "finance"
+    },
+    {
+      "id": "finance-indexes",
+      "name": "全球股指",
+      "slug": "global-indexes",
+      "parentId": "finance"
+    },
+    {
+      "id": "finance-exchanges",
+      "name": "交易所",
+      "slug": "exchanges",
+      "parentId": "finance"
+    },
+    {
+      "id": "life",
+      "name": "生活",
+      "slug": "life",
+      "parentId": null,
+      "navOrder": 80
+    },
+    {
+      "id": "life-deals",
+      "name": "优惠省钱",
+      "slug": "deals",
+      "parentId": "life"
+    },
+    {
+      "id": "life-auto",
+      "name": "汽车",
+      "slug": "auto",
+      "parentId": "life"
+    },
+    {
+      "id": "life-health",
+      "name": "健康",
+      "slug": "health",
+      "parentId": "life"
+    },
+    {
+      "id": "life-education",
+      "name": "教育知识",
+      "slug": "education",
+      "parentId": "life"
+    },
+    {
+      "id": "life-consumer",
+      "name": "消费生活",
+      "slug": "consumer-life",
+      "parentId": "life"
+    },
+    {
+      "id": "life-public",
+      "name": "公共生活",
+      "slug": "public-life",
+      "parentId": "life"
+    },
+    {
+      "id": "entertainment",
+      "name": "文娱",
+      "slug": "entertainment",
+      "parentId": null,
+      "navOrder": 50
+    },
+    {
+      "id": "entertainment-music",
+      "name": "音乐",
+      "slug": "music",
+      "parentId": "entertainment"
+    },
+    {
+      "id": "entertainment-music-songs",
+      "name": "歌曲",
+      "slug": "songs",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-music-albums",
+      "name": "专辑",
+      "slug": "albums",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-music-artists",
+      "name": "歌手",
+      "slug": "artists",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-music-playlists",
+      "name": "歌单",
+      "slug": "playlists",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-audio",
+      "name": "音频",
+      "slug": "audio",
+      "parentId": "entertainment"
+    },
+    {
+      "id": "entertainment-audio-podcasts",
+      "name": "播客",
+      "slug": "podcasts",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-audiobooks",
+      "name": "有声书",
+      "slug": "audiobooks",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-drama",
+      "name": "音频剧",
+      "slug": "audio-drama",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-radio",
+      "name": "广播电台",
+      "slug": "radio",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-video",
+      "name": "影视",
+      "slug": "film-tv",
+      "parentId": "entertainment"
+    },
+    {
+      "id": "entertainment-video-movie",
+      "name": "电影",
+      "slug": "movies",
+      "parentId": "entertainment-video"
+    },
+    {
+      "id": "entertainment-video-tv",
+      "name": "电视剧",
+      "slug": "tv",
+      "parentId": "entertainment-video"
+    },
+    {
+      "id": "entertainment-video-variety",
+      "name": "综艺",
+      "slug": "variety",
+      "parentId": "entertainment-video"
+    },
+    {
+      "id": "entertainment-video-shortdrama",
+      "name": "短剧",
+      "slug": "short-drama",
+      "parentId": "entertainment-video"
+    },
+    {
+      "id": "entertainment-video-animation",
+      "name": "动画",
+      "slug": "animation",
+      "parentId": "entertainment-video"
+    },
+    {
+      "id": "entertainment-reading",
+      "name": "阅读",
+      "slug": "reading",
+      "parentId": "entertainment"
+    },
+    {
+      "id": "entertainment-reading-books",
+      "name": "图书",
+      "slug": "books",
+      "parentId": "entertainment-reading"
+    },
+    {
+      "id": "entertainment-reading-novels",
+      "name": "网络小说",
+      "slug": "novels",
+      "parentId": "entertainment-reading"
+    },
+    {
+      "id": "entertainment-reading-comics",
+      "name": "漫画",
+      "slug": "comics",
+      "parentId": "entertainment-reading"
+    },
+    {
+      "id": "games",
+      "name": "游戏",
+      "slug": "games",
+      "parentId": null,
+      "navOrder": 60
+    },
+    {
+      "id": "games-ranking",
+      "name": "游戏榜单",
+      "slug": "game-rankings",
+      "parentId": "games"
+    },
+    {
+      "id": "games-content",
+      "name": "游戏内容",
+      "slug": "game-content",
+      "parentId": "games"
+    },
+    {
+      "id": "games-community",
+      "name": "玩家社区",
+      "slug": "game-community",
+      "parentId": "games"
+    },
+    {
+      "id": "games-esports",
+      "name": "电竞",
+      "slug": "esports",
+      "parentId": "games"
+    },
+    {
+      "id": "games-deals",
+      "name": "游戏优惠",
+      "slug": "game-deals",
+      "parentId": "games"
+    },
+    {
+      "id": "sports",
+      "name": "体育",
+      "slug": "sports",
+      "parentId": null,
+      "navOrder": 70
+    },
+    {
+      "id": "sports-general",
+      "name": "综合体育",
+      "slug": "general-sports",
+      "parentId": "sports"
+    },
+    {
+      "id": "sports-football",
+      "name": "足球",
+      "slug": "football",
+      "parentId": "sports"
+    },
+    {
+      "id": "sports-basketball",
+      "name": "篮球",
+      "slug": "basketball",
+      "parentId": "sports"
+    },
+    {
+      "id": "community",
+      "name": "社区",
+      "slug": "community",
+      "parentId": null,
+      "navOrder": 90
+    },
+    {
+      "id": "community-general",
+      "name": "综合社区",
+      "slug": "general-community",
+      "parentId": "community"
+    },
+    {
+      "id": "community-tech",
+      "name": "技术社区",
+      "slug": "tech-community",
+      "parentId": "community"
+    },
+    {
+      "id": "community-interest",
+      "name": "兴趣社区",
+      "slug": "interest-community",
+      "parentId": "community"
+    },
+    {
+      "id": "ai",
+      "name": "AI",
+      "slug": "ai",
+      "parentId": null,
+      "navOrder": 30
+    },
+    {
+      "id": "ai-models",
+      "name": "模型评测",
+      "slug": "ai-models",
+      "parentId": "ai"
+    },
+    {
+      "id": "ai-products",
+      "name": "产品生态",
+      "slug": "ai-products",
+      "parentId": "ai"
+    },
+    {
+      "id": "ai-official",
+      "name": "官方动态",
+      "slug": "ai-official",
+      "parentId": "ai"
+    },
+    {
+      "id": "ai-research-community",
+      "name": "研究社区",
+      "slug": "ai-research-community",
+      "parentId": "ai"
+    },
+    {
+      "id": "ai-chinese-news",
+      "name": "中文AI资讯",
+      "slug": "chinese-ai-news",
+      "parentId": "ai"
+    }
+  ]
+}

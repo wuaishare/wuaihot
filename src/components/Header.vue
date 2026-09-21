@@ -678,8 +678,16 @@ const availableCategorySet = computed(() => {
 const categoryOptions = computed(() => {
   const base = store.categories
     .slice()
-    .sort((a, b) => a.order - b.order)
-    .filter((cat) => !cat.parentId && availableCategorySet.value.has(cat.name))
+    .sort(
+      (a, b) =>
+        Number(a.navOrder ?? a.order) - Number(b.navOrder ?? b.order),
+    )
+    .filter(
+      (cat) =>
+        !cat.parentId &&
+        cat.navigation !== false &&
+        availableCategorySet.value.has(cat.name),
+    )
     .map((c) => ({
       label: getCategoryLabel(c.name, locale.value),
       value: c.name,
@@ -691,6 +699,7 @@ const buildMobileCategoryOptions = (parentId = null, parentLabels = []) =>
     .filter(
       (item) =>
         (item.parentId || null) === parentId &&
+        item.navigation !== false &&
         availableCategorySet.value.has(item.name),
     )
     .slice()
