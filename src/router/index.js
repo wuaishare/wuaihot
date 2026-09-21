@@ -14,6 +14,7 @@ import {
 } from "@/utils/locale";
 import {
   getDefaultSourceSubtype,
+  resolveLegacySourceProjection,
   shouldCanonicalizeDefaultSubtype,
 } from "@/utils/sourceSubtypes";
 import { trackEvent } from "@/utils/track";
@@ -49,7 +50,17 @@ router.beforeEach((to) => {
     const subtypeSlug = Array.isArray(legacySubtype)
       ? legacySubtype[0]
       : legacySubtype;
-    return buildRankPath(locale, sourceSlug, subtypeSlug || "");
+    const legacyProjection = resolveLegacySourceProjection(
+      sourceSlug,
+      subtypeSlug || "",
+    );
+    return legacyProjection
+      ? buildRankPath(
+          locale,
+          legacyProjection.sourceName,
+          legacyProjection.variant,
+        )
+      : buildRankPath(locale, sourceSlug, subtypeSlug || "");
   }
   if (to.name === "list" || to.name === "list-locale") {
     const rawSourceSlug = Array.isArray(to.params?.sourceSlug)
@@ -59,6 +70,22 @@ router.beforeEach((to) => {
     const subtypeSlug = Array.isArray(to.params?.subtypeSlug)
       ? to.params.subtypeSlug[0]
       : to.params?.subtypeSlug;
+    const legacyProjection = resolveLegacySourceProjection(
+      sourceSlug,
+      subtypeSlug || "",
+    );
+    if (legacyProjection) {
+      return {
+        path: buildRankPath(
+          locale,
+          legacyProjection.sourceName,
+          legacyProjection.variant,
+        ),
+        query: to.query,
+        hash: to.hash,
+        replace: true,
+      };
+    }
     if (rawSourceSlug && sourceSlug && rawSourceSlug !== sourceSlug) {
       return buildRankPath(locale, sourceSlug, subtypeSlug || "");
     }

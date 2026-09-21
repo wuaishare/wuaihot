@@ -9,16 +9,16 @@
         <nav>
           <button
             v-for="source in orderedSources"
-            :key="source.name"
+            :key="sourceInstanceKey(source)"
             type="button"
             class="category-source-rail__toc-item"
-            :class="{ active: activeSource === source.name }"
-            :aria-current="activeSource === source.name ? 'true' : undefined"
-            @click="scrollToSource(source.name)"
+            :class="{ active: activeSource === sourceInstanceKey(source) }"
+            :aria-current="activeSource === sourceInstanceKey(source) ? 'true' : undefined"
+            @click="scrollToSource(source)"
           >
             <img :src="getSourceLogo(source.name)" alt="" @error="handleLogoError" />
             <span>{{ sourceLabel(source) }}</span>
-            <i :class="sourceState(source.name)" aria-hidden="true"></i>
+            <i :class="sourceState(source)" aria-hidden="true"></i>
           </button>
         </nav>
       </div>
@@ -27,7 +27,7 @@
     <draggable
       v-model="orderedSources"
       class="category-source-rail__main"
-      item-key="name"
+      item-key="cardKey"
       handle=".category-source-section__drag"
       :animation="180"
       ghost-class="category-source-section--ghost"
@@ -36,27 +36,27 @@
     >
       <template #item="{ element: source }">
           <section
-            :id="sectionId(source.name)"
-            :ref="(el) => setSectionRef(source.name, el)"
+            :id="sectionId(source)"
+            :ref="(el) => setSectionRef(source, el)"
             class="category-source-section"
-            :data-source="source.name"
+            :data-source="sourceInstanceKey(source)"
           >
           <header class="category-source-section__header">
             <div class="category-source-section__identity">
               <img :src="getSourceLogo(source.name)" alt="" @error="handleLogoError" />
               <div>
                 <strong>{{ sourceLabel(source) }}</strong>
-                <span v-if="sourceSubtitle(source.name)">{{ sourceSubtitle(source.name) }}</span>
+                <span v-if="sourceSubtitle(source)">{{ sourceSubtitle(source) }}</span>
               </div>
             </div>
-            <div v-if="sourceSubtypeOptions(source.name).length > 1" class="category-source-section__subtypes" :aria-label="sourceLabel(source)">
+            <div v-if="sourceSubtypeOptions(source).length > 1" class="category-source-section__subtypes" :aria-label="sourceLabel(source)">
               <div
-                v-for="group in sourceSubtypeGroups(source.name)"
+                v-for="group in sourceSubtypeGroups(source)"
                 :key="group.key || group.label"
                 class="category-source-section__subtype-group"
               >
                 <span
-                  v-if="sourceSubtypeGroups(source.name).length > 1 && group.label"
+                  v-if="sourceSubtypeGroups(source).length > 1 && group.label"
                   class="category-source-section__subtype-group-label"
                 >{{ group.label }}</span>
                 <div class="category-source-section__subtype-items">
@@ -65,8 +65,8 @@
                     :key="item.value"
                     type="button"
                     class="category-source-section__subtype"
-                    :class="[{ active: sourceSubtype(source.name) === item.value }, 'is-' + sourceVariantState(source.name, item.value)]"
-                    :aria-pressed="sourceSubtype(source.name) === item.value"
+                    :class="[{ active: sourceSubtype(source) === item.value }, 'is-' + sourceVariantState(source, item.value)]"
+                    :aria-pressed="sourceSubtype(source) === item.value"
                     @click.stop="changeSourceSubtype(source, item.value)"
                   >
                     <span>{{ item.label }}</span>
@@ -77,14 +77,24 @@
             </div>
             <div class="category-source-section__tools">
               <div class="category-source-section__freshness">
-                <span class="category-source-section__time">{{ sourceUpdateTime(source.name) || copy.updateFailed }}</span>
-                <span v-if="sourceCadenceLabel(source.name)" class="category-source-section__cadence">{{ sourceCadenceLabel(source.name) }}</span>
-                <button type="button" class="category-source-section__tool" :class="{ loading: sourceState(source.name) === 'loading' }" :title="copy.refreshLatest" :aria-label="copy.refreshLatest" @click.stop="loadSource(source, true)">
+                <span class="category-source-section__time">{{ sourceUpdateTime(source) || copy.updateFailed }}</span>
+                <span v-if="sourceCadenceLabel(source)" class="category-source-section__cadence">{{ sourceCadenceLabel(source) }}</span>
+                <button type="button" class="category-source-section__tool" :class="{ loading: sourceState(source) === 'loading' }" :title="copy.refreshLatest" :aria-label="copy.refreshLatest" @click.stop="loadSource(source, true)">
                   <Refresh />
                 </button>
               </div>
-              <button type="button" class="category-source-section__tool category-source-section__drag" :title="copy.dragSort" :aria-label="copy.dragSort">
+              <button v-if="!source.projectionInstanceId" type="button" class="category-source-section__tool category-source-section__drag" :title="copy.dragSort" :aria-label="copy.dragSort">
                 <Drag />
+              </button>
+              <button
+                v-else
+                type="button"
+                class="category-source-section__tool"
+                :title="copy.removeProjection"
+                :aria-label="copy.removeProjection"
+                @click.stop="removeProjection(source)"
+              >
+                <CloseOne />
               </button>
               <router-link class="category-source-section__more" :to="sourcePath(source)">
                 {{ copy.viewRanking }} <span aria-hidden="true">→</span>
@@ -92,19 +102,19 @@
             </div>
           </header>
 
-          <div v-if="sourceState(source.name) === 'idle' || sourceState(source.name) === 'loading'" class="category-source-section__rail is-loading">
+          <div v-if="sourceState(source) === 'idle' || sourceState(source) === 'loading'" class="category-source-section__rail is-loading">
             <div v-for="index in 4" :key="index" class="category-story-card skeleton"></div>
           </div>
-          <div v-else-if="sourceState(source.name) === 'failed'" class="category-source-section__error">
+          <div v-else-if="sourceState(source) === 'failed'" class="category-source-section__error">
             <span>{{ copy.loadFailed }}</span>
             <button type="button" @click="loadSource(source, true)">{{ copy.retry }}</button>
           </div>
-          <div v-else-if="!sourceEntries(source.name).length" class="category-source-section__error">
+          <div v-else-if="!sourceEntries(source).length" class="category-source-section__error">
             <span>{{ queryText ? copy.noSearchResults : copy.noContent }}</span>
           </div>
           <div v-else class="category-source-section__rail" tabindex="0">
             <a
-              v-for="entry in sourceEntries(source.name)"
+              v-for="entry in sourceEntries(source)"
               :key="entry.key"
               class="category-story-card"
               :class="[{ 'has-cover': showStreamImages && Boolean(entry.cover) }, rankClass(entry.rank)]"
@@ -164,7 +174,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import draggable from 'vuedraggable';
-import { Drag, Refresh } from '@icon-park/vue-next';
+import { CloseOne, Drag, Refresh } from '@icon-park/vue-next';
 import RankingBadgeGroup from '@/components/RankingBadgeGroup.vue';
 import { mainStore } from '@/store';
 import { getSharedRanking } from '@/utils/rankingCollection';
@@ -203,19 +213,23 @@ const { locale: i18nLocale } = useI18n({ useScope: 'global' });
 const catalogRevision = useTrendsCatalogRevision();
 const locale = computed(() => normalizeLocale(getLocaleFromRoute(route) || i18nLocale.value));
 const COPY = {
-  'zh-CN': { sourceDirectory: '来源目录', viewRanking: '查看榜单', loadFailed: '该来源暂时加载失败', retry: '重试', noSearchResults: '没有匹配当前搜索的条目', noContent: '暂无内容', heat: '热度', dragSort: '拖拽排序', refreshLatest: '更新', updateFailed: '更新时间未知' },
-  en: { sourceDirectory: 'Sources', viewRanking: 'View ranking', loadFailed: 'This source is temporarily unavailable', retry: 'Retry', noSearchResults: 'No items match the current search', noContent: 'No content', heat: 'Heat', dragSort: 'Drag to reorder', refreshLatest: 'Refresh', updateFailed: 'Update time unavailable' },
-  'zh-TW': { sourceDirectory: '來源目錄', viewRanking: '查看榜單', loadFailed: '此來源暫時載入失敗', retry: '重試', noSearchResults: '沒有符合目前搜尋的項目', noContent: '暫無內容', heat: '熱度', dragSort: '拖曳排序', refreshLatest: '更新', updateFailed: '更新時間未知' },
-  ja: { sourceDirectory: 'ソース目次', viewRanking: 'ランキングを見る', loadFailed: 'このソースは一時的に読み込めません', retry: '再試行', noSearchResults: '検索に一致する項目がありません', noContent: 'コンテンツがありません', heat: '注目度', dragSort: 'ドラッグで並べ替え', refreshLatest: '更新', updateFailed: '更新時刻不明' },
-  ko: { sourceDirectory: '출처 목차', viewRanking: '랭킹 보기', loadFailed: '이 출처를 일시적으로 불러올 수 없습니다', retry: '다시 시도', noSearchResults: '검색과 일치하는 항목이 없습니다', noContent: '콘텐츠 없음', heat: '인기도', dragSort: '드래그하여 정렬', refreshLatest: '새로고침', updateFailed: '업데이트 시간 없음' },
+  'zh-CN': { sourceDirectory: '来源目录', viewRanking: '查看榜单', loadFailed: '该来源暂时加载失败', retry: '重试', noSearchResults: '没有匹配当前搜索的条目', noContent: '暂无内容', heat: '热度', dragSort: '拖拽排序', refreshLatest: '更新', updateFailed: '更新时间未知', removeProjection: '移除独立榜单' },
+  en: { sourceDirectory: 'Sources', viewRanking: 'View ranking', loadFailed: 'This source is temporarily unavailable', retry: 'Retry', noSearchResults: 'No items match the current search', noContent: 'No content', heat: 'Heat', dragSort: 'Drag to reorder', refreshLatest: 'Refresh', updateFailed: 'Update time unavailable', removeProjection: 'Remove separate ranking' },
+  'zh-TW': { sourceDirectory: '來源目錄', viewRanking: '查看榜單', loadFailed: '此來源暫時載入失敗', retry: '重試', noSearchResults: '沒有符合目前搜尋的項目', noContent: '暫無內容', heat: '熱度', dragSort: '拖曳排序', refreshLatest: '更新', updateFailed: '更新時間未知', removeProjection: '移除獨立榜單' },
+  ja: { sourceDirectory: 'ソース目次', viewRanking: 'ランキングを見る', loadFailed: 'このソースは一時的に読み込めません', retry: '再試行', noSearchResults: '検索に一致する項目がありません', noContent: 'コンテンツがありません', heat: '注目度', dragSort: 'ドラッグで並べ替え', refreshLatest: '更新', updateFailed: '更新時刻不明', removeProjection: '独立ランキングを削除' },
+  ko: { sourceDirectory: '출처 목차', viewRanking: '랭킹 보기', loadFailed: '이 출처를 일시적으로 불러올 수 없습니다', retry: '다시 시도', noSearchResults: '검색과 일치하는 항목이 없습니다', noContent: '콘텐츠 없음', heat: '인기도', dragSort: '드래그하여 정렬', refreshLatest: '새로고침', updateFailed: '업데이트 시간 없음', removeProjection: '별도 랭킹 제거' },
 };
 const copy = computed(() => COPY[locale.value] || COPY['zh-CN']);
+const removeProjection = (source) => {
+  if (!source?.projectionInstanceId) return;
+  store.removePromotedRanking(source.projectionInstanceId);
+};
 const sourceResults = reactive({});
 const sourceSubtypes = reactive({});
 const orderedSources = ref(props.sources.slice());
 const sourceStates = reactive({});
 const sectionRefs = new Map();
-const activeSource = ref(props.sources[0]?.name || '');
+const activeSource = ref(props.sources[0]?.cardKey || (props.sources[0]?.name ? `source:${props.sources[0].name}` : ""));
 const rootEl = ref(null);
 let scrollHost = null;
 let sourceLoadObserver = null;
@@ -233,38 +247,67 @@ const stripText = (value = '') => String(value || '')
   .replace(/\s+/g, ' ')
   .trim();
 
-const sourceLabel = (source) => getSourceDisplayLabel(
-  source.name,
-  locale.value,
-  source.label || source.name,
-);
-const sourceSubtype = (sourceName) => {
+const sourceInstanceKey = (source) =>
+  String(source?.cardKey || (source?.projectionInstanceId
+    ? `projection:${source.projectionInstanceId}`
+    : `source:${source?.name || "unknown"}`));
+const sourceLabel = (source) => {
+  const base = getSourceDisplayLabel(
+    source.name,
+    locale.value,
+    source.label || source.name,
+  );
+  const projectionLabel = String(source?.projectionLabel || "").trim();
+  return source?.projectionInstanceId && projectionLabel
+    ? `${base} · ${projectionLabel}`
+    : base;
+};
+const sourceSubtype = (source) => {
+  if (source?.projectionInstanceId && source?.projectionVariant) {
+    return String(source.projectionVariant);
+  }
+  const sourceName = source?.name || "";
   const options = getSourceSubtypeOptions(sourceName);
-  const preferred = sourceSubtypes[sourceName] || readSourceSubtype(sourceName) || getDefaultSourceSubtype(sourceName);
-  return options.length ? resolveSourceSubtype(options, preferred) : getDefaultSourceSubtype(sourceName);
+  const key = sourceInstanceKey(source);
+  const preferred =
+    sourceSubtypes[key] ||
+    readSourceSubtype(sourceName) ||
+    getDefaultSourceSubtype(sourceName);
+  return options.length
+    ? resolveSourceSubtype(options, preferred)
+    : getDefaultSourceSubtype(sourceName);
 };
-const sourceSubtypeGroups = (sourceName) =>
-  localizeSubtypeGroups(getSourceSubtypeControlGroups(sourceName, sourceSubtype(sourceName)), locale.value);
-const sourceSubtypeOptions = (sourceName) =>
-  sourceSubtypeGroups(sourceName).flatMap((group) => group.items || []);
-const sourceRuntimeKey = (sourceName, subtype = sourceSubtype(sourceName)) =>
-  [sourceName, subtype || "__default__"].join("::");
-const sourceResult = (sourceName, subtype = sourceSubtype(sourceName)) =>
-  sourceResults[sourceRuntimeKey(sourceName, subtype)] || null;
-const sourceState = (sourceName, subtype = sourceSubtype(sourceName)) =>
-  sourceStates[sourceRuntimeKey(sourceName, subtype)] || "idle";
-const sourceVariantState = (sourceName, subtype) => sourceState(sourceName, subtype);
-const sourcePath = (source) => buildRankPath(locale.value, source.name, sourceSubtype(source.name) || '');
-const sourceUpdateTime = (sourceName) => {
+const sourceSubtypeGroups = (source) =>
+  source?.projectionInstanceId
+    ? []
+    : localizeSubtypeGroups(
+        getSourceSubtypeControlGroups(source.name, sourceSubtype(source)),
+        locale.value,
+      );
+const sourceSubtypeOptions = (source) =>
+  sourceSubtypeGroups(source).flatMap((group) => group.items || []);
+const sourceRuntimeKey = (source, subtype = sourceSubtype(source)) =>
+  [sourceInstanceKey(source), subtype || "__default__"].join("::");
+const sourceResult = (source, subtype = sourceSubtype(source)) =>
+  sourceResults[sourceRuntimeKey(source, subtype)] || null;
+const sourceState = (source, subtype = sourceSubtype(source)) =>
+  sourceStates[sourceRuntimeKey(source, subtype)] || "idle";
+const sourceVariantState = (source, subtype) => sourceState(source, subtype);
+const sourcePath = (source) =>
+  buildRankPath(locale.value, source.name, sourceSubtype(source) || "");
+const sourceUpdateTime = (source) => {
   void store.timeData;
-  const value = sourceResult(sourceName)?.updateTime;
-  return value ? formatTime(value, locale.value) : '';
+  const value = sourceResult(source)?.updateTime;
+  return value ? formatTime(value, locale.value) : "";
 };
-const sourceCadenceSeconds = (sourceName) =>
-  Number(getSourceVariantOption(sourceName, sourceSubtype(sourceName))?.recommendedRefreshIntervalSeconds) || 0;
-const sourceCadenceLabel = (sourceName) => {
-  const seconds = sourceCadenceSeconds(sourceName);
-  if (!seconds) return '';
+const sourceCadenceSeconds = (source) =>
+  Number(
+    getSourceVariantOption(source.name, sourceSubtype(source))
+      ?.recommendedRefreshIntervalSeconds,
+  ) || 0;
+const sourceCadenceLabel = (source) => {
+  const seconds = sourceCadenceSeconds(source);
+  if (!seconds) return "";
   if (seconds % 3600 === 0) return `${seconds / 3600}h`;
   if (seconds % 60 === 0) return `${seconds / 60}m`;
   return `${seconds}s`;
@@ -275,27 +318,39 @@ const rankClass = (rank) => ({
   'is-three': rank === 3,
 });
 const changeSourceSubtype = async (source, subtype) => {
-  if (!source?.name || !subtype || sourceSubtype(source.name) === subtype) return;
-  sourceSubtypes[source.name] = subtype;
+  if (
+    !source?.name ||
+    source?.projectionInstanceId ||
+    !subtype ||
+    sourceSubtype(source) === subtype
+  ) {
+    return;
+  }
+  const key = sourceInstanceKey(source);
+  sourceSubtypes[key] = subtype;
   persistSourceSubtype(source.name, subtype);
   await loadSource(source, false);
 };
 const handleSourceDragEnd = () => {
-  emit('reorder', orderedSources.value.map((source) => source.name));
+  emit(
+    "reorder",
+    orderedSources.value.map((source) => sourceInstanceKey(source)),
+  );
 };
-const sourceSubtitle = (sourceName) => getSourceSubtitleLabel(
-  sourceResult(sourceName)?.subtitle || sourceResult(sourceName)?.type || '',
+const sourceSubtitle = (source) => getSourceSubtitleLabel(
+  sourceResult(source)?.subtitle || sourceResult(source)?.type || "",
   locale.value,
 );
-const sectionId = (sourceName) => `category-source-${sourceName}`;
-const setSectionRef = (sourceName, el) => {
-  const previous = sectionRefs.get(sourceName);
+const sectionId = (source) => `category-source-${sourceInstanceKey(source)}`;
+const setSectionRef = (source, el) => {
+  const key = sourceInstanceKey(source);
+  const previous = sectionRefs.get(key);
   if (previous && sourceLoadObserver) sourceLoadObserver.unobserve(previous);
   if (el) {
-    sectionRefs.set(sourceName, el);
+    sectionRefs.set(key, el);
     sourceLoadObserver?.observe(el);
   } else {
-    sectionRefs.delete(sourceName);
+    sectionRefs.delete(key);
   }
 };
 const handleLogoError = (event) => {
@@ -308,35 +363,42 @@ const hideBrokenCover = (event) => {
   card?.classList.remove('has-cover');
 };
 
-const buildParams = (sourceName, subtype = sourceSubtype(sourceName)) => buildSourceSubtypeParams(sourceName, subtype);
+const buildParams = (source, subtype = sourceSubtype(source)) =>
+  buildSourceSubtypeParams(source.name, subtype);
 const loadSource = async (source, force = false) => {
-  const subtype = sourceSubtype(source.name);
-  const runtimeKey = sourceRuntimeKey(source.name, subtype);
+  const subtype = sourceSubtype(source);
+  const runtimeKey = sourceRuntimeKey(source, subtype);
   if (!force && sourceResults[runtimeKey]) return;
-  sourceStates[runtimeKey] = 'loading';
-  const useApi2 = source?.useApi2 || source?.api === 2 || source?.api === 'api2';
+  sourceStates[runtimeKey] = "loading";
+  const useApi2 =
+    source?.useApi2 || source?.api === 2 || source?.api === "api2";
   try {
-    const response = await getSharedRanking(source.name, force, buildParams(source.name, subtype), {
-      useApi2,
-      forceNoCache: force,
-    });
+    const response = await getSharedRanking(
+      source.name,
+      force,
+      buildParams(source, subtype),
+      {
+        useApi2,
+        forceNoCache: force,
+      },
+    );
     if (response?.usedFallback && response?.fallbackSuccess && !useApi2) {
       store.setSourceApi2(source.name, true);
     }
-    if (response?.result?.code !== 200) throw new Error('source failed');
+    if (response?.result?.code !== 200) throw new Error("source failed");
     sourceResults[runtimeKey] = response.result;
-    sourceStates[runtimeKey] = 'loaded';
+    sourceStates[runtimeKey] = "loaded";
     store.markAvailable(source.name);
   } catch {
-    sourceStates[runtimeKey] = 'failed';
-    if (sourceSubtype(source.name) === subtype) {
+    sourceStates[runtimeKey] = "failed";
+    if (sourceSubtype(source) === subtype) {
       store.markUnavailable(source.name);
     }
   }
 };
 
 const loadSources = async (force = false, targets = props.sources) => {
-  const queue = targets.filter((source) => force || !sourceResult(source.name));
+  const queue = targets.filter((source) => force || !sourceResult(source));
   let cursor = 0;
   const worker = async () => {
     while (cursor < queue.length) {
@@ -344,41 +406,61 @@ const loadSources = async (force = false, targets = props.sources) => {
       await loadSource(source, force);
     }
   };
-  await Promise.all(Array.from({ length: Math.min(4, Math.max(1, queue.length)) }, () => worker()));
+  await Promise.all(
+    Array.from(
+      { length: Math.min(4, Math.max(1, queue.length)) },
+      () => worker(),
+    ),
+  );
 };
 
-const sourceEntries = (sourceName) => {
-  const result = sourceResult(sourceName);
+const sourceEntries = (source) => {
+  const sourceName = source.name;
+  const result = sourceResult(source);
   const data = Array.isArray(result?.data) ? result.data : [];
   const query = queryText.value;
   let rank = 1;
   return data
     .filter((item) => {
       if (store.showPinnedRankings) return true;
-      return !normalizeRankingBadges(item?.badges).some((badge) => badge.kind === 'pinned');
+      return !normalizeRankingBadges(item?.badges).some(
+        (badge) => badge.kind === "pinned",
+      );
     })
     .map((item) => {
-      const title = stripText(item?.title || item?.originalTitle || '');
-      const description = stripText(item?.desc || item?.originalDesc || '');
+      const title = stripText(item?.title || item?.originalTitle || "");
+      const description = stripText(item?.desc || item?.originalDesc || "");
       const entry = {
-        key: `${sourceName}:${item?.id || item?.url || item?.mobileUrl || title}:${rank}`,
+        key: `${sourceInstanceKey(source)}:${item?.id || item?.url || item?.mobileUrl || title}:${rank}`,
         rank: rank++,
         title,
         description,
-        hot: stripText(item?.hot || ''),
-        author: stripText(item?.author || ''),
+        hot: stripText(item?.hot || ""),
+        author: stripText(item?.author || ""),
         rankingMeta: getRankingItemMeta(item, locale.value, {
-          variant: result?.variant || sourceSubtype(sourceName),
+          variant: result?.variant || sourceSubtype(source),
         }),
-        cover: item?.cover || '',
-        href: item?.url || item?.mobileUrl || '',
-        suffixBadges: normalizeRankingBadges(item?.badges, 3).filter((badge) => badge.placement !== 'prefix'),
-        sourceLabel: getSourceDisplayLabel(sourceName, locale.value, result?.title || sourceName),
+        cover: item?.cover || "",
+        href: item?.url || item?.mobileUrl || "",
+        suffixBadges: normalizeRankingBadges(item?.badges, 3).filter(
+          (badge) => badge.placement !== "prefix",
+        ),
+        sourceLabel: getSourceDisplayLabel(
+          sourceName,
+          locale.value,
+          result?.title || sourceName,
+        ),
       };
       return entry;
     })
     .filter((entry) => entry.title && entry.href)
-    .filter((entry) => !query || [entry.title, entry.description, entry.hot, entry.author].some((value) => value.toLowerCase().includes(query)))
+    .filter(
+      (entry) =>
+        !query ||
+        [entry.title, entry.description, entry.hot, entry.author].some(
+          (value) => value.toLowerCase().includes(query),
+        ),
+    )
     .slice(0, 15);
 };
 
@@ -386,25 +468,26 @@ const syncActiveSource = () => {
   scrollFrame = 0;
   if (!orderedSources.value.length) return;
   const anchor = Math.max(120, Math.min(window.innerHeight * 0.28, 240));
-  let candidate = orderedSources.value[0]?.name || '';
+  let candidate = sourceInstanceKey(orderedSources.value[0]);
   let bestDistance = Number.POSITIVE_INFINITY;
   for (const source of orderedSources.value) {
-    const el = sectionRefs.get(source.name);
+    const key = sourceInstanceKey(source);
+    const el = sectionRefs.get(key);
     if (!el) continue;
     const rect = el.getBoundingClientRect();
     if (rect.bottom < anchor) {
-      candidate = source.name;
+      candidate = key;
       continue;
     }
     const distance = Math.abs(rect.top - anchor);
     if (rect.top <= anchor && rect.bottom >= anchor) {
-      candidate = source.name;
+      candidate = key;
       bestDistance = -1;
       break;
     }
     if (bestDistance !== -1 && distance < bestDistance) {
       bestDistance = distance;
-      candidate = source.name;
+      candidate = key;
     }
   }
   activeSource.value = candidate;
@@ -413,39 +496,53 @@ const queueActiveSync = () => {
   if (scrollFrame) return;
   scrollFrame = window.requestAnimationFrame(syncActiveSource);
 };
-const scrollToSource = (sourceName) => {
-  const el = sectionRefs.get(sourceName);
+const scrollToSource = (source) => {
+  const key = sourceInstanceKey(source);
+  const el = sectionRefs.get(key);
   if (!el) return;
-  activeSource.value = sourceName;
+  activeSource.value = key;
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-watch(() => props.sources.map((source) => source.name).join('|'), () => {
-  orderedSources.value = props.sources.slice();
-  if (!props.sources.some((source) => source.name === activeSource.value)) {
-    activeSource.value = props.sources[0]?.name || '';
-  }
-  for (const source of props.sources) {
-    const runtimeKey = sourceRuntimeKey(source.name);
-    if (!sourceStates[runtimeKey]) sourceStates[runtimeKey] = 'idle';
-  }
-  void loadSources(false, props.sources.slice(0, INITIAL_SOURCE_LOAD_COUNT));
-  nextTick(() => {
-    for (const el of sectionRefs.values()) sourceLoadObserver?.observe(el);
-    queueActiveSync();
-  });
-}, { immediate: true });
+watch(
+  () => props.sources.map((source) => sourceInstanceKey(source)).join("|"),
+  () => {
+    orderedSources.value = props.sources.slice();
+    if (
+      !props.sources.some(
+        (source) => sourceInstanceKey(source) === activeSource.value,
+      )
+    ) {
+      activeSource.value = props.sources[0]
+        ? sourceInstanceKey(props.sources[0])
+        : "";
+    }
+    for (const source of props.sources) {
+      const runtimeKey = sourceRuntimeKey(source);
+      if (!sourceStates[runtimeKey]) sourceStates[runtimeKey] = "idle";
+    }
+    void loadSources(false, props.sources.slice(0, INITIAL_SOURCE_LOAD_COUNT));
+    nextTick(() => {
+      for (const el of sectionRefs.values()) sourceLoadObserver?.observe(el);
+      queueActiveSync();
+    });
+  },
+  { immediate: true },
+);
 watch(() => catalogRevision.value, () => {
   for (const source of props.sources) {
-    const runtimeKey = sourceRuntimeKey(source.name);
-    if (!sourceStates[runtimeKey]) sourceStates[runtimeKey] = 'idle';
+    const runtimeKey = sourceRuntimeKey(source);
+    if (!sourceStates[runtimeKey]) sourceStates[runtimeKey] = "idle";
   }
   void loadSources(false, props.sources.slice(0, INITIAL_SOURCE_LOAD_COUNT));
 });
 
 const handleRefresh = () => {
-  const loaded = props.sources.filter((source) => sourceResult(source.name));
-  void loadSources(true, loaded.length ? loaded : props.sources.slice(0, INITIAL_SOURCE_LOAD_COUNT));
+  const loaded = props.sources.filter((source) => sourceResult(source));
+  void loadSources(
+    true,
+    loaded.length ? loaded : props.sources.slice(0, INITIAL_SOURCE_LOAD_COUNT),
+  );
 };
 onMounted(() => {
   scrollHost = rootEl.value?.closest?.('.n-scrollbar-container') || window;
@@ -454,8 +551,10 @@ onMounted(() => {
     sourceLoadObserver = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        const sourceName = entry.target?.dataset?.source;
-        const source = props.sources.find((item) => item.name === sourceName);
+        const sourceKey = entry.target?.dataset?.source;
+        const source = props.sources.find(
+          (item) => sourceInstanceKey(item) === sourceKey,
+        );
         if (source) void loadSource(source);
       }
     }, {

@@ -436,26 +436,30 @@ const SOURCE_SUBTYPE_GROUPS = {
   ],
   miyoushe: [
     {
-      key: "news",
-      label: "动态",
+      key: "ranking",
+      label: "游戏动态",
       items: [
-        { label: "公告", value: "1" },
-        { label: "活动", value: "2" },
-        { label: "资讯", value: "3" },
-      ],
-    },
-    {
-      key: "game",
-      label: "游戏",
-      param: "game",
-      items: [
-        { label: "崩坏3", value: "game-honkai", apiValue: "1" },
-        { label: "原神", value: "game-genshin", apiValue: "2" },
-        { label: "崩坏学园2", value: "game-houkai2", apiValue: "3" },
-        { label: "未定事件簿", value: "game-tears-of-themis", apiValue: "4" },
-        { label: "大别野", value: "game-villa", apiValue: "5" },
-        { label: "崩坏：星穹铁道", value: "game-starrail", apiValue: "6" },
-        { label: "绝区零", value: "game-zenless", apiValue: "8" },
+        { label: "崩坏3 · 公告", value: "bh3-notice", apiParams: { game: "1", type: "1" } },
+        { label: "崩坏3 · 活动", value: "bh3-event", apiParams: { game: "1", type: "2" } },
+        { label: "崩坏3 · 资讯", value: "bh3-news", apiParams: { game: "1", type: "3" } },
+        { label: "原神 · 公告", value: "genshin-notice", apiParams: { game: "2", type: "1" } },
+        { label: "原神 · 活动", value: "genshin-event", apiParams: { game: "2", type: "2" } },
+        { label: "原神 · 资讯", value: "genshin-news", apiParams: { game: "2", type: "3" } },
+        { label: "崩坏学园2 · 公告", value: "houkai2-notice", apiParams: { game: "3", type: "1" } },
+        { label: "崩坏学园2 · 活动", value: "houkai2-event", apiParams: { game: "3", type: "2" } },
+        { label: "崩坏学园2 · 资讯", value: "houkai2-news", apiParams: { game: "3", type: "3" } },
+        { label: "未定事件簿 · 公告", value: "tot-notice", apiParams: { game: "4", type: "1" } },
+        { label: "未定事件簿 · 活动", value: "tot-event", apiParams: { game: "4", type: "2" } },
+        { label: "未定事件簿 · 资讯", value: "tot-news", apiParams: { game: "4", type: "3" } },
+        { label: "大别野 · 公告", value: "villa-notice", apiParams: { game: "5", type: "1" } },
+        { label: "大别野 · 活动", value: "villa-event", apiParams: { game: "5", type: "2" } },
+        { label: "大别野 · 资讯", value: "villa-news", apiParams: { game: "5", type: "3" } },
+        { label: "星穹铁道 · 公告", value: "starrail-notice", apiParams: { game: "6", type: "1" } },
+        { label: "星穹铁道 · 活动", value: "starrail-event", apiParams: { game: "6", type: "2" } },
+        { label: "星穹铁道 · 资讯", value: "starrail-news", apiParams: { game: "6", type: "3" } },
+        { label: "绝区零 · 公告", value: "zzz-notice", apiParams: { game: "8", type: "1" } },
+        { label: "绝区零 · 活动", value: "zzz-event", apiParams: { game: "8", type: "2" } },
+        { label: "绝区零 · 资讯", value: "zzz-news", apiParams: { game: "8", type: "3" } },
       ],
     },
   ],
@@ -1147,6 +1151,55 @@ export const shouldCanonicalizeDefaultSubtype = (sourceName) =>
   !AGGREGATE_SUBTYPE_SOURCES.includes(sourceName) &&
   Boolean(getDefaultSourceSubtype(sourceName));
 
+const LEGACY_SOURCE_PROJECTION_ALIASES = {
+  genshin: {
+    sourceName: "miyoushe",
+    defaultVariant: "genshin-notice",
+    variants: {
+      "1": "genshin-notice",
+      notice: "genshin-notice",
+      "2": "genshin-event",
+      event: "genshin-event",
+      "3": "genshin-news",
+      news: "genshin-news",
+    },
+  },
+  starrail: {
+    sourceName: "miyoushe",
+    defaultVariant: "starrail-notice",
+    variants: {
+      "1": "starrail-notice",
+      notice: "starrail-notice",
+      "2": "starrail-event",
+      event: "starrail-event",
+      "3": "starrail-news",
+      news: "starrail-news",
+    },
+  },
+  honkai: {
+    sourceName: "miyoushe",
+    defaultVariant: "bh3-notice",
+    variants: {
+      "1": "bh3-notice",
+      notice: "bh3-notice",
+      "2": "bh3-event",
+      event: "bh3-event",
+      "3": "bh3-news",
+      news: "bh3-news",
+    },
+  },
+};
+
+export const resolveLegacySourceProjection = (sourceName, variant = "") => {
+  const alias = LEGACY_SOURCE_PROJECTION_ALIASES[String(sourceName || "")];
+  if (!alias) return null;
+  const requested = String(variant || "").trim();
+  return {
+    sourceName: alias.sourceName,
+    variant: alias.variants[requested] || alias.defaultVariant,
+  };
+};
+
 export const getSourceSubtypeStorageKey = (sourceName) =>
   `${STORAGE_PREFIX}${sourceName}`;
 
@@ -1186,5 +1239,8 @@ export const buildSourceSubtypeParams = (sourceName, subtype) => {
     (item.items || []).some((option) => option.value === resolved)
   );
   const option = (group?.items || []).find((item) => item.value === resolved);
+  if (option?.apiParams && typeof option.apiParams === "object") {
+    return { ...option.apiParams };
+  }
   return { [group?.param || "type"]: option?.apiValue || resolved };
 };

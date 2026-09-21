@@ -650,28 +650,7 @@ export const mainStore = defineStore("mainData", {
           order: 28,
           show: true,
           category: "游戏",
-        },
-        {
-          label: "原神",
-          name: "genshin",
-          order: 29,
-          show: true,
-          category: "游戏",
-        },
-        {
-          label: "崩坏：星穹铁道",
-          name: "starrail",
-          order: 30,
-          show: true,
-          category: "游戏",
-        },
-        {
-          label: "崩坏3",
-          name: "honkai",
-          coverPresentationMode: "landscape-uniform",
-          order: 31,
-          show: true,
-          category: "游戏",
+          categoryIds: ["games"],
         },
         {
           label: "LOL",
@@ -1474,6 +1453,8 @@ export const mainStore = defineStore("mainData", {
         },
       ],
       newsArr: [],
+      // 用户提升为独立卡片/列表的 source + variant 投影实例。
+      promotedRankings: [],
       // 链接跳转方式
       linkOpenType: "open",
       // 页头固定
@@ -1785,6 +1766,11 @@ export const mainStore = defineStore("mainData", {
         "hf-models",
         "hf-papers",
       ]);
+      normalized = mergeGroup(normalized, "miyoushe", [
+        "genshin",
+        "starrail",
+        "honkai",
+      ]);
       return normalized;
     },
     addCategory(name, parentId = null) {
@@ -1973,6 +1959,50 @@ export const mainStore = defineStore("mainData", {
     setActiveCategory(name) {
       this.activeCategory = name;
     },
+    promoteRanking(sourceName, variant, label = "") {
+      const source = String(sourceName || "").trim();
+      const normalizedVariant = String(variant || "").trim();
+      if (!source || !normalizedVariant) return false;
+      const id = `${source}::${normalizedVariant}`;
+      if ((this.promotedRankings || []).some((item) => item?.id === id)) return false;
+      const base =
+        this.newsArr.find((item) => item?.name === source) ||
+        this.defaultNewsArr.find((item) => item?.name === source);
+      if (!base) return false;
+      this.promotedRankings = [
+        ...(this.promotedRankings || []),
+        {
+          id,
+          sourceName: source,
+          variant: normalizedVariant,
+          label: String(label || "").trim(),
+          order: (this.promotedRankings || []).length,
+        },
+      ];
+      return true;
+    },
+    removePromotedRanking(id) {
+      const key = String(id || "");
+      if (!key) return false;
+      const before = (this.promotedRankings || []).length;
+      this.promotedRankings = (this.promotedRankings || []).filter(
+        (item) => item?.id !== key,
+      );
+      return this.promotedRankings.length !== before;
+    },
+    reorderPromotedRankings(orderedIds = []) {
+      const positions = new Map(
+        orderedIds.map((id, index) => [String(id), index]),
+      );
+      this.promotedRankings = (this.promotedRankings || [])
+        .slice()
+        .sort(
+          (left, right) =>
+            (positions.get(String(left?.id)) ?? Number.MAX_SAFE_INTEGER) -
+            (positions.get(String(right?.id)) ?? Number.MAX_SAFE_INTEGER),
+        )
+        .map((item, order) => ({ ...item, order }));
+    },
     reorderVisibleNews(orderedNames = [], scopedNames = orderedNames) {
       const scopedSet = new Set(scopedNames.filter(Boolean));
       const orderedItems = orderedNames
@@ -2118,6 +2148,7 @@ export const mainStore = defineStore("mainData", {
         "siteTheme",
         "siteThemeAuto",
         "newsArr",
+        "promotedRankings",
         "linkOpenType",
         "headerFixed",
         "compactMode",
