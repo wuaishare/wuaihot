@@ -58,6 +58,7 @@ const SOURCE_LOGO_MAP = {
   "china-film-boxoffice": "/logo/platforms/china-film-boxoffice.ico",
   "fanqie-books": "/logo/platforms/fanqie-books.png",
   "hongguo-rank": "/logo/platforms/hongguo-rank.png",
+  "hotbook-discovery": "/logo/platforms/hotbook-discovery.png",
   "iqiyi-rank": "/logo/platforms/iqiyi-rank.ico",
   "jjwxc-books": "/logo/platforms/jjwxc-books.png",
   "qidian-books": "/logo/platforms/qidian-books.png",

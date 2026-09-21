@@ -37,6 +37,7 @@ const TRENDS_SOURCE_PRESENTATION = {
   "bilibili-live": { category: "生活", categoryIds: ["life"], order: 16.5 },
   "bilibili-manga": { category: "生活", categoryIds: ["life"], order: 16.6 },
   "kuaikan-comics": { category: "生活", categoryIds: ["life"], order: 16.7 },
+  "hotbook-discovery": { category: "生活", categoryIds: ["life"], order: 17.0 },
   "qidian-books": { category: "生活", categoryIds: ["life"], order: 17.1 },
   "fanqie-books": { category: "生活", categoryIds: ["life"], order: 17.2 },
   "qimao-books": { category: "生活", categoryIds: ["life"], order: 17.3 },
