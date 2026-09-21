@@ -1,6 +1,10 @@
 import { defineStore } from "pinia";
 import { BUILTIN_CATEGORIES as SITE_BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
 import { GAME_DEAL_SOURCE_IDS } from "@/config/topics";
+import {
+  SOURCE_CATEGORY_PROJECTIONS,
+  getProjectedSourceCategoryIds,
+} from "@/config/taxonomy-v3";
 import { filterReadableTrendsCatalogManagedSources, getTrendsCatalogSources } from "@/utils/sourceSubtypes";
 import {
   MAX_CATEGORY_DEPTH,
@@ -185,6 +189,8 @@ const BUILTIN_CATEGORY_MIGRATIONS = {
 };
 
 const LEGACY_BUILTIN_CATEGORY_ALIASES = {
+  wool: "life-deals",
+  "羊毛": "life-deals",
   media: "entertainment",
   "影音娱乐": "entertainment",
   "media-music": "entertainment-music",
@@ -1611,7 +1617,18 @@ export const mainStore = defineStore("mainData", {
     },
     ensureCategoriesForNews(list) {
       const categories = this.categories || BUILTIN_CATEGORIES;
-      return list.map((item) => syncLegacyPrimaryCategory(item, categories));
+      return list.map((item) => {
+        const projectedCategoryIds =
+          !item?.categoryIdsCustomized && SOURCE_CATEGORY_PROJECTIONS[item?.name]
+            ? getProjectedSourceCategoryIds(item.name)
+            : null;
+        return syncLegacyPrimaryCategory(
+          projectedCategoryIds?.length
+            ? { ...item, categoryIds: projectedCategoryIds }
+            : item,
+          categories,
+        );
+      });
     },
     mergeNewsWithDefaults(list) {
       list = this.normalizeLegacySources(list);

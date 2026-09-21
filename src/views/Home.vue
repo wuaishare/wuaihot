@@ -128,6 +128,7 @@ import {
   GAME_DEALS_TOPIC_METADATA,
   WOOL_TOPIC_METADATA,
 } from "@/config/site-metadata.mjs";
+import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
 import { sourceBelongsToCategory } from "@/utils/categoryTree";
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
 import { getSourceLogo } from "@/utils/sourceLogos";
@@ -164,23 +165,51 @@ const renderNews = computed(() => {
       cardKey: `source:${item.name}`,
     }));
   const baseByName = new Map(baseSources.map((item) => [item.name, item]));
+  const variantProjectionByKey = new Map(
+    VARIANT_CATEGORY_PROJECTIONS.map((item) => [
+      `${item.sourceName}::${item.variant}`,
+      item,
+    ]),
+  );
+  const systemProjected = VARIANT_CATEGORY_PROJECTIONS.map((projection, index) => {
+    const base = baseByName.get(projection.sourceName);
+    if (!base) return null;
+    return {
+      ...base,
+      categoryIds: projection.categoryIds.slice(),
+      order: Number(base.order || 0) + 0.0001 * (index + 1),
+      cardKey: `system-projection:${projection.id}`,
+      projectionInstanceId: `system:${projection.id}`,
+      projectionVariant: projection.variant,
+      projectionLabel: projection.label,
+      projectionRemovable: false,
+      systemProjection: true,
+    };
+  }).filter(Boolean);
   const promoted = (store.promotedRankings || [])
     .slice()
     .sort((left, right) => Number(left?.order || 0) - Number(right?.order || 0))
     .map((projection, index) => {
       const base = baseByName.get(projection?.sourceName);
       if (!base) return null;
+      const taxonomyProjection = variantProjectionByKey.get(
+        `${projection.sourceName}::${projection.variant}`,
+      );
       return {
         ...base,
+        ...(taxonomyProjection?.categoryIds?.length
+          ? { categoryIds: taxonomyProjection.categoryIds.slice() }
+          : {}),
         order: Number(base.order || 0) + 0.001 * (index + 1),
         cardKey: `projection:${projection.id}`,
         projectionInstanceId: projection.id,
         projectionVariant: projection.variant,
         projectionLabel: projection.label,
+        projectionRemovable: true,
       };
     })
     .filter(Boolean);
-  return [...baseSources, ...promoted].sort(
+  return [...baseSources, ...systemProjected, ...promoted].sort(
     (left, right) => Number(left.order || 0) - Number(right.order || 0),
   );
 });
@@ -308,14 +337,17 @@ const woolTopicPath = computed(() =>
 );
 const scopedNews = computed(() => {
   let scoped = renderNews.value;
-  if (forcedCategoryName.value) {
+  const targetCategory =
+    forcedCategoryName.value ||
+    (store.categoryEnabled && store.activeCategory !== "全部"
+      ? store.activeCategory
+      : "");
+  if (targetCategory) {
     scoped = scoped.filter((item) =>
-      sourceBelongsToCategory(item, forcedCategoryName.value, store.categories),
+      sourceBelongsToCategory(item, targetCategory, store.categories),
     );
-  } else if (store.categoryEnabled && store.activeCategory !== "全部") {
-    scoped = scoped.filter((item) =>
-      sourceBelongsToCategory(item, store.activeCategory, store.categories),
-    );
+  } else {
+    scoped = scoped.filter((item) => !item.systemProjection);
   }
   return scoped;
 });

@@ -129,6 +129,7 @@ export const getCategorySlugByName = (
 };
 
 const LEGACY_CATEGORY_SLUG_ALIASES = {
+  wool: "deals",
   media: "entertainment",
   "music-audio": "music",
   "books-comics": "reading",

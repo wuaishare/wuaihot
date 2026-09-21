@@ -136,10 +136,28 @@ try {
   assert.equal(store.categories.some((item) => String(item.id).startsWith("media")), false);
 
   const taxonomy = JSON.parse(
-    fs.readFileSync("docs/engineering/hotlist-taxonomy-v2-tree.json", "utf8"),
+    fs.readFileSync("docs/engineering/hotlist-taxonomy-v3-tree.json", "utf8"),
   );
+  assert.equal(taxonomy.version, 3);
   assert.equal(taxonomy.status, "production-canonical");
   assert.equal(taxonomy.maxDepth, 3);
+  assert.equal(store.categories.some((item) => item.id === "wool"), false);
+  assert.equal(
+    store.categories.find((item) => item.id === "general")?.navigation,
+    false,
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "life-deals")?.parentId,
+    "life",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "sports-general")?.parentId,
+    "sports",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "tech-developer-security")?.parentId,
+    "tech-developer",
+  );
   const taxonomyEntertainment = taxonomy.nodes
     .filter((item) => String(item.id).startsWith("entertainment"))
     .map(({ id, name, parentId = null }) => ({ id, name, parentId }))
@@ -178,8 +196,34 @@ try {
     store.newsArr.find((item) => item.name === "hotbook-discovery")?.categoryIds,
     ["entertainment-reading-books"],
   );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "smzdm")?.categoryIds,
+    ["life-deals"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "miyoushe")?.categoryIds,
+    ["games-community"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "v2ex")?.categoryIds,
+    ["community-tech", "tech-developer"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "qq-news")?.categoryIds,
+    ["news-domestic"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "nytimes")?.categoryIds,
+    ["news-world"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "douban-movie")?.categoryIds,
+    ["entertainment-video-movie"],
+  );
+  assert.equal(getCanonicalCategorySlug("wool"), "deals");
+  assert.equal(getCategoryNameBySlug("wool"), "优惠省钱");
 
-  console.log("[category-integrity] persisted categories reconcile and entertainment taxonomy stays canonical");
+  console.log("[category-integrity] taxonomy v3 migration, source projections and canonical tree verified");
 } finally {
   await vite.close();
 }
