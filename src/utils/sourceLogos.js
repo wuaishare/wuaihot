@@ -34,6 +34,7 @@ const SOURCE_LOGO_MAP = {
   "bilibili-game-rankings": "/logo/bilibili.png",
   "bilibili-live": "/logo/bilibili.png",
   "bilibili-manga": "/logo/bilibili.png",
+  "apple-music": "/logo/platforms/apple-music.png",
   "qq-music": "/logo/qq_music_toplist.png",
   "netease-music": "/logo/netease_music_toplist.png",
   "lol-top-canyon": "/logo/lol.png",
