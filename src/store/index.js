@@ -30,28 +30,120 @@ const TRENDS_CATEGORY_DEFAULTS = {
 const TRENDS_SOURCE_PRESENTATION = {
   "douyin-live": { category: "综合", categoryIds: ["general"], order: 0.2 },
   "autohome-sales": { category: "生活", categoryIds: ["life"], order: 10.5 },
-  "china-film-boxoffice": { category: "影视综艺", categoryIds: ["media-video"], order: 16.1 },
-  "iqiyi-rank": { category: "影视综艺", categoryIds: ["media-video"], order: 16.2 },
-  "youku-rank": { category: "影视综艺", categoryIds: ["media-video"], order: 16.3 },
-  "hongguo-rank": { category: "影视综艺", categoryIds: ["media-video"], order: 16.4 },
-  "bilibili-live": { category: "影视综艺", categoryIds: ["media-video"], order: 16.5 },
-  "bilibili-manga": { category: "小说漫画", categoryIds: ["media-reading"], order: 16.6 },
-  "kuaikan-comics": { category: "小说漫画", categoryIds: ["media-reading"], order: 16.7 },
-  "hotbook-discovery": { category: "小说漫画", categoryIds: ["media-reading"], order: 17.0 },
-  "qidian-books": { category: "小说漫画", categoryIds: ["media-reading"], order: 17.1 },
-  "fanqie-books": { category: "小说漫画", categoryIds: ["media-reading"], order: 17.2 },
-  "qimao-books": { category: "小说漫画", categoryIds: ["media-reading"], order: 17.3 },
-  "jjwxc-books": { category: "小说漫画", categoryIds: ["media-reading"], order: 17.4 },
-  "apple-music": { category: "音乐音频", categoryIds: ["media-music"], order: 17.45 },
-  "qq-music": { category: "音乐音频", categoryIds: ["media-music"], order: 17.5 },
-  "netease-music": { category: "音乐音频", categoryIds: ["media-music"], order: 17.6 },
-  "kugou-music": { category: "音乐音频", categoryIds: ["media-music"], order: 17.7 },
-  "kuwo-music": { category: "音乐音频", categoryIds: ["media-music"], order: 17.8 },
-  "apple-podcasts": { category: "音乐音频", categoryIds: ["media-music"], order: 17.9 },
-  "ximalaya-rankings": { category: "音乐音频", categoryIds: ["media-music"], order: 17.905 },
-  "qingting-audio": { category: "音乐音频", categoryIds: ["media-music"], order: 17.91 },
-  "maoer-drama": { category: "音乐音频", categoryIds: ["media-music"], order: 17.92 },
-  "lanren-audio": { category: "音乐音频", categoryIds: ["media-music"], order: 17.93 },
+  "china-film-boxoffice": {
+    category: "电影",
+    categoryIds: ["entertainment-video-movie"],
+    order: 16.1,
+  },
+  "iqiyi-rank": {
+    category: "影视",
+    categoryIds: ["entertainment-video"],
+    order: 16.2,
+  },
+  "youku-rank": {
+    category: "影视",
+    categoryIds: ["entertainment-video"],
+    order: 16.3,
+  },
+  "hongguo-rank": {
+    category: "短剧",
+    categoryIds: ["entertainment-video-shortdrama"],
+    order: 16.4,
+  },
+  "bilibili-live": {
+    category: "影视",
+    categoryIds: ["entertainment-video"],
+    order: 16.5,
+  },
+  "bilibili-manga": {
+    category: "漫画",
+    categoryIds: ["entertainment-reading-comics"],
+    order: 16.6,
+  },
+  "kuaikan-comics": {
+    category: "漫画",
+    categoryIds: ["entertainment-reading-comics"],
+    order: 16.7,
+  },
+  "hotbook-discovery": {
+    category: "图书",
+    categoryIds: ["entertainment-reading-books"],
+    order: 17.0,
+  },
+  "qidian-books": {
+    category: "网络小说",
+    categoryIds: ["entertainment-reading-novels"],
+    order: 17.1,
+  },
+  "fanqie-books": {
+    category: "网络小说",
+    categoryIds: ["entertainment-reading-novels"],
+    order: 17.2,
+  },
+  "qimao-books": {
+    category: "网络小说",
+    categoryIds: ["entertainment-reading-novels"],
+    order: 17.3,
+  },
+  "jjwxc-books": {
+    category: "网络小说",
+    categoryIds: ["entertainment-reading-novels"],
+    order: 17.4,
+  },
+  "apple-music": {
+    category: "音乐",
+    categoryIds: [
+      "entertainment-music-songs",
+      "entertainment-music-albums",
+      "entertainment-music-playlists",
+    ],
+    order: 17.45,
+  },
+  "qq-music": {
+    category: "音乐",
+    categoryIds: ["entertainment-music"],
+    order: 17.5,
+  },
+  "netease-music": {
+    category: "音乐",
+    categoryIds: ["entertainment-music"],
+    order: 17.6,
+  },
+  "kugou-music": {
+    category: "音乐",
+    categoryIds: ["entertainment-music"],
+    order: 17.7,
+  },
+  "kuwo-music": {
+    category: "音乐",
+    categoryIds: ["entertainment-music"],
+    order: 17.8,
+  },
+  "apple-podcasts": {
+    category: "播客",
+    categoryIds: ["entertainment-audio-podcasts"],
+    order: 17.9,
+  },
+  "ximalaya-rankings": {
+    category: "音频",
+    categoryIds: ["entertainment-audio"],
+    order: 17.905,
+  },
+  "qingting-audio": {
+    category: "音频",
+    categoryIds: ["entertainment-audio"],
+    order: 17.91,
+  },
+  "maoer-drama": {
+    category: "音频剧",
+    categoryIds: ["entertainment-audio-drama"],
+    order: 17.92,
+  },
+  "lanren-audio": {
+    category: "有声书",
+    categoryIds: ["entertainment-audio-audiobooks"],
+    order: 17.93,
+  },
   "apple-app-store": { category: "科技", categoryIds: ["tech"], order: 22.1 },
   "xiaomi-app-store": { category: "科技", categoryIds: ["tech"], order: 22.2 },
   "yingyongbao-store": { category: "科技", categoryIds: ["tech"], order: 22.3 },
@@ -90,6 +182,19 @@ const trendsCatalogSourceToNewsItem = (source, order) => {
 
 const BUILTIN_CATEGORY_MIGRATIONS = {
   xueqiu: { from: "综合", to: "财经" },
+};
+
+const LEGACY_BUILTIN_CATEGORY_ALIASES = {
+  media: "entertainment",
+  "影音娱乐": "entertainment",
+  "media-music": "entertainment-music",
+  "music-audio": "entertainment-music",
+  "音乐音频": "entertainment-music",
+  "media-video": "entertainment-video",
+  "影视综艺": "entertainment-video",
+  "media-reading": "entertainment-reading",
+  "books-comics": "entertainment-reading",
+  "小说漫画": "entertainment-reading",
 };
 
 const FINANCE_TAXONOMY_SOURCE_IDS = [
@@ -141,7 +246,7 @@ const AI_TAXONOMY_SOURCE_IDS = [
   "qbitai-ai",
 ];
 
-const MEDIA_TAXONOMY_SOURCE_IDS = [
+const ENTERTAINMENT_TAXONOMY_SOURCE_IDS = [
   "china-film-boxoffice",
   "iqiyi-rank",
   "youku-rank",
@@ -168,7 +273,7 @@ const MEDIA_TAXONOMY_SOURCE_IDS = [
 
 const BUILTIN_CATEGORY_ID_RESETS = new Set([
   ...GAME_DEAL_SOURCE_IDS,
-  ...MEDIA_TAXONOMY_SOURCE_IDS,
+  ...ENTERTAINMENT_TAXONOMY_SOURCE_IDS,
   ...FINANCE_TAXONOMY_SOURCE_IDS,
   ...AI_TAXONOMY_SOURCE_IDS,
 ]);
@@ -1439,13 +1544,19 @@ export const mainStore = defineStore("mainData", {
           nameAliases.set(String(item.name), canonical.name);
         }
       };
-      const builtinMatch = (item) =>
-        BUILTIN_CATEGORIES.find(
+      const builtinMatch = (item) => {
+        const legacyBuiltinId = [item?.id, item?.name, item?.slug]
+          .filter(Boolean)
+          .map((ref) => LEGACY_BUILTIN_CATEGORY_ALIASES[String(ref)])
+          .find(Boolean);
+        return BUILTIN_CATEGORIES.find(
           (builtin) =>
             builtin.id === item?.id ||
+            builtin.id === legacyBuiltinId ||
             builtin.name === item?.name ||
             (item?.slug && builtin.slug === item.slug),
         );
+      };
       current.forEach((item) => registerAlias(item, builtinMatch(item)));
       const mergedBuiltin = BUILTIN_CATEGORIES.map((builtin) => {
         const existing = current.find((item) => builtinMatch(item)?.id === builtin.id);

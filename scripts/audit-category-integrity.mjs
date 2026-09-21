@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { createPinia, setActivePinia } from "pinia";
 import { createServer } from "vite";
 
@@ -21,11 +22,14 @@ const vite = await createServer({
 try {
   const { mainStore } = await vite.ssrLoadModule("/src/store/index.js");
   const { applyTrendsSourceCatalog } = await vite.ssrLoadModule("/src/utils/sourceSubtypes.js");
+  const { getCanonicalCategorySlug, getCategoryNameBySlug } = await vite.ssrLoadModule("/src/utils/locale.js");
   applyTrendsSourceCatalog({
     sources: [
       { key: "apple-music", name: "Apple Music", category: "culture", priorityTier: "A", rankingLabel: "热门歌曲排行", defaultVariant: "songs", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "ximalaya-rankings", name: "喜马拉雅排行榜", category: "culture", priorityTier: "A", rankingLabel: "全站 · 热播", defaultVariant: "classic-all-hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "apple-podcasts", name: "Apple Podcasts", category: "culture", priorityTier: "A", rankingLabel: "所有类别 · 热门节目", defaultVariant: "shows", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "china-film-boxoffice", name: "中国电影票房", category: "culture", priorityTier: "A", rankingLabel: "当日实时票房榜", defaultVariant: "realtime", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "hongguo-rank", name: "红果短剧", category: "culture", priorityTier: "A", rankingLabel: "红果热播榜", defaultVariant: "hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "hotbook-discovery", name: "热书发现", category: "culture", priorityTier: "A", rankingLabel: "高校文学借阅榜", defaultVariant: "literature", publicAvailable: false, displayAvailable: true, variantGroups: [] },
     ],
   });
@@ -71,16 +75,110 @@ try {
   assert.equal(store.renameCategory("custom-child", "自定义热点"), false);
   assert.equal(store.categories.find((item) => item.id === "custom-child")?.name, "旧子类");
 
-  assert.equal(store.categories.find((item) => item.id === "media")?.name, "影音娱乐");
-  assert.equal(store.categories.find((item) => item.id === "media-music")?.parentId, "media");
-  assert.equal(store.categories.find((item) => item.id === "media-video")?.parentId, "media");
-  assert.equal(store.categories.find((item) => item.id === "media-reading")?.parentId, "media");
-  assert.deepEqual(store.newsArr.find((item) => item.name === "apple-music")?.categoryIds, ["media-music"]);
-  assert.deepEqual(store.newsArr.find((item) => item.name === "ximalaya-rankings")?.categoryIds, ["media-music"]);
-  assert.deepEqual(store.newsArr.find((item) => item.name === "china-film-boxoffice")?.categoryIds, ["media-video"]);
-  assert.deepEqual(store.newsArr.find((item) => item.name === "hotbook-discovery")?.categoryIds, ["media-reading"]);
+  store.categories = store.categories.filter(
+    (item) => !String(item.id).startsWith("entertainment"),
+  );
+  store.categories.push(
+    { id: "media", name: "影音娱乐", slug: "media", parentId: null, order: 20, builtin: true },
+    { id: "media-music", name: "音乐音频", slug: "music-audio", parentId: "media", order: 21, builtin: true },
+    { id: "media-video", name: "影视综艺", slug: "film-tv", parentId: "media", order: 22, builtin: true },
+    { id: "media-reading", name: "小说漫画", slug: "books-comics", parentId: "media", order: 23, builtin: true },
+  );
+  for (const [sourceName, categoryIds] of [
+    ["apple-music", ["media-music"]],
+    ["ximalaya-rankings", ["media-music"]],
+    ["apple-podcasts", ["media-music"]],
+    ["china-film-boxoffice", ["media-video"]],
+    ["hongguo-rank", ["media-video"]],
+    ["hotbook-discovery", ["media-reading"]],
+  ]) {
+    const item = store.newsArr.find((source) => source.name === sourceName);
+    if (item) item.categoryIds = categoryIds;
+  }
+  store.activeCategory = "影音娱乐";
+  store.categoryViewModes.media = "card";
+  store.ensureNewsList();
 
-  console.log("[category-integrity] persisted categories reconcile and media taxonomy stays canonical");
+  assert.equal(store.activeCategory, "文娱");
+  assert.equal(store.categoryViewModes.entertainment, "card");
+  assert.equal(store.categoryViewModes.media, undefined);
+  assert.equal(store.categories.some((item) => String(item.id).startsWith("media")), false);
+  assert.equal(getCanonicalCategorySlug("media"), "entertainment");
+  assert.equal(getCanonicalCategorySlug("music-audio"), "music");
+  assert.equal(getCanonicalCategorySlug("books-comics"), "reading");
+  assert.equal(getCategoryNameBySlug("media"), "文娱");
+
+  assert.equal(store.categories.find((item) => item.id === "entertainment")?.name, "文娱");
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-music")?.parentId,
+    "entertainment",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-audio")?.parentId,
+    "entertainment",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-video")?.parentId,
+    "entertainment",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-reading")?.parentId,
+    "entertainment",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-audio-podcasts")?.parentId,
+    "entertainment-audio",
+  );
+  assert.equal(
+    store.categories.find((item) => item.id === "entertainment-reading-novels")?.parentId,
+    "entertainment-reading",
+  );
+  assert.equal(store.categories.some((item) => String(item.id).startsWith("media")), false);
+
+  const taxonomy = JSON.parse(
+    fs.readFileSync("docs/engineering/hotlist-taxonomy-v2-tree.json", "utf8"),
+  );
+  assert.equal(taxonomy.maxDepth, 3);
+  const taxonomyEntertainment = taxonomy.nodes
+    .filter((item) => String(item.id).startsWith("entertainment"))
+    .map(({ id, name, parentId = null }) => ({ id, name, parentId }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  const runtimeEntertainment = store.categories
+    .filter((item) => String(item.id).startsWith("entertainment"))
+    .map(({ id, name, parentId = null }) => ({ id, name, parentId }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  assert.deepEqual(runtimeEntertainment, taxonomyEntertainment);
+
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "apple-music")?.categoryIds,
+    [
+      "entertainment-music-songs",
+      "entertainment-music-albums",
+      "entertainment-music-playlists",
+    ],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "ximalaya-rankings")?.categoryIds,
+    ["entertainment-audio"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "apple-podcasts")?.categoryIds,
+    ["entertainment-audio-podcasts"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "china-film-boxoffice")?.categoryIds,
+    ["entertainment-video-movie"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "hongguo-rank")?.categoryIds,
+    ["entertainment-video-shortdrama"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "hotbook-discovery")?.categoryIds,
+    ["entertainment-reading-books"],
+  );
+
+  console.log("[category-integrity] persisted categories reconcile and entertainment taxonomy stays canonical");
 } finally {
   await vite.close();
 }

@@ -128,13 +128,23 @@ export const getCategorySlugByName = (
   return meta?.slug || null;
 };
 
+const LEGACY_CATEGORY_SLUG_ALIASES = {
+  media: "entertainment",
+  "music-audio": "music",
+  "books-comics": "reading",
+};
+
+export const getCanonicalCategorySlug = (slug = "") =>
+  LEGACY_CATEGORY_SLUG_ALIASES[String(slug || "")] || String(slug || "");
+
 export const getCategoryNameBySlug = (
   slug,
   categories = BUILTIN_CATEGORIES,
 ) => {
+  const canonicalSlug = getCanonicalCategorySlug(slug);
   const meta =
-    categories.find((item) => item.slug === slug) ||
-    BUILTIN_CATEGORIES.find((item) => item.slug === slug);
+    categories.find((item) => item.slug === canonicalSlug) ||
+    BUILTIN_CATEGORIES.find((item) => item.slug === canonicalSlug);
   return meta?.name || null;
 };
 
