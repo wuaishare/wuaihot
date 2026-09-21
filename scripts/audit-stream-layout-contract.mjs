@@ -76,6 +76,15 @@ assert.match(home, /store\.compactMode[\s\S]{0,180}store\.homeCompactColumns[\s\
 assert.match(home, /resolveResponsiveCardColumns/);
 assert.match(home, /ResizeObserver/);
 assert.match(home, /repeat\(var\(--home-grid-columns, 1\), minmax\(0, 1fr\)\)/);
+assert.match(home, /class="music-platform-strip"/);
+assert.match(home, /"apple-music"[\s\S]{0,120}"ximalaya-rankings"/);
+assert.match(home, /"qq-music"[\s\S]{0,220}"netease-music"[\s\S]{0,220}"kugou-music"[\s\S]{0,220}"kuwo-music"/);
+assert.match(home, /item\.external \? musicPlatformCopy\.official : musicPlatformCopy\.ranking/);
+assert.match(home, /buildRankPath\([\s\S]{0,120}item\.source[\s\S]{0,100}item\.variant/);
+assert.match(home, /\.music-platform-strip__items[\s\S]{0,220}overflow-x: auto/);
+assert.match(store, /"apple-music": \{ category: "音乐音频", categoryIds: \["media-music"\]/);
+assert.match(store, /"china-film-boxoffice": \{ category: "影视综艺", categoryIds: \["media-video"\]/);
+assert.match(store, /"hotbook-discovery": \{ category: "小说漫画", categoryIds: \["media-reading"\]/);
 assert.doesNotMatch(home, /@media \(min-width: 1100px\)[\s\S]{0,160}--home-grid-columns/);
 assert.equal(resolveResponsiveCardColumns({ width: 1600, requested: 5, compact: true }), 5);
 assert.equal(resolveResponsiveCardColumns({ width: 1200, requested: 5, compact: true }), 4);

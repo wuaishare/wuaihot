@@ -20,6 +20,15 @@ const vite = await createServer({
 
 try {
   const { mainStore } = await vite.ssrLoadModule("/src/store/index.js");
+  const { applyTrendsSourceCatalog } = await vite.ssrLoadModule("/src/utils/sourceSubtypes.js");
+  applyTrendsSourceCatalog({
+    sources: [
+      { key: "apple-music", name: "Apple Music", category: "culture", priorityTier: "A", rankingLabel: "热门歌曲排行", defaultVariant: "songs", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "ximalaya-rankings", name: "喜马拉雅排行榜", category: "culture", priorityTier: "A", rankingLabel: "全站 · 热播", defaultVariant: "classic-all-hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "china-film-boxoffice", name: "中国电影票房", category: "culture", priorityTier: "A", rankingLabel: "当日实时票房榜", defaultVariant: "realtime", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "hotbook-discovery", name: "热书发现", category: "culture", priorityTier: "A", rankingLabel: "高校文学借阅榜", defaultVariant: "literature", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+    ],
+  });
   setActivePinia(createPinia());
   const store = mainStore();
   store.ensureNewsList();
@@ -61,7 +70,17 @@ try {
   });
   assert.equal(store.renameCategory("custom-child", "自定义热点"), false);
   assert.equal(store.categories.find((item) => item.id === "custom-child")?.name, "旧子类");
-  console.log("[category-integrity] persisted duplicate categories and references reconcile safely");
+
+  assert.equal(store.categories.find((item) => item.id === "media")?.name, "影音娱乐");
+  assert.equal(store.categories.find((item) => item.id === "media-music")?.parentId, "media");
+  assert.equal(store.categories.find((item) => item.id === "media-video")?.parentId, "media");
+  assert.equal(store.categories.find((item) => item.id === "media-reading")?.parentId, "media");
+  assert.deepEqual(store.newsArr.find((item) => item.name === "apple-music")?.categoryIds, ["media-music"]);
+  assert.deepEqual(store.newsArr.find((item) => item.name === "ximalaya-rankings")?.categoryIds, ["media-music"]);
+  assert.deepEqual(store.newsArr.find((item) => item.name === "china-film-boxoffice")?.categoryIds, ["media-video"]);
+  assert.deepEqual(store.newsArr.find((item) => item.name === "hotbook-discovery")?.categoryIds, ["media-reading"]);
+
+  console.log("[category-integrity] persisted categories reconcile and media taxonomy stays canonical");
 } finally {
   await vite.close();
 }

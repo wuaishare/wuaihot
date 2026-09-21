@@ -23,6 +23,31 @@
       </div>
       <em>{{ woolTopicCopy.open }} →</em>
     </router-link>
+    <section
+      v-if="showMusicPlatformStrip"
+      class="music-platform-strip"
+      :aria-label="musicPlatformCopy.title"
+    >
+      <div class="music-platform-strip__intro">
+        <strong>{{ musicPlatformCopy.title }}</strong>
+        <span>{{ musicPlatformCopy.description }}</span>
+      </div>
+      <div class="music-platform-strip__items">
+        <component
+          :is="item.external ? 'a' : 'router-link'"
+          v-for="item in musicPlatformLinks"
+          :key="item.source"
+          class="music-platform-strip__item"
+          v-bind="item.external
+            ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' }
+            : { to: item.to }"
+        >
+          <img :src="getSourceLogo(item.source)" :alt="item.label" />
+          <span>{{ item.label }}</span>
+          <em>{{ item.external ? musicPlatformCopy.official : musicPlatformCopy.ranking }}</em>
+        </component>
+      </div>
+    </section>
     <!-- <n-alert type="info" :show-icon="false" style="margin-bottom: 20px">
       站点未完工
     </n-alert> -->
@@ -94,6 +119,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import {
   buildFixedLocalePath,
+  buildRankPath,
   getCategoryNameBySlug,
   getLocaleFromRoute,
   normalizeLocale,
@@ -104,6 +130,7 @@ import {
 } from "@/config/site-metadata.mjs";
 import { sourceBelongsToCategory } from "@/utils/categoryTree";
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
+import { getSourceLogo } from "@/utils/sourceLogos";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
 
 const store = mainStore();
@@ -178,6 +205,69 @@ const sourceMatchesSearch = (item) => {
 };
 const isWoolCategory = computed(() => forcedCategoryName.value === "羊毛");
 const isGamesCategory = computed(() => forcedCategoryName.value === "游戏");
+const MUSIC_PLATFORM_COPY = {
+  "zh-CN": {
+    title: "热门音乐平台",
+    description: "站内优先展示已开放榜单；其余主流平台提供官网直达。",
+    ranking: "榜单",
+    official: "官网",
+  },
+  en: {
+    title: "Popular music platforms",
+    description: "Open ranking sources stay in-site; other major platforms link to their official sites.",
+    ranking: "Rankings",
+    official: "Official",
+  },
+  "zh-TW": {
+    title: "熱門音樂平台",
+    description: "站內優先展示已開放榜單；其他主流平台提供官網直達。",
+    ranking: "榜單",
+    official: "官網",
+  },
+  ja: {
+    title: "人気の音楽プラットフォーム",
+    description: "公開済みランキングはサイト内で表示し、その他は公式サイトへ案内します。",
+    ranking: "ランキング",
+    official: "公式",
+  },
+  ko: {
+    title: "인기 음악 플랫폼",
+    description: "공개 허용된 랭킹은 사이트에서 보고, 그 외 주요 플랫폼은 공식 사이트로 연결합니다.",
+    ranking: "랭킹",
+    official: "공식",
+  },
+};
+
+const MUSIC_PLATFORM_LINKS = [
+  { source: "apple-music", label: "Apple Music", variant: "songs" },
+  { source: "ximalaya-rankings", label: "喜马拉雅", variant: "classic-all-hot" },
+  { source: "qq-music", label: "QQ音乐", href: "https://y.qq.com/" },
+  { source: "netease-music", label: "网易云音乐", href: "https://music.163.com/" },
+  { source: "kugou-music", label: "酷狗音乐", href: "https://www.kugou.com/" },
+  { source: "kuwo-music", label: "酷我音乐", href: "https://www.kuwo.cn/" },
+];
+
+const showMusicPlatformStrip = computed(() =>
+  ["影音娱乐", "音乐音频"].includes(forcedCategoryName.value),
+);
+const musicPlatformCopy = computed(
+  () => MUSIC_PLATFORM_COPY[locale.value] || MUSIC_PLATFORM_COPY["zh-CN"],
+);
+const musicPlatformLinks = computed(() =>
+  MUSIC_PLATFORM_LINKS.map((item) => ({
+    ...item,
+    external: Boolean(item.href),
+    ...(item.href
+      ? {}
+      : {
+          to: buildRankPath(
+            locale.value,
+            item.source,
+            item.variant || "",
+          ),
+        }),
+  })),
+);
 const gameDealsTopicCopy = computed(
   () =>
     GAME_DEALS_TOPIC_METADATA[locale.value] ||
@@ -352,6 +442,77 @@ const reset = () => {
     white-space: nowrap;
   }
 
+  .music-platform-strip {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.72fr) minmax(0, 2.2fr);
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding: 12px 14px;
+    border: 1px solid var(--n-border-color);
+    border-radius: 12px;
+    background: var(--n-color);
+  }
+  .music-platform-strip__intro {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+  }
+  .music-platform-strip__intro strong {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+  .music-platform-strip__intro span {
+    color: var(--n-text-color-3);
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .music-platform-strip__items {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .music-platform-strip__items::-webkit-scrollbar {
+    display: none;
+  }
+  .music-platform-strip__item {
+    display: inline-grid;
+    grid-template-columns: 24px max-content auto;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 5px 8px;
+    border: 1px solid var(--n-border-color);
+    border-radius: 9px;
+    color: var(--n-text-color);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.16s ease, background-color 0.16s ease;
+  }
+  .music-platform-strip__item:hover {
+    border-color: var(--n-primary-color);
+    background: var(--n-action-color);
+  }
+  .music-platform-strip__item img {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: contain;
+  }
+  .music-platform-strip__item span {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .music-platform-strip__item em {
+    color: var(--n-text-color-3);
+    font-size: 10px;
+    font-style: normal;
+  }
+
   .news-grid {
     display: grid;
     grid-template-columns: repeat(var(--home-grid-columns, 1), minmax(0, 1fr));
@@ -379,6 +540,16 @@ const reset = () => {
   .news-card-chosen,
   .news-card-drag {
     cursor: grabbing;
+  }
+}
+
+@media (max-width: 720px) {
+  .home .music-platform-strip {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+  .home .music-platform-strip__items {
+    justify-content: flex-start;
   }
 }
 
