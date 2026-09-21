@@ -138,6 +138,7 @@ try {
   const taxonomy = JSON.parse(
     fs.readFileSync("docs/engineering/hotlist-taxonomy-v2-tree.json", "utf8"),
   );
+  assert.equal(taxonomy.status, "production-canonical");
   assert.equal(taxonomy.maxDepth, 3);
   const taxonomyEntertainment = taxonomy.nodes
     .filter((item) => String(item.id).startsWith("entertainment"))
