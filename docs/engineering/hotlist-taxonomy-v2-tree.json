@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "status": "planning-draft",
+  "status": "production-canonical",
   "maxDepth": 3,
   "uiViews": [
     "all",
