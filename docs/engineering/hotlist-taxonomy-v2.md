@@ -54,7 +54,26 @@
 
 负责回答：**榜单覆盖什么时间？**
 
-统一为：`realtime`、`day`、`week`、`month`、`all_time`。今日/本周/本月不再创建分类节点。## 4. Taxonomy v2：一级分类
+统一为：`realtime`、`day`、`week`、`month`、`all_time`。今日/本周/本月不再创建分类节点。
+
+### 3.5 分类治理规则
+
+分类树是稳定的信息架构，不是来源清单。新增来源或 variant 时必须遵守：
+
+1. **只按内容对象分类**：分类回答“内容是什么”，不回答“来自谁”“为什么上榜”“榜单多久更新”。
+2. **优先落到最深且稳定的节点**：语义单一的来源可落三级；跨多个三级的来源停在最低共同祖先，不为了“看起来细”而制造假精确。
+3. **平台不是分类**：QQ 音乐、网易云、Apple Music、喜马拉雅、起点等永远属于 source/provider 维度。
+4. **榜单类型不是分类**：热榜、新榜、飙升榜、畅销榜、免费榜、付费榜属于 `rankingKind` 或 variant。
+5. **时间窗口不是分类**：实时、日、周、月、年度属于 `period`。
+6. **父节点天然聚合后代**：来源只需记录最准确的 `categoryIds`，无需同时重复写父分类。
+7. **多内容来源允许多个 categoryIds**：例如 Apple Music 同时包含歌曲、专辑、歌单；父级“音乐”自动聚合。
+8. **跨内容 variant 最终应做 variant-level 分类**：在 variant-level projection 完成前，爱奇艺、优酷、喜马拉雅这类混合来源停在二级节点，避免把整个平台误标成某一个三级内容。
+9. **新三级节点必须满足稳定性门槛**：它应是用户长期可理解的内容对象，并至少满足“已有真实来源”或“已确认即将接入多个 variants/来源”；不因单个平台独有栏目创建节点。
+10. **空节点不强制展示**：Built-in taxonomy 可以预留稳定节点，但导航只展示当前存在可读来源的节点。
+11. **分类 ID 一经发布保持稳定**：名称可优化，ID 只通过版本化迁移修改；构建审计必须阻止废弃 ID 回流。
+12. **一级分类保持克制**：除非出现长期独立、来源充足、用户心智明确的新领域，否则优先扩二/三级，不继续增加一级分类。
+
+## 4. Taxonomy v2：一级分类
 
 `全部/综合` 不再是内容分类，而是 UI 聚合视图。建议一级分类固定为 11 个：
 
@@ -144,8 +163,15 @@
 
 - 音乐 `entertainment-music`
   - 歌曲 `entertainment-music-songs`
-  - 歌手/专辑 `entertainment-music-artists`
-- 影音 `entertainment-video`
+  - 专辑 `entertainment-music-albums`
+  - 歌手 `entertainment-music-artists`
+  - 歌单 `entertainment-music-playlists`
+- 音频 `entertainment-audio`
+  - 播客 `entertainment-audio-podcasts`
+  - 有声书 `entertainment-audio-audiobooks`
+  - 音频剧 `entertainment-audio-drama`
+  - 广播电台 `entertainment-audio-radio`
+- 影视 `entertainment-video`
   - 电影 `entertainment-video-movie`
   - 电视剧 `entertainment-video-tv`
   - 综艺 `entertainment-video-variety`
@@ -155,6 +181,17 @@
   - 图书 `entertainment-reading-books`
   - 网络小说 `entertainment-reading-novels`
   - 漫画 `entertainment-reading-comics`
+
+当前来源落点示例：
+
+- Apple Music → 歌曲 + 专辑 + 歌单；
+- QQ 音乐 / 网易云 / 酷狗 / 酷我 → 音乐（只有来源获得 Public Display 准入后才成为站内可读榜单）；
+- Apple Podcasts → 播客；
+- 喜马拉雅 / 蜻蜓 → 音频（二级，避免把混合内容强行塞进单一三级）；
+- 猫耳 → 音频剧；懒人听书 → 有声书；
+- 中国电影票房 → 电影；红果短剧 → 短剧；
+- 爱奇艺 / 优酷 → 影视（二级，等待 variant-level 分类）；
+- 热书发现 → 图书；起点 / 番茄 / 七猫 / 晋江 → 网络小说；快看 / B站漫画 → 漫画。
 
 ### 游戏 `games`
 

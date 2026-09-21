@@ -3,7 +3,9 @@ import routes from "@/router/routes";
 import { applySeoMeta } from "@/utils/seo";
 import { mainStore } from "@/store";
 import {
+  buildCategoryPath,
   buildRankPath,
+  getCanonicalCategorySlug,
   getCategoryNameBySlug,
   getLocaleFromRoute,
   getSourceNameBySlug,
@@ -72,7 +74,19 @@ router.beforeEach((to) => {
       };
     }
   }
-  const categoryName = getCategoryNameBySlug(to.params?.categorySlug);
+  const rawCategorySlug = Array.isArray(to.params?.categorySlug)
+    ? to.params.categorySlug[0]
+    : to.params?.categorySlug;
+  const canonicalCategorySlug = getCanonicalCategorySlug(rawCategorySlug || "");
+  if (rawCategorySlug && canonicalCategorySlug !== rawCategorySlug) {
+    return {
+      path: buildCategoryPath(locale, canonicalCategorySlug),
+      query: to.query,
+      hash: to.hash,
+      replace: true,
+    };
+  }
+  const categoryName = getCategoryNameBySlug(canonicalCategorySlug);
   const store = mainStore();
   if (store?.setActiveCategory) {
     store.setActiveCategory(categoryName || "全部");

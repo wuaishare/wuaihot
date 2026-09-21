@@ -323,13 +323,48 @@
       "parentId": "entertainment-music"
     },
     {
-      "id": "entertainment-music-artists",
-      "name": "歌手/专辑",
+      "id": "entertainment-music-albums",
+      "name": "专辑",
       "parentId": "entertainment-music"
     },
     {
+      "id": "entertainment-music-artists",
+      "name": "歌手",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-music-playlists",
+      "name": "歌单",
+      "parentId": "entertainment-music"
+    },
+    {
+      "id": "entertainment-audio",
+      "name": "音频",
+      "parentId": "entertainment"
+    },
+    {
+      "id": "entertainment-audio-podcasts",
+      "name": "播客",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-audiobooks",
+      "name": "有声书",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-drama",
+      "name": "音频剧",
+      "parentId": "entertainment-audio"
+    },
+    {
+      "id": "entertainment-audio-radio",
+      "name": "广播电台",
+      "parentId": "entertainment-audio"
+    },
+    {
       "id": "entertainment-video",
-      "name": "影音",
+      "name": "影视",
       "parentId": "entertainment"
     },
     {

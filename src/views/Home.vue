@@ -208,47 +208,46 @@ const isGamesCategory = computed(() => forcedCategoryName.value === "游戏");
 const MUSIC_PLATFORM_COPY = {
   "zh-CN": {
     title: "热门音乐平台",
-    description: "站内优先展示已开放榜单；其余主流平台提供官网直达。",
-    ranking: "榜单",
-    official: "官网",
+    description: "站内展示已准入榜单；其余主流平台直达官方排行榜。",
+    ranking: "站内榜单",
+    official: "官方榜单",
   },
   en: {
     title: "Popular music platforms",
-    description: "Open ranking sources stay in-site; other major platforms link to their official sites.",
-    ranking: "Rankings",
-    official: "Official",
+    description: "Admitted rankings stay in-site; other major platforms link to their official chart pages.",
+    ranking: "On-site",
+    official: "Official charts",
   },
   "zh-TW": {
     title: "熱門音樂平台",
-    description: "站內優先展示已開放榜單；其他主流平台提供官網直達。",
-    ranking: "榜單",
-    official: "官網",
+    description: "站內展示已准入榜單；其他主流平台直達官方排行榜。",
+    ranking: "站內榜單",
+    official: "官方榜單",
   },
   ja: {
     title: "人気の音楽プラットフォーム",
-    description: "公開済みランキングはサイト内で表示し、その他は公式サイトへ案内します。",
-    ranking: "ランキング",
-    official: "公式",
+    description: "公開対象のランキングはサイト内で表示し、その他は公式ランキングへ案内します。",
+    ranking: "サイト内",
+    official: "公式ランキング",
   },
   ko: {
     title: "인기 음악 플랫폼",
-    description: "공개 허용된 랭킹은 사이트에서 보고, 그 외 주요 플랫폼은 공식 사이트로 연결합니다.",
-    ranking: "랭킹",
-    official: "공식",
+    description: "공개 허용된 랭킹은 사이트에서 보고, 그 외 주요 플랫폼은 공식 차트로 연결합니다.",
+    ranking: "사이트 내",
+    official: "공식 차트",
   },
 };
 
 const MUSIC_PLATFORM_LINKS = [
   { source: "apple-music", label: "Apple Music", variant: "songs" },
-  { source: "ximalaya-rankings", label: "喜马拉雅", variant: "classic-all-hot" },
-  { source: "qq-music", label: "QQ音乐", href: "https://y.qq.com/" },
-  { source: "netease-music", label: "网易云音乐", href: "https://music.163.com/" },
-  { source: "kugou-music", label: "酷狗音乐", href: "https://www.kugou.com/" },
-  { source: "kuwo-music", label: "酷我音乐", href: "https://www.kuwo.cn/" },
+  { source: "qq-music", label: "QQ音乐", href: "https://y.qq.com/n/ryqq_v2/toplist/62" },
+  { source: "netease-music", label: "网易云音乐", href: "https://music.163.com/discover/toplist?id=19723756" },
+  { source: "kugou-music", label: "酷狗音乐", href: "https://www.kugou.com/yy/rank/home/1-6666.html" },
+  { source: "kuwo-music", label: "酷我音乐", href: "https://m.kuwo.cn/newh5app/ranklist_detail/16" },
 ];
 
 const showMusicPlatformStrip = computed(() =>
-  ["影音娱乐", "音乐音频"].includes(forcedCategoryName.value),
+  ["文娱", "音乐"].includes(forcedCategoryName.value),
 );
 const musicPlatformCopy = computed(
   () => MUSIC_PLATFORM_COPY[locale.value] || MUSIC_PLATFORM_COPY["zh-CN"],
