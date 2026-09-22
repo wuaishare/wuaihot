@@ -36,6 +36,16 @@ try {
   setActivePinia(createPinia());
   const store = mainStore();
   store.ensureNewsList();
+  assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-wool"), false);
+  assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-pet-wool"), false);
+  const legacyDoubanMigrated = store.dedupeNewsList([
+    ...store.newsArr,
+    { name: "douban-wool", label: "豆瓣羊毛", show: true, order: 51.9, subtype: "buy" },
+    { name: "douban-pet-wool", label: "豆瓣宠物羊毛", show: true, order: 51.95, subtype: "catlife" },
+  ]);
+  assert.equal(legacyDoubanMigrated.filter((item) => item.name === "douban-group").length, 1);
+  assert.equal(legacyDoubanMigrated.some((item) => item.name === "douban-wool"), false);
+  assert.equal(legacyDoubanMigrated.some((item) => item.name === "douban-pet-wool"), false);
   store.categories.push(
     { id: "old-general-v0", name: "综合旧版", slug: "general", parentId: null, order: 0.25, builtin: false },
     { id: "custom-topic-a", name: "自定义热点", slug: "custom-hot", parentId: null, order: 98, builtin: false },

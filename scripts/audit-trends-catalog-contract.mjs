@@ -14,6 +14,7 @@ import {
   hasTrendsPublicCatalogSource,
   getSourceSubtypeControlGroups,
   getSourceVariantOption,
+  resolveLegacySourceProjection,
   resolveTrendsCatalogVariant,
   subscribeTrendsSourceCatalog,
 } from "../src/utils/sourceSubtypes.js";
@@ -183,6 +184,22 @@ assert.equal(resolveTrendsCatalogVariant("xiaohongshu", { type: "hot" }), "hot")
 assert.equal(resolveTrendsCatalogVariant("xiaohongshu", { type: "read-3d" }), null);
 assert.equal(canFallbackTrendsCatalogVariant("xiaohongshu", "hot"), true);
 assert.equal(canFallbackTrendsCatalogVariant("xiaohongshu", "read-3d"), false);
+assert.deepEqual(resolveLegacySourceProjection("douban-wool", "buy"), {
+  sourceName: "douban-group",
+  variant: "buy",
+});
+assert.deepEqual(resolveLegacySourceProjection("douban-wool", "groupbuy"), {
+  sourceName: "douban-group",
+  variant: "groupbuy",
+});
+assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", "dog"), {
+  sourceName: "douban-group",
+  variant: "dog",
+});
+assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", ""), {
+  sourceName: "douban-group",
+  variant: "catlife",
+});
 
 const pgyCatalog = structuredClone(catalog);
 const pgyXiaohongshu = pgyCatalog.sources.find((source) => source.key === "xiaohongshu");

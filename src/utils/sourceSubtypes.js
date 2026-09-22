@@ -1152,6 +1152,23 @@ export const shouldCanonicalizeDefaultSubtype = (sourceName) =>
   Boolean(getDefaultSourceSubtype(sourceName));
 
 const LEGACY_SOURCE_PROJECTION_ALIASES = {
+  "douban-wool": {
+    sourceName: "douban-group",
+    defaultVariant: "buy",
+    variants: {
+      buy: "buy",
+      groupbuy: "groupbuy",
+    },
+  },
+  "douban-pet-wool": {
+    sourceName: "douban-group",
+    defaultVariant: "catlife",
+    variants: {
+      catlife: "catlife",
+      bathtub: "bathtub",
+      dog: "dog",
+    },
+  },
   genshin: {
     sourceName: "miyoushe",
     defaultVariant: "genshin-notice",
