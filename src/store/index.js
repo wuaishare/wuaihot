@@ -5,7 +5,11 @@ import {
   SOURCE_CATEGORY_PROJECTIONS,
   getProjectedSourceCategoryIds,
 } from "@/config/taxonomy-v3";
-import { filterReadableTrendsCatalogManagedSources, getTrendsCatalogSources } from "@/utils/sourceSubtypes";
+import {
+  filterReadableTrendsCatalogManagedSources,
+  getTrendsCatalogSources,
+  resolveLegacySourceProjection,
+} from "@/utils/sourceSubtypes";
 import {
   MAX_CATEGORY_DEPTH,
   canMoveCategory,
@@ -165,6 +169,11 @@ const TRENDS_SOURCE_PRESENTATION = {
   "pconline-rankings": { category: "科技", categoryIds: ["tech"], order: 35.4 },
   "ludashi-rankings": { category: "科技", categoryIds: ["tech"], order: 35.5 },
   "bilibili-ai-arena": { category: "AI", categoryIds: ["ai-models"], order: 62.1 },
+  steam: {
+    category: "游戏",
+    categoryIds: ["games-deals", "life-deals"],
+    order: 52.1,
+  },
   "sonkwo-deals": {
     category: "游戏",
     categoryIds: ["games-deals", "life-deals"],
@@ -839,15 +848,6 @@ export const mainStore = defineStore("mainData", {
           show: true,
           category: "游戏",
           categoryIds: ["games"],
-        },
-        {
-          label: "Steam 特惠",
-          name: "steam-deals",
-          order: 52.1,
-          show: true,
-          category: "游戏",
-          categoryIds: ["games"],
-          subtype: "featured",
         },
         {
           label: "Epic 免费游戏",
@@ -1775,6 +1775,7 @@ export const mainStore = defineStore("mainData", {
         "starrail",
         "honkai",
       ]);
+      normalized = mergeGroup(normalized, "steam", ["steam-deals"]);
       normalized = mergeGroup(normalized, "douban-group", [
         "douban-wool",
         "douban-pet-wool",
@@ -2087,7 +2088,12 @@ export const mainStore = defineStore("mainData", {
       );
       const adoptCatalogAuthority = (items = []) =>
         items.map((item) => {
-          const source = catalogByKey.get(String(item?.name || ""));
+          const legacyProjection = resolveLegacySourceProjection(
+            String(item?.name || ""),
+            String(item?.subtype || ""),
+          );
+          const sourceKey = legacyProjection?.sourceName || String(item?.name || "");
+          const source = catalogByKey.get(sourceKey);
           if (!source) return item;
           return {
             ...item,
