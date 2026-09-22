@@ -58,6 +58,11 @@ const recentTrendsFrontendSources = [
   "youku-rank",
   "lol-top-canyon",
   "modeldial-radar",
+  "epic-free-games",
+  "gog-deals",
+  "sonkwo-deals",
+  "xiaoheihe-deals",
+  "qbitai-ai",
 ];
 
 const catalog = {
@@ -200,6 +205,12 @@ assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", ""), {
   sourceName: "douban-group",
   variant: "catlife",
 });
+assert.deepEqual(
+  getSourceSubtypeGroups("sonkwo-deals").flatMap((group) =>
+    group.items.map((item) => item.value),
+  ),
+  ["popular", "lowest", "newlowest", "discount90", "under10", "under30", "sales"],
+);
 
 const pgyCatalog = structuredClone(catalog);
 const pgyXiaohongshu = pgyCatalog.sources.find((source) => source.key === "xiaohongshu");

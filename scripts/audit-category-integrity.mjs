@@ -31,11 +31,19 @@ try {
       { key: "china-film-boxoffice", name: "中国电影票房", category: "culture", priorityTier: "A", rankingLabel: "当日实时票房榜", defaultVariant: "realtime", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "hongguo-rank", name: "红果短剧", category: "culture", priorityTier: "A", rankingLabel: "红果热播榜", defaultVariant: "hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "hotbook-discovery", name: "热书发现", category: "culture", priorityTier: "A", rankingLabel: "高校文学借阅榜", defaultVariant: "literature", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "sonkwo-deals", name: "杉果", category: "culture", priorityTier: "A", rankingLabel: "热门优惠", defaultVariant: "popular", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "ggdeals", name: "GG.deals", category: "culture", priorityTier: "B", rankingLabel: "免费游戏", defaultVariant: "freebies", publicAvailable: false, displayAvailable: false, variantGroups: [] },
     ],
   });
   setActivePinia(createPinia());
   const store = mainStore();
   store.ensureNewsList();
+  assert.equal(
+    store.defaultNewsArr.some((item) => item.name === "ggdeals"),
+    false,
+    "Directory-known sources without Public/Display admission must not bypass Catalog through static defaults",
+  );
+  assert.equal(store.newsArr.some((item) => item.name === "ggdeals"), false);
   assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-wool"), false);
   assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-pet-wool"), false);
   const legacyDoubanMigrated = store.dedupeNewsList([
@@ -209,6 +217,10 @@ try {
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "smzdm")?.categoryIds,
     ["life-deals"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "sonkwo-deals")?.categoryIds,
+    ["games-deals", "life-deals"],
   );
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "miyoushe")?.categoryIds,

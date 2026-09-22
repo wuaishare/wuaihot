@@ -165,6 +165,11 @@ const TRENDS_SOURCE_PRESENTATION = {
   "pconline-rankings": { category: "科技", categoryIds: ["tech"], order: 35.4 },
   "ludashi-rankings": { category: "科技", categoryIds: ["tech"], order: 35.5 },
   "bilibili-ai-arena": { category: "AI", categoryIds: ["ai-models"], order: 62.1 },
+  "sonkwo-deals": {
+    category: "游戏",
+    categoryIds: ["games-deals", "life-deals"],
+    order: 52.6,
+  },
 };
 
 const trendsCatalogSourceToNewsItem = (source, order) => {
@@ -2077,8 +2082,26 @@ export const mainStore = defineStore("mainData", {
     syncTrendsCatalogSources() {
       const catalogSources = getTrendsCatalogSources();
       if (!catalogSources.length) return 0;
-      this.defaultNewsArr = filterReadableTrendsCatalogManagedSources(this.defaultNewsArr);
-      this.newsArr = filterReadableTrendsCatalogManagedSources(this.newsArr);
+      const catalogByKey = new Map(
+        catalogSources.map((source) => [String(source?.key || ""), source]),
+      );
+      const adoptCatalogAuthority = (items = []) =>
+        items.map((item) => {
+          const source = catalogByKey.get(String(item?.name || ""));
+          if (!source) return item;
+          return {
+            ...item,
+            catalogManaged: true,
+            publicAvailable: Boolean(source.publicAvailable),
+            displayAvailable: Boolean(source.displayAvailable),
+          };
+        });
+      this.defaultNewsArr = filterReadableTrendsCatalogManagedSources(
+        adoptCatalogAuthority(this.defaultNewsArr),
+      );
+      this.newsArr = filterReadableTrendsCatalogManagedSources(
+        adoptCatalogAuthority(this.newsArr),
+      );
       const candidates = catalogSources.filter(
         (source) =>
           (source.publicAvailable || source.displayAvailable) &&

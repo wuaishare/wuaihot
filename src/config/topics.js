@@ -7,6 +7,7 @@ export const GAME_DEAL_SOURCE_IDS = [
   "xiaoheihe-deals",
   "ggdeals",
   "gog-deals",
+  "sonkwo-deals",
 ];
 
 export const TOPIC_REGISTRY = [

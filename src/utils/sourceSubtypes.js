@@ -230,6 +230,21 @@ const SOURCE_SUBTYPE_GROUPS = {
       ],
     },
   ],
+  "sonkwo-deals": [
+    {
+      key: "feed",
+      label: "",
+      items: [
+        { label: "热门优惠", value: "popular" },
+        { label: "史低游戏", value: "lowest" },
+        { label: "超史低", value: "newlowest" },
+        { label: "90%+ 超低折扣", value: "discount90" },
+        { label: "10 元以内", value: "under10" },
+        { label: "30 元以内", value: "under30" },
+        { label: "销量榜", value: "sales" },
+      ],
+    },
+  ],
   smzdm: [
     {
       key: "period",

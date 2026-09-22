@@ -36,6 +36,7 @@ const requiredSources = [
   // High-value media/platform entries that must keep usable local brand assets
   // even when their ranking data is not admitted to Public Display.
   "qq-music",
+  "sonkwo-deals",
   "netease-music",
   "kugou-music",
   "kuwo-music",

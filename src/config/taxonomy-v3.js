@@ -97,6 +97,7 @@ export const SOURCE_CATEGORY_PROJECTIONS = {
   "xiaoheihe-deals": ["games-deals", "life-deals"],
   ggdeals: ["games-deals", "life-deals"],
   "gog-deals": ["games-deals", "life-deals"],
+  "sonkwo-deals": ["games-deals", "life-deals"],
 
   // 生活与优惠：“羊毛”不再作为一级领域，统一落到生活 → 优惠省钱。
   "super-deals": single("life-deals"),
