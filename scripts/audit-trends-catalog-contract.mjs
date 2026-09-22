@@ -459,6 +459,28 @@ assert.match(listViewSource, /changeType\(fallbackSource\.name, true\)/, "remove
 assert.match(listViewSource, /const navigate = replace \? router\.replace : router\.push/, "source navigation must support replace semantics for stale routes");
 assert.match(listViewSource, /if \(!ensureRouteSourceExists\(\)\) return;\s*getHotListsData\(listType\.value\)/, "initial rank mount must validate the route source before loading data");
 assert.match(catalogLoaderSource, /DISPLAY_API/, "frontend catalog loader must consume the Public Display catalog");
-assert.match(catalogLoaderSource, /publicAvailable/, "frontend catalog loader must preserve Public Feed admission separately from directory discovery");
-assert.match(catalogLoaderSource, /displayAvailable/, "frontend catalog loader must preserve Public Display admission separately from Public Feed");
+assert.match(
+  catalogLoaderSource,
+  /mergeDirectoryAndReadCatalogs/,
+  "frontend catalog loader must delegate surface-aware source merging to the shared helper",
+);
+const surfaceMergeSource = fs.readFileSync(
+  new URL("../src/utils/trendsCatalogSurfaceMerge.mjs", import.meta.url).pathname,
+  "utf8",
+);
+assert.match(
+  surfaceMergeSource,
+  /publicAvailable/,
+  "surface merge helper must preserve Public Feed admission separately from directory discovery",
+);
+assert.match(
+  surfaceMergeSource,
+  /displayAvailable/,
+  "surface merge helper must preserve Public Display admission separately from Public Feed",
+);
+assert.match(
+  surfaceMergeSource,
+  /cachedSources/,
+  "surface merge helper must preserve the last readable surface subset when a read catalog is temporarily unavailable",
+);
 console.log(`[trends-catalog-contract] ${subtypeConsumers.length} runtime UI consumers use the reactive catalog revision contract`);
