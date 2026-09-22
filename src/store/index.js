@@ -169,7 +169,7 @@ const TRENDS_SOURCE_PRESENTATION = {
   "pconline-rankings": { category: "科技", categoryIds: ["tech"], order: 35.4 },
   "ludashi-rankings": { category: "科技", categoryIds: ["tech"], order: 35.5 },
   "bilibili-ai-arena": { category: "AI", categoryIds: ["ai-models"], order: 62.1 },
-  steam: {
+  "steam": {
     category: "游戏",
     categoryIds: ["games-deals", "life-deals"],
     order: 52.1,
