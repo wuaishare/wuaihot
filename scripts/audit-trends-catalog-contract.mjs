@@ -59,6 +59,7 @@ const recentTrendsFrontendSources = [
   "youku-rank",
   "lol-top-canyon",
   "modeldial-radar",
+  "steam",
   "epic-free-games",
   "gog-deals",
   "sonkwo-deals",
@@ -205,6 +206,14 @@ assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", "dog"), {
 assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", ""), {
   sourceName: "douban-group",
   variant: "catlife",
+});
+assert.deepEqual(resolveLegacySourceProjection("steam-deals", "discount90"), {
+  sourceName: "steam",
+  variant: "discount90",
+});
+assert.deepEqual(resolveLegacySourceProjection("steam-deals", ""), {
+  sourceName: "steam",
+  variant: "featured",
 });
 assert.deepEqual(
   getSourceSubtypeGroups("sonkwo-deals").flatMap((group) =>
