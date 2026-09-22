@@ -1,4 +1,5 @@
 import { applyTrendsSourceCatalog } from "@/utils/sourceSubtypes";
+import { mergeDirectoryAndReadCatalogs } from "@/utils/trendsCatalogSurfaceMerge.mjs";
 
 const CACHE_KEY = "dailyhot:trends-source-catalog:v3";
 const STALE_MS = 24 * 60 * 60 * 1000;
@@ -61,54 +62,6 @@ const fetchJsonCatalog = async (url) => {
   }
 };
 
-const cachedSurfaceKeys = (surface) =>
-  new Set(
-    (cachedCatalog()?.catalog?.sources || [])
-      .filter((source) => source?.[surface] === true)
-      .map((source) => source.key),
-  );
-
-const mergeCatalogSources = (publicCatalog, displayCatalog) => {
-  const sources = new Map();
-  for (const catalog of [displayCatalog, publicCatalog]) {
-    for (const source of catalog?.sources || []) {
-      if (source?.key) {
-        sources.set(source.key, {
-          ...(sources.get(source.key) || {}),
-          ...source,
-        });
-      }
-    }
-  }
-  return [...sources.values()];
-};
-
-const mergeDirectoryAndReadCatalogs = (
-  directoryCatalog,
-  publicCatalog,
-  displayCatalog,
-) => {
-  const baseCatalog = directoryCatalog || publicCatalog || displayCatalog;
-  if (!baseCatalog) return null;
-  const publicKeys = publicCatalog
-    ? new Set(publicCatalog.sources.map((source) => source.key))
-    : cachedSurfaceKeys("publicAvailable");
-  const displayKeys = displayCatalog
-    ? new Set(displayCatalog.sources.map((source) => source.key))
-    : cachedSurfaceKeys("displayAvailable");
-  const sources =
-    directoryCatalog?.sources ||
-    mergeCatalogSources(publicCatalog, displayCatalog);
-  return {
-    ...baseCatalog,
-    sources: sources.map((source) => ({
-      ...source,
-      publicAvailable: publicKeys.has(source.key),
-      displayAvailable: displayKeys.has(source.key),
-    })),
-  };
-};
-
 const fetchCatalog = async () => {
   if (!PUBLIC_API && !DISPLAY_API && !DIRECTORY_API) return null;
   const [directoryResult, publicResult, displayResult] = await Promise.allSettled([
@@ -122,11 +75,12 @@ const fetchCatalog = async () => {
     publicResult.status === "fulfilled" ? publicResult.value : null;
   const displayCatalog =
     displayResult.status === "fulfilled" ? displayResult.value : null;
-  const catalog = mergeDirectoryAndReadCatalogs(
+  const catalog = mergeDirectoryAndReadCatalogs({
     directoryCatalog,
     publicCatalog,
     displayCatalog,
-  );
+    cachedCatalog: cachedCatalog()?.catalog || null,
+  });
   if (!catalog) {
     throw (
       directoryResult.reason ||
