@@ -1230,23 +1230,45 @@ export const resolveLegacySourceProjection = (sourceName, variant = "") => {
   };
 };
 
+const LEGACY_SOURCE_SUBTYPE_STORAGE_ALIASES = {
+  steam: ["steam-deals"],
+};
+
 export const getSourceSubtypeStorageKey = (sourceName) =>
   `${STORAGE_PREFIX}${sourceName}`;
 
 export const readSourceSubtype = (sourceName) => {
   if (!sourceName || typeof localStorage === "undefined") return null;
-  const stored = localStorage.getItem(getSourceSubtypeStorageKey(sourceName));
-  return normalizeValue(stored);
+  const stored = normalizeValue(
+    localStorage.getItem(getSourceSubtypeStorageKey(sourceName)),
+  );
+  if (stored) return stored;
+
+  for (const legacySourceName of LEGACY_SOURCE_SUBTYPE_STORAGE_ALIASES[sourceName] || []) {
+    const legacyStored = normalizeValue(
+      localStorage.getItem(getSourceSubtypeStorageKey(legacySourceName)),
+    );
+    if (!legacyStored) continue;
+    return resolveLegacySourceProjection(legacySourceName, legacyStored)?.variant || null;
+  }
+  return null;
 };
 
 export const persistSourceSubtype = (sourceName, subtype) => {
   if (!sourceName || typeof localStorage === "undefined") return;
   const key = getSourceSubtypeStorageKey(sourceName);
+  const legacySourceNames = LEGACY_SOURCE_SUBTYPE_STORAGE_ALIASES[sourceName] || [];
   if (!subtype) {
     localStorage.removeItem(key);
+    legacySourceNames.forEach((legacySourceName) =>
+      localStorage.removeItem(getSourceSubtypeStorageKey(legacySourceName))
+    );
     return;
   }
   localStorage.setItem(key, subtype);
+  legacySourceNames.forEach((legacySourceName) =>
+    localStorage.removeItem(getSourceSubtypeStorageKey(legacySourceName))
+  );
 };
 
 export const resolveSourceSubtype = (options, preferredSubtype) => {
