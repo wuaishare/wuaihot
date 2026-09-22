@@ -102,8 +102,6 @@ export const SOURCE_CATEGORY_PROJECTIONS = {
   "super-deals": single("life-deals"),
   "0818tuan": single("life-deals"),
   "nodeloc-deals": ["life-deals", "community-tech"],
-  "douban-wool": ["life-deals", "community-interest"],
-  "douban-pet-wool": ["life-deals", "life-consumer"],
   smzdm: single("life-deals"),
   "autohome-sales": single("life-auto"),
   weatheralarm: single("life-public"),
