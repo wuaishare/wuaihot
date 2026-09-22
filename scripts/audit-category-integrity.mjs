@@ -23,7 +23,7 @@ try {
   const { mainStore } = await vite.ssrLoadModule("/src/store/index.js");
   const { applyTrendsSourceCatalog } = await vite.ssrLoadModule("/src/utils/sourceSubtypes.js");
   const { getCanonicalCategorySlug, getCategoryNameBySlug } = await vite.ssrLoadModule("/src/utils/locale.js");
-  applyTrendsSourceCatalog({
+  const catalogFixture = {
     sources: [
       { key: "apple-music", name: "Apple Music", category: "culture", priorityTier: "A", rankingLabel: "热门歌曲排行", defaultVariant: "songs", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "ximalaya-rankings", name: "喜马拉雅排行榜", category: "culture", priorityTier: "A", rankingLabel: "全站 · 热播", defaultVariant: "classic-all-hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
@@ -32,9 +32,11 @@ try {
       { key: "hongguo-rank", name: "红果短剧", category: "culture", priorityTier: "A", rankingLabel: "红果热播榜", defaultVariant: "hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "hotbook-discovery", name: "热书发现", category: "culture", priorityTier: "A", rankingLabel: "高校文学借阅榜", defaultVariant: "literature", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "sonkwo-deals", name: "杉果", category: "culture", priorityTier: "A", rankingLabel: "热门优惠", defaultVariant: "popular", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      { key: "steam", name: "Steam", category: "culture", priorityTier: "A", rankingLabel: "全球畅销榜", defaultVariant: "topselling", publicAvailable: false, displayAvailable: false, variantGroups: [] },
       { key: "ggdeals", name: "GG.deals", category: "culture", priorityTier: "B", rankingLabel: "免费游戏", defaultVariant: "freebies", publicAvailable: false, displayAvailable: false, variantGroups: [] },
     ],
-  });
+  };
+  applyTrendsSourceCatalog(catalogFixture);
   setActivePinia(createPinia());
   const store = mainStore();
   store.ensureNewsList();
@@ -44,6 +46,49 @@ try {
     "Directory-known sources without Public/Display admission must not bypass Catalog through static defaults",
   );
   assert.equal(store.newsArr.some((item) => item.name === "ggdeals"), false);
+  store.newsArr.push({
+    name: "steam-deals",
+    label: "Steam 特惠",
+    show: true,
+    order: 52.1,
+    subtype: "featured",
+  });
+  store.syncTrendsCatalogSources();
+  assert.equal(
+    store.newsArr.some((item) => item.name === "steam-deals"),
+    false,
+    "legacy Steam deals must inherit the closed canonical Steam Catalog authority",
+  );
+  assert.equal(store.newsArr.some((item) => item.name === "steam"), false);
+
+  const readableCatalog = structuredClone(catalogFixture);
+  const readableSteam = readableCatalog.sources.find((item) => item.key === "steam");
+  readableSteam.displayAvailable = true;
+  applyTrendsSourceCatalog(readableCatalog);
+  store.syncTrendsCatalogSources();
+  const legacySteamMigrated = store.dedupeNewsList([
+    ...store.newsArr,
+    {
+      name: "steam-deals",
+      label: "Steam 特惠",
+      show: true,
+      order: 52.1,
+      subtype: "featured",
+    },
+  ]);
+  assert.equal(
+    legacySteamMigrated.filter((item) => item.name === "steam").length,
+    1,
+  );
+  assert.equal(
+    legacySteamMigrated.some((item) => item.name === "steam-deals"),
+    false,
+  );
+  assert.deepEqual(
+    legacySteamMigrated.find((item) => item.name === "steam")?.categoryIds,
+    ["games-deals", "life-deals"],
+  );
+  store.newsArr = legacySteamMigrated;
   assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-wool"), false);
   assert.equal(store.defaultNewsArr.some((item) => item.name === "douban-pet-wool"), false);
   const legacyDoubanMigrated = store.dedupeNewsList([
@@ -217,6 +262,10 @@ try {
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "smzdm")?.categoryIds,
     ["life-deals"],
+  );
+  assert.deepEqual(
+    store.newsArr.find((item) => item.name === "steam")?.categoryIds,
+    ["games-deals", "life-deals"],
   );
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "sonkwo-deals")?.categoryIds,
