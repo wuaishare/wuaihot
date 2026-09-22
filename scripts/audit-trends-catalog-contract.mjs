@@ -8,6 +8,9 @@ import {
   filterReadableTrendsCatalogManagedSources,
   getDefaultSourceSubtype,
   getSourceSubtypeGroups,
+  getSourceSubtypeStorageKey,
+  readSourceSubtype,
+  persistSourceSubtype,
   getTrendsCatalogReadSurface,
   getTrendsCatalogSources,
   hasTrendsCatalogSource,
@@ -215,6 +218,20 @@ assert.deepEqual(resolveLegacySourceProjection("steam-deals", ""), {
   sourceName: "steam",
   variant: "featured",
 });
+
+const subtypeStorage = new Map();
+globalThis.localStorage = {
+  getItem: (key) => subtypeStorage.get(key) ?? null,
+  setItem: (key, value) => subtypeStorage.set(key, String(value)),
+  removeItem: (key) => subtypeStorage.delete(key),
+};
+localStorage.setItem(getSourceSubtypeStorageKey("steam-deals"), "discount90");
+assert.equal(readSourceSubtype("steam"), "discount90");
+persistSourceSubtype("steam", "under10");
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam")), "under10");
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam-deals")), null);
+persistSourceSubtype("steam", null);
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam")), null);
 assert.deepEqual(
   getSourceSubtypeGroups("sonkwo-deals").flatMap((group) =>
     group.items.map((item) => item.value),
