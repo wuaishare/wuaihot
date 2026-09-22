@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import assert from "node:assert/strict";
+import { mergeDirectoryAndReadCatalogs } from "../src/utils/trendsCatalogSurfaceMerge.mjs";
 import {
   applyTrendsSourceCatalog,
   canFallbackTrendsCatalogVariant,
@@ -211,6 +212,99 @@ assert.deepEqual(
   ),
   ["popular", "lowest", "newlowest", "discount90", "under10", "under30", "sales"],
 );
+
+const steamDirectoryCatalog = {
+  version: 1,
+  sources: [
+    {
+      key: "steam",
+      name: "Steam",
+      category: "culture",
+      defaultVariant: "topselling",
+      variantSelectorEnabled: true,
+      variantGroups: [
+        {
+          key: "ranking",
+          label: "榜单",
+          options: [
+            { key: "topselling", label: "全球畅销榜" },
+            { key: "mostplayed", label: "在线人数榜" },
+            { key: "steamdeck", label: "Steam Deck 热门榜" },
+          ],
+        },
+        {
+          key: "deals",
+          label: "游戏特惠",
+          options: [
+            { key: "featured", label: "热门特惠" },
+            { key: "discount75", label: "75%+ 高折扣" },
+          ],
+        },
+      ],
+    },
+  ],
+};
+const steamDisplayCatalog = {
+  version: 1,
+  profile: "public-display-v1",
+  sources: [
+    {
+      key: "steam",
+      name: "Steam",
+      category: "culture",
+      defaultVariant: "topselling",
+      variantSelectorEnabled: true,
+      displayStatus: "limited",
+      displayScope: "variant",
+      variantGroups: [
+        {
+          key: "ranking",
+          label: "榜单",
+          options: [
+            { key: "topselling", label: "全球畅销榜", displayStatus: "limited" },
+            { key: "mostplayed", label: "在线人数榜", displayStatus: "limited" },
+            { key: "steamdeck", label: "Steam Deck 热门榜", displayStatus: "limited" },
+          ],
+        },
+      ],
+    },
+  ],
+};
+const surfaceMergedCatalog = mergeDirectoryAndReadCatalogs({
+  directoryCatalog: steamDirectoryCatalog,
+  displayCatalog: steamDisplayCatalog,
+});
+const mergedSteam = surfaceMergedCatalog.sources[0];
+assert.equal(mergedSteam.publicAvailable, false);
+assert.equal(mergedSteam.displayAvailable, true);
+assert.equal(mergedSteam.displayScope, "variant");
+assert.deepEqual(
+  mergedSteam.variantGroups.flatMap((group) => group.options.map((option) => option.key)),
+  ["topselling", "mostplayed", "steamdeck"],
+  "Display variant subset must replace Directory full variants on the active read surface",
+);
+applyTrendsSourceCatalog(surfaceMergedCatalog);
+assert.deepEqual(
+  getSourceSubtypeGroups("steam").flatMap((group) =>
+    group.items.map((item) => item.value),
+  ),
+  ["topselling", "mostplayed", "steamdeck"],
+);
+assert.equal(resolveTrendsCatalogVariant("steam", { type: "featured" }), null);
+
+const staleDisplayMergedCatalog = mergeDirectoryAndReadCatalogs({
+  directoryCatalog: steamDirectoryCatalog,
+  displayCatalog: null,
+  cachedCatalog: surfaceMergedCatalog,
+});
+assert.deepEqual(
+  staleDisplayMergedCatalog.sources[0].variantGroups.flatMap((group) =>
+    group.options.map((option) => option.key),
+  ),
+  ["topselling", "mostplayed", "steamdeck"],
+  "temporary Display catalog failure must reuse the cached readable subset instead of reopening Directory-only variants",
+);
+applyTrendsSourceCatalog(catalog);
 
 const pgyCatalog = structuredClone(catalog);
 const pgyXiaohongshu = pgyCatalog.sources.find((source) => source.key === "xiaohongshu");
