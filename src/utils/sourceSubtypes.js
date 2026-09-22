@@ -169,19 +169,6 @@ const SOURCE_SUBTYPE_GROUPS = {
       ],
     },
   ],
-  "steam-deals": [
-    {
-      key: "feed",
-      label: "",
-      items: [
-        { label: "热门特惠", value: "featured" },
-        { label: "75%+ 高折扣", value: "discount75" },
-        { label: "90%+ 超低折扣", value: "discount90" },
-        { label: "10 元以内", value: "under10" },
-        { label: "30 元以内", value: "under30" },
-      ],
-    },
-  ],
   "epic-free-games": [
     {
       key: "feed",
@@ -1167,6 +1154,17 @@ export const shouldCanonicalizeDefaultSubtype = (sourceName) =>
   Boolean(getDefaultSourceSubtype(sourceName));
 
 const LEGACY_SOURCE_PROJECTION_ALIASES = {
+  "steam-deals": {
+    sourceName: "steam",
+    defaultVariant: "featured",
+    variants: {
+      featured: "featured",
+      discount75: "discount75",
+      discount90: "discount90",
+      under10: "under10",
+      under30: "under30",
+    },
+  },
   "douban-wool": {
     sourceName: "douban-group",
     defaultVariant: "buy",
