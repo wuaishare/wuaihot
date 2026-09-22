@@ -92,7 +92,7 @@ export const SOURCE_CATEGORY_PROJECTIONS = {
   "huya-video-rankings": single("games-ranking"),
   "lol-top-canyon": single("games-esports"),
   "ithome-xijiayi": ["games-deals", "life-deals"],
-  "steam-deals": ["games-deals", "life-deals"],
+  "steam": ["games-deals", "life-deals"],
   "epic-free-games": ["games-deals", "life-deals"],
   "xiaoheihe-deals": ["games-deals", "life-deals"],
   ggdeals: ["games-deals", "life-deals"],

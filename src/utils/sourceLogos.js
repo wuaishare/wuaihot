@@ -6,7 +6,7 @@ const SOURCE_LOGO_MAP = {
   "nodeloc-deals": "/logo/wool/nodeloc.png",
   "douban-wool": "/logo/douban-group.png",
   "douban-pet-wool": "/logo/douban-group.png",
-  "steam-deals": "https://store.steampowered.com/favicon.ico",
+  "steam": "https://store.steampowered.com/favicon.ico",
   "epic-free-games": "/logo/game/epic.ico",
   "xiaoheihe-deals": "/logo/game/xiaoheihe.png",
   ggdeals: "https://gg.deals/favicon.ico",

@@ -2,7 +2,7 @@ import { buildFixedLocalePath, normalizeLocale } from "@/utils/locale";
 
 export const GAME_DEAL_SOURCE_IDS = [
   "ithome-xijiayi",
-  "steam-deals",
+  "steam",
   "epic-free-games",
   "xiaoheihe-deals",
   "ggdeals",

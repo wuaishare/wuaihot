@@ -8,6 +8,9 @@ import {
   filterReadableTrendsCatalogManagedSources,
   getDefaultSourceSubtype,
   getSourceSubtypeGroups,
+  getSourceSubtypeStorageKey,
+  readSourceSubtype,
+  persistSourceSubtype,
   getTrendsCatalogReadSurface,
   getTrendsCatalogSources,
   hasTrendsCatalogSource,
@@ -59,6 +62,7 @@ const recentTrendsFrontendSources = [
   "youku-rank",
   "lol-top-canyon",
   "modeldial-radar",
+  "steam",
   "epic-free-games",
   "gog-deals",
   "sonkwo-deals",
@@ -206,6 +210,28 @@ assert.deepEqual(resolveLegacySourceProjection("douban-pet-wool", ""), {
   sourceName: "douban-group",
   variant: "catlife",
 });
+assert.deepEqual(resolveLegacySourceProjection("steam-deals", "discount90"), {
+  sourceName: "steam",
+  variant: "discount90",
+});
+assert.deepEqual(resolveLegacySourceProjection("steam-deals", ""), {
+  sourceName: "steam",
+  variant: "featured",
+});
+
+const subtypeStorage = new Map();
+globalThis.localStorage = {
+  getItem: (key) => subtypeStorage.get(key) ?? null,
+  setItem: (key, value) => subtypeStorage.set(key, String(value)),
+  removeItem: (key) => subtypeStorage.delete(key),
+};
+localStorage.setItem(getSourceSubtypeStorageKey("steam-deals"), "discount90");
+assert.equal(readSourceSubtype("steam"), "discount90");
+persistSourceSubtype("steam", "under10");
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam")), "under10");
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam-deals")), null);
+persistSourceSubtype("steam", null);
+assert.equal(localStorage.getItem(getSourceSubtypeStorageKey("steam")), null);
 assert.deepEqual(
   getSourceSubtypeGroups("sonkwo-deals").flatMap((group) =>
     group.items.map((item) => item.value),
@@ -448,6 +474,36 @@ for (const sourceKey of recentTrendsFrontendSources) {
 assert.match(storeSource, /syncTrendsCatalogSources\(\)/, "main store must merge newly admitted catalog sources");
 assert.match(storeSource, /priorityTier === ["']A["'] \|\| source\.priorityTier === ["']B["']/, "catalog auto-discovery must stay limited to Tier A/B sources");
 const apiSource = fs.readFileSync(new URL("../src/api/index.js", import.meta.url).pathname, "utf8");
+const topicsSource = fs.readFileSync(new URL("../src/config/topics.js", import.meta.url).pathname, "utf8");
+const taxonomySource = fs.readFileSync(new URL("../src/config/taxonomy-v3.js", import.meta.url).pathname, "utf8");
+const directPublicApiBlock = apiSource.match(
+  /const DIRECT_PUBLIC_API_SOURCES = new Set\(\[([\s\S]*?)\]\);/,
+)?.[1] || "";
+assert.doesNotMatch(
+  storeSource,
+  /name:\s*"steam-deals"/,
+  "legacy steam-deals must not return as a standalone default source",
+);
+assert.doesNotMatch(
+  directPublicApiBlock,
+  /"steam-deals"/,
+  "legacy steam-deals must not bypass canonical Steam through the direct API allowlist",
+);
+assert.match(
+  topicsSource,
+  /GAME_DEAL_SOURCE_IDS[\s\S]*?"steam"/,
+  "game deals topic must consume canonical Steam",
+);
+assert.doesNotMatch(
+  topicsSource.match(/GAME_DEAL_SOURCE_IDS = \[([\s\S]*?)\];/)?.[1] || "",
+  /"steam-deals"/,
+  "game deals topic must not contain the legacy Steam source",
+);
+assert.match(
+  taxonomySource,
+  /"steam":\s*\["games-deals",\s*"life-deals"\]/,
+  "canonical Steam must project to game deals and life deals",
+);
 assert.match(apiSource, /getTrendsCatalogReadSurface\(type\)/, "catalog-managed sources must resolve an explicit readable surface");
 assert.match(apiSource, /readSurface === "display"/, "Display-only reads must fail closed instead of falling back to legacy full-data endpoints");
 assert.match(apiSource, /TRENDS_DISPLAY_API/, "frontend ranking transport must support the bounded Public Display API");
