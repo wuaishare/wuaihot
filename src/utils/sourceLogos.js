@@ -11,6 +11,7 @@ const SOURCE_LOGO_MAP = {
   "xiaoheihe-deals": "/logo/game/xiaoheihe.png",
   ggdeals: "https://gg.deals/favicon.ico",
   "gog-deals": "/logo/game/gog.ico",
+  "sonkwo-deals": "/logo/game/sonkwo.ico",
   cls: "https://cdnjs.cls.cn/www/20200601/image/favicon.ico",
   "eastmoney-flash": "https://www.eastmoney.com/favicon.ico",
   jin10: "https://www.jin10.com/favicon.ico",
