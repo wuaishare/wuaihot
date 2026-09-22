@@ -28,7 +28,6 @@ const DIRECT_PUBLIC_API_SOURCES = new Set([
   "0818tuan",
   "nodeloc-deals",
   "ithome-xijiayi",
-  "steam-deals",
   "epic-free-games",
   "xiaoheihe-deals",
   "ggdeals",
