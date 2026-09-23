@@ -100,11 +100,7 @@ const TRENDS_SOURCE_PRESENTATION = {
   },
   "apple-music": {
     category: "音乐",
-    categoryIds: [
-      "entertainment-music-songs",
-      "entertainment-music-albums",
-      "entertainment-music-playlists",
-    ],
+    categoryIds: ["entertainment-music"],
     order: 17.45,
   },
   "qq-music": {
