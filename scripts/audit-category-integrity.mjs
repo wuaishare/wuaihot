@@ -241,6 +241,7 @@ try {
       (item) => item.sourceName === sourceName && item.variant === variant,
     )?.categoryIds || [];
   for (const [sourceName, variant, categoryId] of [
+    ["hongguo-rank", "hot-comic-drama", "entertainment-video-animation"],
     ["apple-music", "songs", "entertainment-music-songs"],
     ["apple-music", "albums", "entertainment-music-albums"],
     ["apple-music", "playlists", "entertainment-music-playlists"],

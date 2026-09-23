@@ -132,6 +132,7 @@ export const VARIANT_CATEGORY_PROJECTIONS = [
   { id: "douyin-entertainment", sourceName: "douyin", variant: "entertainment", label: "娱乐榜", categoryIds: ["entertainment"] },
   { id: "douyin-society", sourceName: "douyin", variant: "society", label: "社会榜", categoryIds: ["news-domestic"] },
   { id: "bilibili-music", sourceName: "bilibili", variant: "music", label: "全站音乐榜", categoryIds: ["entertainment-music-songs"] },
+  { id: "hongguo-comic-drama", sourceName: "hongguo-rank", variant: "hot-comic-drama", label: "漫剧热播榜", categoryIds: ["entertainment-video-animation"] },
 
   // 高需求垂类：把已经由 Trends Display Catalog 放行的跨领域 variants
   // 投影到用户实际寻找它们的音乐 / 小说 / 游戏分类，不改变来源本身的主归属。
