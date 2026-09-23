@@ -22,6 +22,7 @@ const vite = await createServer({
 try {
   const { mainStore } = await vite.ssrLoadModule("/src/store/index.js");
   const { applyTrendsSourceCatalog } = await vite.ssrLoadModule("/src/utils/sourceSubtypes.js");
+  const { VARIANT_CATEGORY_PROJECTIONS } = await vite.ssrLoadModule("/src/config/taxonomy-v3.js");
   const { getCanonicalCategorySlug, getCategoryNameBySlug } = await vite.ssrLoadModule("/src/utils/locale.js");
   const catalogFixture = {
     sources: [
@@ -233,12 +234,29 @@ try {
 
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "apple-music")?.categoryIds,
-    [
-      "entertainment-music-songs",
-      "entertainment-music-albums",
-      "entertainment-music-playlists",
-    ],
+    ["entertainment-music"],
   );
+  const projectionCategories = (sourceName, variant) =>
+    VARIANT_CATEGORY_PROJECTIONS.find(
+      (item) => item.sourceName === sourceName && item.variant === variant,
+    )?.categoryIds || [];
+  for (const [sourceName, variant, categoryId] of [
+    ["apple-music", "songs", "entertainment-music-songs"],
+    ["apple-music", "albums", "entertainment-music-albums"],
+    ["apple-music", "playlists", "entertainment-music-playlists"],
+    ["ximalaya-rankings", "category-music-hot", "entertainment-music"],
+    ["ximalaya-rankings", "classic-fiction-ticket", "entertainment-reading-novels"],
+    ["apple-podcasts", "fiction-shows", "entertainment-reading-novels"],
+    ["apple-app-store", "games-free", "games-ranking"],
+    ["xiaomi-app-store", "games", "games-ranking"],
+    ["tencent-software-center", "music", "entertainment-music"],
+    ["steam", "topselling", "games-ranking"],
+  ]) {
+    assert.ok(
+      projectionCategories(sourceName, variant).includes(categoryId),
+      `${sourceName}/${variant} must project into ${categoryId}`,
+    );
+  }
   assert.deepEqual(
     store.newsArr.find((item) => item.name === "ximalaya-rankings")?.categoryIds,
     ["entertainment-audio"],

@@ -131,6 +131,7 @@ import {
 import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
 import { sourceBelongsToCategory } from "@/utils/categoryTree";
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
+import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { getSourceLogo } from "@/utils/sourceLogos";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
 
@@ -174,6 +175,15 @@ const renderNews = computed(() => {
   const systemProjected = VARIANT_CATEGORY_PROJECTIONS.map((projection, index) => {
     const base = baseByName.get(projection.sourceName);
     if (!base) return null;
+    const availableVariants = base.catalogManaged
+      ? getSourceVariantOptions(projection.sourceName)
+      : [];
+    if (
+      availableVariants.length &&
+      !availableVariants.some((item) => item.value === projection.variant)
+    ) {
+      return null;
+    }
     return {
       ...base,
       categoryIds: projection.categoryIds.slice(),
@@ -346,6 +356,16 @@ const scopedNews = computed(() => {
     scoped = scoped.filter((item) =>
       sourceBelongsToCategory(item, targetCategory, store.categories),
     );
+    const projectedSourceNames = new Set(
+      scoped
+        .filter((item) => item.systemProjection)
+        .map((item) => item.name),
+    );
+    if (projectedSourceNames.size) {
+      scoped = scoped.filter(
+        (item) => item.systemProjection || !projectedSourceNames.has(item.name),
+      );
+    }
   } else {
     scoped = scoped.filter((item) => !item.systemProjection);
   }
