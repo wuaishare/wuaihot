@@ -247,6 +247,7 @@
                 v-else
                 :style="{ fontSize: store.effectiveListFontSize + 'px' }"
                 class="text"
+                :class="{ 'has-item-author': item.displayAuthor }"
                 :href="getItemLink(item)"
                 :target="linkTarget"
                 rel="noopener noreferrer nofollow"
@@ -267,6 +268,13 @@
                   :translate="item.hasReadableTranslation ? 'no' : undefined"
                 >
                   {{ item.displayTitle }}
+                </span>
+                <span
+                  v-if="item.displayAuthor"
+                  class="item-author"
+                  :title="item.displayAuthor"
+                >
+                  {{ item.displayAuthor }}
                 </span>
                 <RankingBadgeGroup
                   v-if="item.suffixBadges.length"
@@ -521,6 +529,12 @@ const { locale, t } = useI18n({ useScope: "global" });
 const isClient = typeof window !== "undefined";
 const isPrerender =
   isClient && window.__PRERENDER_INJECTED && window.__PRERENDER_INJECTED.prerender;
+const MUSIC_FACTUAL_SOURCE_KEYS = new Set([
+  "qq-music",
+  "netease-music",
+  "kugou-music",
+  "kuwo-music",
+]);
 const coverErrorMap = reactive({});
 const logoSrc = (name) => getSourceLogo(name);
 const errorLogoUrl = getPublicAssetUrl("/ico/icon_error.png");
@@ -734,6 +748,9 @@ const visibleItems = computed(() => {
       originalDesc,
       displayTitle,
       displayDesc,
+      displayAuthor: MUSIC_FACTUAL_SOURCE_KEYS.has(props.hotData.name)
+        ? String(item?.author || "").trim()
+        : "",
       rankingBadges,
       prefixBadges,
       inlinePrefixBadges,
@@ -1958,6 +1975,30 @@ onBeforeUnmount(() => {
           overflow: hidden;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
+        }
+
+        &.has-item-author {
+          .title-text {
+            flex: 1 1 auto;
+          }
+
+          .item-author {
+            flex: 0 1 36%;
+            min-width: 0;
+            max-width: 36%;
+            overflow: hidden;
+            color: var(--n-text-color-3);
+            font-size: 0.86em;
+            line-height: 1.35;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            &::before {
+              margin-right: 6px;
+              color: var(--n-text-color-3);
+              content: "·";
+            }
+          }
         }
 
         &.market-quote-link {
