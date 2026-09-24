@@ -795,24 +795,25 @@ async function main() {
     const categoryConfig = categoryConfigBySlug.get(category.slug);
     if (locale === "zh-CN") {
       const meta = categorySeoMap[category.name];
-      if (!meta) return null;
-      const title = buildZhTitle(meta.title, meta.titleTail);
-      const description = meta.description;
-      return {
-        title,
-        description,
-        keywords: mergeKeywords(meta.keywords, category.name, brandNameZh),
-        canonical,
-        htmlLang,
-        alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
-        jsonLd: buildCollectionJsonLd({
+      if (meta) {
+        const title = buildZhTitle(meta.title, meta.titleTail);
+        const description = meta.description;
+        return {
           title,
           description,
+          keywords: mergeKeywords(meta.keywords, category.name, brandNameZh),
           canonical,
           htmlLang,
-          listName: meta.title,
-        }),
-      };
+          alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+          jsonLd: buildCollectionJsonLd({
+            title,
+            description,
+            canonical,
+            htmlLang,
+            listName: meta.title,
+          }),
+        };
+      }
     }
     const localizedCategoryMeta = categoryLocaleSeoMap?.[category.name]?.[locale];
     if (localizedCategoryMeta) {
