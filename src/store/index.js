@@ -2016,8 +2016,7 @@ export const mainStore = defineStore("mainData", {
       return true;
     },
     setCategorySourcesSplit(categoryRef, sourceNames = [], enabled = true) {
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       if (!key) return false;
       const names = [...new Set((Array.isArray(sourceNames) ? sourceNames : []).map(String).filter(Boolean))];
       const current = new Set(this.getCategorySplitSources(categoryRef));
@@ -2040,8 +2039,7 @@ export const mainStore = defineStore("mainData", {
       return Array.isArray(variants) ? variants : [];
     },
     setCategorySplitVariants(categoryRef, sourceName, variants = []) {
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       const source = String(sourceName || "").trim();
       if (!key || !source) return false;
 

@@ -157,10 +157,12 @@ import {
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
+import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
 
 const store = mainStore();
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
+const subtypeCatalogRevision = useTrendsCatalogRevision();
 const enableCardEntrance = ref(true);
 const isCardDragging = ref(false);
 const isSubtypeInteracting = ref(false);
@@ -326,8 +328,9 @@ const normalizeVariantValues = (values = []) =>
     ),
   ];
 
-const allSplitTargets = computed(() =>
-  renderNews.value
+const allSplitTargets = computed(() => {
+  subtypeCatalogRevision.value;
+  return renderNews.value
     .filter((item) => !item.systemProjection && !item.projectionInstanceId)
     .map((item) => {
       const variants = normalizeVariantValues(
@@ -337,8 +340,8 @@ const allSplitTargets = computed(() =>
         ? { sourceName: item.name, variants }
         : null;
     })
-    .filter(Boolean),
-);
+    .filter(Boolean);
+});
 
 const splitSelectionFor = (scopeRef, sourceName, variants = []) => {
   const normalizedVariants = normalizeVariantValues(variants);
@@ -353,6 +356,7 @@ const splitSelectionFor = (scopeRef, sourceName, variants = []) => {
 };
 
 const allScopeNews = computed(() => {
+  subtypeCatalogRevision.value;
   const baseSources = renderNews.value.filter(
     (item) => !item.systemProjection && !item.projectionInstanceId,
   );
