@@ -787,6 +787,9 @@ const currentVariantLabel = computed(() => {
 const sourcePathFor = (source) =>
   buildRankPath(locale.value, source.name, sourceSubtypeFor(source.name) || "");
 
+const DETAIL_REQUEST_TIMEOUT_MS = 6000;
+const DETAIL_FALLBACK_DELAY_MS = 600;
+
 const loadSource = async (source, force = false) => {
   if (!force && sourceResults[source.name]) return;
   const requestVersion = (sourceRequestVersions[source.name] || 0) + 1;
@@ -802,6 +805,8 @@ const loadSource = async (source, force = false) => {
       {
         useApi2,
         forceNoCache: force,
+        timeout: DETAIL_REQUEST_TIMEOUT_MS,
+        fallbackDelay: DETAIL_FALLBACK_DELAY_MS,
       },
     );
     if (sourceRequestVersions[source.name] !== requestVersion) return;
