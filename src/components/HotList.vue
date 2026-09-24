@@ -58,45 +58,16 @@
             {{ cardSubtitle }}
           </n-text>
           <n-skeleton v-else-if="!hotListData" width="60px" text round />
-          <n-button
-            v-if="canToggleCategorySplit"
-            class="category-split-action no-card-drag"
-            text
-            size="tiny"
-            :title="isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource"
-            :aria-label="isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource"
-            @click.stop="toggleCategorySplit"
-          >
-            {{ isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource }}
-          </n-button>
-          <n-button
-            v-if="canPromoteCurrentRanking"
-            class="projection-action no-card-drag"
-            text
-            circle
-            size="tiny"
-            :title="projectionActionCopy.promote"
-            :aria-label="projectionActionCopy.promote"
-            @click.stop="promoteCurrentRanking"
-          >
-            <template #icon>
-              <n-icon :component="Pushpin" />
-            </template>
-          </n-button>
-          <n-button
-            v-else-if="isRemovableProjection"
-            class="projection-action no-card-drag"
-            text
-            circle
-            size="tiny"
-            :title="projectionActionCopy.remove"
-            :aria-label="projectionActionCopy.remove"
-            @click.stop="removeProjectionInstance"
-          >
-            <template #icon>
-              <n-icon :component="CloseOne" />
-            </template>
-          </n-button>
+          <RankingSplitControl
+            v-if="hasCategorySplitControl"
+            class="no-card-drag"
+            :source-name="hotData.name"
+            :category-ref="hotData.categorySplitRef"
+            :variants="categoryAllProjectionVariants"
+            :split-variants="categorySplitVariants"
+            :projection-variant="hotData.categorySplitProjection ? projectionVariant : ''"
+            :show-merge-all="Boolean(hotData.categorySplitPrimary)"
+          />
         </div>
       </div>
     </template>
@@ -474,7 +445,7 @@
 </template>
 
 <script setup>
-import { CloseOne, Drag, Fire, More, Pushpin, Refresh } from "@icon-park/vue-next";
+import { Drag, Fire, More, Refresh } from "@icon-park/vue-next";
 import { getSharedRanking } from "@/utils/rankingCollection";
 import { formatTime } from "@/utils/getTime";
 import {
@@ -492,6 +463,7 @@ import {
 import { normalizeRankingBadges } from "@/utils/rankingBadges";
 import UiGlyph from "@/components/ui/UiGlyph.vue";
 import RankingBadgeGroup from "@/components/RankingBadgeGroup.vue";
+import RankingSplitControl from "@/components/RankingSplitControl.vue";
 import { mainStore } from "@/store";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
@@ -503,7 +475,6 @@ import {
   buildSourceSubtypeParams,
   getDefaultSourceSubtype,
   getSourceSubtypeControlGroups,
-  getSourceVariantOption,
   getSourceVariantOptions,
   persistSourceSubtype,
   readSourceSubtype,
@@ -566,11 +537,6 @@ const props = defineProps({
 });
 const isProjectionInstance = computed(() =>
   Boolean(props.hotData?.projectionInstanceId),
-);
-const isRemovableProjection = computed(
-  () =>
-    isProjectionInstance.value &&
-    props.hotData?.projectionRemovable !== false,
 );
 const projectionVariant = computed(() =>
   String(props.hotData?.projectionVariant || "").trim(),
@@ -839,6 +805,29 @@ const categoryProjectionVariants = computed(() =>
       .filter(Boolean),
   )],
 );
+const categoryAllProjectionVariants = computed(() =>
+  [...new Set(
+    (Array.isArray(props.hotData?.categoryAllProjectionVariants)
+      ? props.hotData.categoryAllProjectionVariants
+      : categoryProjectionVariants.value)
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  )],
+);
+const categorySplitVariants = computed(() =>
+  [...new Set(
+    (Array.isArray(props.hotData?.categorySplitVariants)
+      ? props.hotData.categorySplitVariants
+      : [])
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  )],
+);
+const hasCategorySplitControl = computed(
+  () =>
+    Boolean(props.hotData?.categorySplitRef) &&
+    categoryAllProjectionVariants.value.length > 1,
+);
 const subtypeOptions = computed(() => {
   subtypeCatalogRevision.value;
   const options = getSourceVariantOptions(props.hotData.name);
@@ -861,7 +850,7 @@ const subtypeGroups = computed(() => {
   const allowed = categoryProjectionVariants.value.length
     ? new Set(categoryProjectionVariants.value)
     : null;
-  return localizeSubtypeGroups(
+  const groups = localizeSubtypeGroups(
     getSourceSubtypeControlGroups(props.hotData.name, activeSubType.value),
     locale.value,
   )
@@ -872,59 +861,12 @@ const subtypeGroups = computed(() => {
       ),
     }))
     .filter((group) => (group.items || []).length);
-});
-const activeVariantOption = computed(() =>
-  getSourceVariantOption(props.hotData.name, activeSubType.value),
-);
-const projectionActionCopy = computed(() => {
-  const copies = {
-    "zh-CN": { promote: "独立显示当前榜单", remove: "移除独立榜单", splitSource: "拆分榜单", mergeSource: "合并平台" },
-    "zh-TW": { promote: "獨立顯示目前榜單", remove: "移除獨立榜單", splitSource: "拆分榜單", mergeSource: "合併平台" },
-    en: { promote: "Show as a separate ranking", remove: "Remove separate ranking", splitSource: "Split rankings", mergeSource: "Group platform" },
-    ja: { promote: "このランキングを独立表示", remove: "独立ランキングを削除", splitSource: "ランキングを分割", mergeSource: "プラットフォームを統合" },
-    ko: { promote: "현재 랭킹을 별도로 표시", remove: "별도 랭킹 제거", splitSource: "랭킹 분리", mergeSource: "플랫폼 묶기" },
-  };
-  return copies[locale.value] || copies["zh-CN"];
-});
-const canToggleCategorySplit = computed(() =>
-  Boolean(
-    props.hotData?.categoryProjectionGroup &&
-      props.hotData?.categorySplitRef &&
-      categoryProjectionVariants.value.length > 1,
-  ),
-);
-const isCategorySourceSplit = computed(() =>
-  canToggleCategorySplit.value &&
-  store.isCategorySourceSplit(props.hotData.categorySplitRef, props.hotData.name),
-);
-const toggleCategorySplit = () => {
-  if (!canToggleCategorySplit.value) return;
-  store.setCategorySourceSplit(
-    props.hotData.categorySplitRef,
-    props.hotData.name,
-    !isCategorySourceSplit.value,
+  const itemCount = groups.reduce(
+    (total, group) => total + (group.items || []).length,
+    0,
   );
-};
-const canPromoteCurrentRanking = computed(() => {
-  if (isProjectionInstance.value || !activeSubType.value) return false;
-  if (subtypeOptions.value.length < 2) return false;
-  const id = `${props.hotData.name}::${activeSubType.value}`;
-  return !(store.promotedRankings || []).some((item) => item?.id === id);
+  return itemCount > 1 ? groups : [];
 });
-const promoteCurrentRanking = () => {
-  const label =
-    activeVariantOption.value?.label ||
-    activeVariantOption.value?.value ||
-    activeSubType.value;
-  if (store.promoteRanking(props.hotData.name, activeSubType.value, label)) {
-    $message?.success?.(projectionActionCopy.value.promote);
-  }
-};
-const removeProjectionInstance = () => {
-  if (store.removePromotedRanking(props.hotData?.projectionInstanceId)) {
-    $message?.success?.(projectionActionCopy.value.remove);
-  }
-};
 const variantRuntime = reactive({});
 const runtimeKey = (variant = activeSubType.value) => variant || "__default__";
 const variantRuntimeEntry = (variant = activeSubType.value) =>
@@ -1774,29 +1716,7 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .category-split-action {
-      flex: 0 0 auto;
-      min-height: 24px;
-      padding: 0 7px;
-      color: var(--n-text-color-2);
-      font-size: 11px;
-      white-space: nowrap;
-
-      &:hover {
-        color: var(--n-primary-color);
-      }
-    }
-
-    .projection-action {
-      flex: 0 0 auto;
-      color: var(--n-text-color-2);
-
-      &:hover {
-        color: var(--n-text-color);
-      }
-    }
+    }    }    }
   }
 
   &.is-compact {
