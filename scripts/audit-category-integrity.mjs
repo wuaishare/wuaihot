@@ -368,6 +368,29 @@ try {
     [],
   );
 
+  assert.equal(
+    store.getCategorySplitScopeKey("__all__"),
+    "__all__",
+    "the all-page split scope must stay independent from taxonomy categories",
+  );
+  assert.equal(
+    store.setCategorySplitVariants(
+      "__all__",
+      "apple-music",
+      ["songs", "albums", "playlists"],
+    ),
+    true,
+  );
+  assert.deepEqual(
+    store.getCategorySplitVariants("__all__", "apple-music"),
+    ["songs", "albums", "playlists"],
+  );
+  store.setCategorySplitVariants("__all__", "apple-music", []);
+  assert.deepEqual(
+    store.getCategorySplitVariants("__all__", "apple-music"),
+    [],
+  );
+
   console.log("[category-integrity] taxonomy v3 migration, source projections and canonical tree verified");
 } finally {
   await vite.close();

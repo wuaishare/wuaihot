@@ -97,6 +97,20 @@
             </n-dropdown>
           </template>
         </template>
+
+        <template v-if="showScopeSplitControl">
+          <span class="context-breadcrumb__separator" aria-hidden="true">›</span>
+          <button
+            type="button"
+            class="context-breadcrumb__scope-action"
+            :class="{ 'is-active': allScopeFullySplit }"
+            :title="scopeSplitActionTitle"
+            :aria-label="scopeSplitActionTitle"
+            @click="toggleScopeSplit"
+          >
+            {{ allScopeFullySplit ? copy.mergeAll : copy.splitAll }}
+          </button>
+        </template>
       </div>
 
       <div v-else-if="currentTopic" class="context-breadcrumb">
@@ -249,6 +263,7 @@ import { dropdownSelectionProps } from "@/utils/dropdownSelection";
 import {
   getCategoryByRef,
   getSourceCategoryIds,
+  sourceBelongsToCategory,
 } from "@/utils/categoryTree";
 import {
   buildCategoryPath,
@@ -262,6 +277,7 @@ import {
 import {
   getDefaultSourceSubtype,
   getSourceSubtypeOptions,
+  getSourceVariantOptions,
   readSourceSubtype,
   resolveSourceSubtype,
 } from "@/utils/sourceSubtypes";
@@ -270,6 +286,7 @@ import {
   getSubtypeLabel,
 } from "@/utils/sourceLabels";
 import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
+import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
 import {
   TOPIC_REGISTRY,
   buildTopicPath,
@@ -290,6 +307,9 @@ const COPY = {
     viewMode: "视图",
     cardView: "卡片视图",
     listView: "列表视图",
+    splitDisplay: "榜单显示",
+    splitAll: "全部拆分",
+    mergeAll: "全部合并",
     compactView: "紧凑列表",
     filters: "筛选",
     allSources: "全部来源",
@@ -319,6 +339,9 @@ const COPY = {
     viewMode: "View",
     cardView: "Card view",
     listView: "List view",
+    splitDisplay: "Ranking display",
+    splitAll: "Split all",
+    mergeAll: "Group all",
     compactView: "Compact list",
     filters: "Filter",
     allSources: "All sources",
@@ -348,6 +371,9 @@ const COPY = {
     viewMode: "檢視",
     cardView: "卡片檢視",
     listView: "列表檢視",
+    splitDisplay: "榜單顯示",
+    splitAll: "全部拆分",
+    mergeAll: "全部合併",
     compactView: "緊湊列表",
     filters: "篩選",
     allSources: "全部來源",
@@ -377,6 +403,9 @@ const COPY = {
     viewMode: "表示",
     cardView: "カード表示",
     listView: "リスト表示",
+    splitDisplay: "ランキング表示",
+    splitAll: "すべて分割",
+    mergeAll: "すべて統合",
     compactView: "コンパクトリスト",
     filters: "絞り込み",
     allSources: "すべてのソース",
@@ -406,6 +435,9 @@ const COPY = {
     viewMode: "보기",
     cardView: "카드 보기",
     listView: "목록 보기",
+    splitDisplay: "랭킹 표시",
+    splitAll: "모두 분리",
+    mergeAll: "모두 묶기",
     compactView: "컴팩트 목록",
     filters: "필터",
     allSources: "전체 출처",
@@ -595,6 +627,122 @@ const currentVariantLabel = computed(() => {
   );
   return item ? getSubtypeLabel(item, locale.value) : "";
 });
+
+const SPLIT_SCOPE_ALL = "__all__";
+const splitScopeRef = computed(() => {
+  if (routeKind.value === "home") return SPLIT_SCOPE_ALL;
+  if (routeKind.value === "category") return currentCategory.value?.id || "";
+  return "";
+});
+const splitTargets = computed(() => {
+  subtypeCatalogRevision.value;
+  if (!["home", "category"].includes(routeKind.value)) return [];
+  const visibleByName = new Map(
+    store.newsArr
+      .filter((item) => item.show)
+      .map((item) => [String(item.name || ""), item]),
+  );
+
+  if (routeKind.value === "home") {
+    return [...visibleByName.values()]
+      .map((source) => {
+        const variants = [
+          ...new Set(
+            getSourceVariantOptions(source.name)
+              .map((item) => String(item?.value || "").trim())
+              .filter(Boolean),
+          ),
+        ];
+        return variants.length > 1
+          ? { sourceName: source.name, variants }
+          : null;
+      })
+      .filter(Boolean);
+  }
+
+  const categoryId = currentCategory.value?.id;
+  if (!categoryId) return [];
+  const variantsBySource = new Map();
+  for (const projection of VARIANT_CATEGORY_PROJECTIONS) {
+    const source = visibleByName.get(String(projection.sourceName || ""));
+    if (!source) continue;
+    if (source.catalogManaged) {
+      const available = getSourceVariantOptions(source.name);
+      if (
+        available.length &&
+        !available.some(
+          (item) => String(item?.value || "") === String(projection.variant || ""),
+        )
+      ) {
+        continue;
+      }
+    }
+    if (
+      !sourceBelongsToCategory(
+        { ...source, categoryIds: projection.categoryIds || [] },
+        categoryId,
+        store.categories,
+      )
+    ) {
+      continue;
+    }
+    const variants = variantsBySource.get(source.name) || new Set();
+    if (projection.variant) variants.add(String(projection.variant));
+    variantsBySource.set(source.name, variants);
+  }
+  return [...variantsBySource.entries()]
+    .filter(([, variants]) => variants.size > 1)
+    .map(([sourceName, variants]) => ({
+      sourceName,
+      variants: [...variants],
+    }));
+});
+const splitVariantsForTarget = (target) => {
+  const scope = splitScopeRef.value;
+  if (!scope) return [];
+  const allowed = new Set(target.variants);
+  const configured = store
+    .getCategorySplitVariants(scope, target.sourceName)
+    .filter((variant) => allowed.has(String(variant)));
+  if (configured.length) return configured;
+  return store.isCategorySourceSplit(scope, target.sourceName)
+    ? target.variants.slice()
+    : [];
+};
+const allScopeFullySplit = computed(() =>
+  Boolean(
+    splitTargets.value.length &&
+      splitTargets.value.every(
+        (target) =>
+          splitVariantsForTarget(target).length === target.variants.length,
+      ),
+  ),
+);
+const showScopeSplitControl = computed(
+  () =>
+    ["home", "category"].includes(routeKind.value) &&
+    viewMode.value === "card" &&
+    splitTargets.value.length > 0,
+);
+const scopeSplitActionTitle = computed(
+  () =>
+    `${copy.value.splitDisplay}：${
+      allScopeFullySplit.value ? copy.value.mergeAll : copy.value.splitAll
+    }`,
+);
+const toggleScopeSplit = () => {
+  const scope = splitScopeRef.value;
+  if (!scope) return;
+  const nextSplit = !allScopeFullySplit.value;
+  for (const target of splitTargets.value) {
+    store.setCategorySplitVariants(
+      scope,
+      target.sourceName,
+      nextSplit ? target.variants : [],
+    );
+  }
+};
+
 const topicMenuOptions = computed(() =>
   TOPIC_REGISTRY.map((topic) => ({
     key: topic.id,
@@ -1071,6 +1219,35 @@ watchEffect(() => {
   color: var(--n-text-color-3);
   font-size: 12px;
   font-weight: 550;
+}
+
+.context-breadcrumb__scope-action {
+  min-height: 30px;
+  padding: 0 7px;
+  border: 1px solid var(--context-stroke);
+  border-radius: 7px;
+  background: var(--context-control);
+  color: var(--context-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.context-breadcrumb__scope-action:hover,
+.context-breadcrumb__scope-action.is-active {
+  border-color: var(--context-stroke-hover);
+  background: var(--context-control-hover);
+  color: var(--context-fg);
+}
+
+.context-breadcrumb__scope-action.is-active {
+  color: var(--n-primary-color);
 }
 
 .context-breadcrumb__caret {

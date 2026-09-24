@@ -379,6 +379,8 @@ assert.match(store, /"showStreamDescriptions"/);
 assert.match(store, /categorySplitSources: \{\}/);
 assert.match(store, /categorySplitVariants: \{\}/);
 assert.match(store, /"categorySplitVariants"/);
+assert.match(store, /getCategorySplitScopeKey\(categoryRef\)/);
+assert.match(store, /if \(raw === "__all__"\) return raw/);
 assert.match(store, /getCategorySplitVariants\(categoryRef, sourceName\)/);
 assert.match(store, /setCategorySplitVariants\(categoryRef, sourceName, variants = \[\]\)/);
 assert.match(store, /setCategoryVariantSplit\(categoryRef, sourceName, variant, enabled = true\)/);
@@ -386,10 +388,23 @@ assert.match(home, /categoryAllProjectionVariants: variants/);
 assert.match(home, /categorySplitVariants: splitVariants/);
 assert.match(home, /categorySplitProjection: true/);
 assert.match(home, /categorySplitPrimary:/);
+assert.match(home, /const ALL_SPLIT_SCOPE = "__all__"/);
+assert.match(home, /const allScopeNews = computed/);
+assert.match(home, /const showAllSplitDirectory = computed/);
+assert.match(home, /const allCategorySections = computed/);
+assert.match(home, /class="all-category-toc"/);
+assert.match(home, /category\?\.navOrder \?\? category\?\.order/);
+assert.match(home, /compareCategoryPaths/);
 assert.doesNotMatch(home, /category-split-toolbar/);
 assert.doesNotMatch(home, /toggleAllCategorySplits/);
 assert.doesNotMatch(home, /music-platform-strip/);
 assert.doesNotMatch(home, /promotedRankings/);
+assert.match(contextToolbar, /const SPLIT_SCOPE_ALL = "__all__"/);
+assert.match(contextToolbar, /const splitScopeRef = computed/);
+assert.match(contextToolbar, /const splitTargets = computed/);
+assert.match(contextToolbar, /const allScopeFullySplit = computed/);
+assert.match(contextToolbar, /const toggleScopeSplit = \(\) =>/);
+assert.match(contextToolbar, /context-breadcrumb__scope-action/);
 assert.match(categoryRail, /import RankingSplitControl/);
 assert.match(categoryRail, /categoryAllProjectionVariants\(source\)/);
 assert.match(categoryRail, /STREAM_REQUEST_TIMEOUT_MS = 6000/);
@@ -409,6 +424,16 @@ assert.match(component, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(component, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.match(component, /timeout: DETAIL_REQUEST_TIMEOUT_MS/);
 assert.match(component, /fallbackDelay: DETAIL_FALLBACK_DELAY_MS/);
+assert.match(
+  component,
+  /if \(response\?\.result\?\.code !== 200\) \{[\s\S]{0,180}sourceStates\[source\.name\] = "failed"/,
+  "CategoryStream must leave loading state when a provider returns a failure",
+);
+assert.match(
+  component,
+  /catch \{[\s\S]{0,180}sourceStates\[source\.name\] = "failed"/,
+  "CategoryStream must leave loading state when a provider throws or times out",
+);
 assert.match(listView, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(listView, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.equal(

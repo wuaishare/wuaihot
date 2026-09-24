@@ -1965,8 +1965,7 @@ export const mainStore = defineStore("mainData", {
     },
     setCategoryViewMode(categoryRef, mode) {
       const nextMode = this.normalizeCategoryViewMode(mode);
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       if (!key) {
         this.categoryViewMode = nextMode;
         return;
@@ -1978,8 +1977,7 @@ export const mainStore = defineStore("mainData", {
       this.categoryViewPerCategory = true;
     },
     clearCategoryViewMode(categoryRef) {
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       if (!key || !this.categoryViewModes?.[key]) return;
       const next = { ...(this.categoryViewModes || {}) };
       delete next[key];
@@ -1988,9 +1986,14 @@ export const mainStore = defineStore("mainData", {
     setCategoryViewPerCategory(enabled) {
       this.categoryViewPerCategory = Boolean(enabled);
     },
-    getCategorySplitSources(categoryRef) {
+    getCategorySplitScopeKey(categoryRef) {
+      const raw = String(categoryRef || "").trim();
+      if (raw === "__all__") return raw;
       const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      return String(category?.id || "");
+    },
+    getCategorySplitSources(categoryRef) {
+      const key = this.getCategorySplitScopeKey(categoryRef);
       return key && Array.isArray(this.categorySplitSources?.[key])
         ? this.categorySplitSources[key]
         : [];
@@ -2000,8 +2003,7 @@ export const mainStore = defineStore("mainData", {
       return Boolean(source && this.getCategorySplitSources(categoryRef).includes(source));
     },
     setCategorySourceSplit(categoryRef, sourceName, enabled = true) {
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       const source = String(sourceName || "").trim();
       if (!key || !source) return false;
       const current = new Set(this.getCategorySplitSources(categoryRef));
@@ -2030,8 +2032,7 @@ export const mainStore = defineStore("mainData", {
       return true;
     },
     getCategorySplitVariants(categoryRef, sourceName) {
-      const category = getCategoryByRef(this.categories, categoryRef);
-      const key = String(category?.id || "");
+      const key = this.getCategorySplitScopeKey(categoryRef);
       const source = String(sourceName || "").trim();
       const variants = key && source
         ? this.categorySplitVariants?.[key]?.[source]
