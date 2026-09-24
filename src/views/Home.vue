@@ -71,7 +71,8 @@
               :class="{ 'with-entrance': enableCardEntrance }"
               :style="{ animationDelay: index / 10 + 0.1 + 's' }"
             >
-              <HotList :hotData="item" />
+              <DirectorySourceCard v-if="item.directoryOnly" :source="item" />
+              <HotList v-else :hotData="item" />
             </div>
           </div>
         </section>
@@ -104,7 +105,8 @@
           :key="`${store.activeCategory}-${item.cardKey}`"
           :style="{ animationDelay: index / 10 + 0.2 + 's' }"
         >
-          <HotList :hotData="item" />
+          <DirectorySourceCard v-if="item.directoryOnly" :source="item" />
+          <HotList v-else :hotData="item" />
         </div>
       </template>
     </draggable>
@@ -134,6 +136,7 @@
 <script setup>
 import { mainStore } from "@/store";
 import HotList from "@/components/HotList.vue";
+import DirectorySourceCard from "@/components/DirectorySourceCard.vue";
 import CategorySourceRail from "@/components/CategorySourceRail.vue";
 import draggable from "vuedraggable";
 import { useI18n } from "vue-i18n";
@@ -332,7 +335,12 @@ const normalizeVariantValues = (values = []) =>
 const allSplitTargets = computed(() => {
   subtypeCatalogRevision.value;
   return renderNews.value
-    .filter((item) => !item.systemProjection && !item.projectionInstanceId)
+    .filter(
+      (item) =>
+        !item.systemProjection &&
+        !item.projectionInstanceId &&
+        !item.directoryOnly,
+    )
     .map((item) => {
       const variants = normalizeVariantValues(
         getSourceVariantOptions(item.name),
@@ -364,6 +372,10 @@ const allScopeNews = computed(() => {
   const scoped = [];
 
   for (const base of baseSources) {
+    if (base.directoryOnly) {
+      scoped.push(base);
+      continue;
+    }
     const options = getSourceVariantOptions(base.name)
       .map((option) => ({
         value: String(option?.value || "").trim(),
@@ -446,6 +458,12 @@ const scopedNews = computed(() => {
   const scoped = [];
 
   for (const base of baseSources) {
+    if (base.directoryOnly) {
+      if (sourceBelongsToCategory(base, targetCategory, store.categories)) {
+        scoped.push(base);
+      }
+      continue;
+    }
     const allOptions = getSourceVariantOptions(base.name)
       .map((option) => ({
         value: String(option?.value || "").trim(),

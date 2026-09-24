@@ -1039,6 +1039,7 @@ export const filterReadableTrendsCatalogManagedSources = (items = []) => {
   return (Array.isArray(items) ? items : []).filter((item) => {
     if (!item?.catalogManaged) return true;
     const source = REMOTE_SOURCE_CATALOG.get(String(item?.name || ""));
+    if (item?.directoryOnly === true) return Boolean(source);
     return Boolean(source && (source.publicAvailable || source.displayAvailable));
   });
 };

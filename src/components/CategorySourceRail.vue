@@ -49,7 +49,7 @@
                 <span v-if="sourceSubtitle(source)">{{ sourceSubtitle(source) }}</span>
               </div>
             </div>
-            <div v-if="sourceSubtypeOptions(source).length > 1" class="category-source-section__subtypes" :aria-label="sourceLabel(source)">
+            <div v-if="!source.directoryOnly && sourceSubtypeOptions(source).length > 1" class="category-source-section__subtypes" :aria-label="sourceLabel(source)">
               <div
                 v-for="group in sourceSubtypeGroups(source)"
                 :key="group.key || group.label"
@@ -77,7 +77,7 @@
             </div>
             <div class="category-source-section__tools">
               <RankingSplitControl
-                v-if="categoryAllProjectionVariants(source).length > 1"
+                v-if="!source.directoryOnly && categoryAllProjectionVariants(source).length > 1"
                 :source-name="source.name"
                 :category-ref="source.categorySplitRef"
                 :variants="categoryAllProjectionVariants(source)"
@@ -86,7 +86,7 @@
                 :show-merge-all="Boolean(source.categorySplitPrimary)"
                 compact
               />
-              <div class="category-source-section__freshness">
+              <div v-if="!source.directoryOnly" class="category-source-section__freshness">
                 <span class="category-source-section__time">{{ sourceUpdateTime(source) || copy.updateFailed }}</span>
                 <span v-if="sourceCadenceLabel(source)" class="category-source-section__cadence">{{ sourceCadenceLabel(source) }}</span>
                 <button type="button" class="category-source-section__tool" :class="{ loading: sourceState(source) === 'loading' }" :title="copy.refreshLatest" :aria-label="copy.refreshLatest" @click.stop="loadSource(source, true)">
@@ -96,13 +96,34 @@
               <button v-if="!source.projectionInstanceId" type="button" class="category-source-section__tool category-source-section__drag" :title="copy.dragSort" :aria-label="copy.dragSort">
                 <Drag />
               </button>
-              <router-link class="category-source-section__more" :to="sourcePath(source)">
+              <a
+                v-if="source.directoryOnly"
+                class="category-source-section__more"
+                :href="directorySourceUrl(source)"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+              >
+                {{ copy.viewOfficialRanking }} <span aria-hidden="true">↗</span>
+              </a>
+              <router-link v-else class="category-source-section__more" :to="sourcePath(source)">
                 {{ copy.viewRanking }} <span aria-hidden="true">→</span>
               </router-link>
             </div>
           </header>
 
-          <div v-if="sourceState(source) === 'idle' || sourceState(source) === 'loading'" class="category-source-section__rail is-loading">
+          <div v-if="source.directoryOnly" class="category-source-section__directory">
+            <p>{{ copy.directoryDescription }}</p>
+            <div class="category-source-section__directory-variants" :aria-label="copy.directoryVariants">
+              <span
+                v-for="item in sourceSubtypeOptions(source)"
+                :key="item.value"
+                class="category-source-section__directory-variant"
+              >
+                {{ item.label }}
+              </span>
+            </div>
+          </div>
+          <div v-else-if="sourceState(source) === 'idle' || sourceState(source) === 'loading'" class="category-source-section__rail is-loading">
             <div v-for="index in 4" :key="index" class="category-story-card skeleton"></div>
           </div>
           <div v-else-if="sourceState(source) === 'failed'" class="category-source-section__error">
@@ -177,6 +198,7 @@ import draggable from 'vuedraggable';
 import { Drag, Refresh } from '@icon-park/vue-next';
 import RankingBadgeGroup from '@/components/RankingBadgeGroup.vue';
 import RankingSplitControl from '@/components/RankingSplitControl.vue';
+import { getDirectoryOnlySourceDetails } from '@/config/directorySources';
 import { mainStore } from '@/store';
 import { getSharedRanking } from '@/utils/rankingCollection';
 import {
@@ -214,11 +236,81 @@ const { locale: i18nLocale } = useI18n({ useScope: 'global' });
 const catalogRevision = useTrendsCatalogRevision();
 const locale = computed(() => normalizeLocale(getLocaleFromRoute(route) || i18nLocale.value));
 const COPY = {
-  'zh-CN': { sourceDirectory: '来源目录', viewRanking: '查看榜单', loadFailed: '该来源暂时加载失败', retry: '重试', noSearchResults: '没有匹配当前搜索的条目', noContent: '暂无内容', heat: '热度', dragSort: '拖拽排序', refreshLatest: '更新', updateFailed: '更新时间未知' },
-  en: { sourceDirectory: 'Sources', viewRanking: 'View ranking', loadFailed: 'This source is temporarily unavailable', retry: 'Retry', noSearchResults: 'No items match the current search', noContent: 'No content', heat: 'Heat', dragSort: 'Drag to reorder', refreshLatest: 'Refresh', updateFailed: 'Update time unavailable' },
-  'zh-TW': { sourceDirectory: '來源目錄', viewRanking: '查看榜單', loadFailed: '此來源暫時載入失敗', retry: '重試', noSearchResults: '沒有符合目前搜尋的項目', noContent: '暫無內容', heat: '熱度', dragSort: '拖曳排序', refreshLatest: '更新', updateFailed: '更新時間未知' },
-  ja: { sourceDirectory: 'ソース目次', viewRanking: 'ランキングを見る', loadFailed: 'このソースは一時的に読み込めません', retry: '再試行', noSearchResults: '検索に一致する項目がありません', noContent: 'コンテンツがありません', heat: '注目度', dragSort: 'ドラッグで並べ替え', refreshLatest: '更新', updateFailed: '更新時刻不明' },
-  ko: { sourceDirectory: '출처 목차', viewRanking: '랭킹 보기', loadFailed: '이 출처를 일시적으로 불러올 수 없습니다', retry: '다시 시도', noSearchResults: '검색과 일치하는 항목이 없습니다', noContent: '콘텐츠 없음', heat: '인기도', dragSort: '드래그하여 정렬', refreshLatest: '새로고침', updateFailed: '업데이트 시간 없음' },
+  'zh-CN': {
+    sourceDirectory: '来源目录',
+    viewRanking: '查看榜单',
+    viewOfficialRanking: '官方榜单',
+    directoryDescription: '展示该平台的官方榜单类型；榜单内容前往平台官方页面查看。',
+    directoryVariants: '官方榜单类型',
+    loadFailed: '该来源暂时加载失败',
+    retry: '重试',
+    noSearchResults: '没有匹配当前搜索的条目',
+    noContent: '暂无内容',
+    heat: '热度',
+    dragSort: '拖拽排序',
+    refreshLatest: '更新',
+    updateFailed: '更新时间未知',
+  },
+  en: {
+    sourceDirectory: 'Sources',
+    viewRanking: 'View ranking',
+    viewOfficialRanking: 'Official ranking',
+    directoryDescription: 'Browse the platform\'s official ranking types; ranking content opens on the official platform.',
+    directoryVariants: 'Official ranking types',
+    loadFailed: 'This source is temporarily unavailable',
+    retry: 'Retry',
+    noSearchResults: 'No items match the current search',
+    noContent: 'No content',
+    heat: 'Heat',
+    dragSort: 'Drag to reorder',
+    refreshLatest: 'Refresh',
+    updateFailed: 'Update time unavailable',
+  },
+  'zh-TW': {
+    sourceDirectory: '來源目錄',
+    viewRanking: '查看榜單',
+    viewOfficialRanking: '官方榜單',
+    directoryDescription: '展示該平台的官方榜單類型；榜單內容前往平台官方頁面查看。',
+    directoryVariants: '官方榜單類型',
+    loadFailed: '此來源暫時載入失敗',
+    retry: '重試',
+    noSearchResults: '沒有符合目前搜尋的項目',
+    noContent: '暫無內容',
+    heat: '熱度',
+    dragSort: '拖曳排序',
+    refreshLatest: '更新',
+    updateFailed: '更新時間未知',
+  },
+  ja: {
+    sourceDirectory: 'ソース目次',
+    viewRanking: 'ランキングを見る',
+    viewOfficialRanking: '公式ランキング',
+    directoryDescription: '公式ランキング種別を表示し、内容はプラットフォームの公式ページで確認できます。',
+    directoryVariants: '公式ランキング種別',
+    loadFailed: 'このソースは一時的に読み込めません',
+    retry: '再試行',
+    noSearchResults: '検索に一致する項目がありません',
+    noContent: 'コンテンツがありません',
+    heat: '注目度',
+    dragSort: 'ドラッグで並べ替え',
+    refreshLatest: '更新',
+    updateFailed: '更新時刻不明',
+  },
+  ko: {
+    sourceDirectory: '출처 목차',
+    viewRanking: '랭킹 보기',
+    viewOfficialRanking: '공식 랭킹',
+    directoryDescription: '공식 랭킹 유형을 보여 주며, 내용은 플랫폼 공식 페이지에서 확인할 수 있습니다.',
+    directoryVariants: '공식 랭킹 유형',
+    loadFailed: '이 출처를 일시적으로 불러올 수 없습니다',
+    retry: '다시 시도',
+    noSearchResults: '검색과 일치하는 항목이 없습니다',
+    noContent: '콘텐츠 없음',
+    heat: '인기도',
+    dragSort: '드래그하여 정렬',
+    refreshLatest: '새로고침',
+    updateFailed: '업데이트 시간 없음',
+  },
 };
 const copy = computed(() => COPY[locale.value] || COPY['zh-CN']);
 const sourceResults = reactive({});
@@ -330,10 +422,14 @@ const sourceRuntimeKey = (source, subtype = sourceSubtype(source)) =>
 const sourceResult = (source, subtype = sourceSubtype(source)) =>
   sourceResults[sourceRuntimeKey(source, subtype)] || null;
 const sourceState = (source, subtype = sourceSubtype(source)) =>
-  sourceStates[sourceRuntimeKey(source, subtype)] || "idle";
+  source?.directoryOnly
+    ? "loaded"
+    : sourceStates[sourceRuntimeKey(source, subtype)] || "idle";
 const sourceVariantState = (source, subtype) => sourceState(source, subtype);
 const sourcePath = (source) =>
   buildRankPath(locale.value, source.name, sourceSubtype(source) || "");
+const directorySourceUrl = (source) =>
+  getDirectoryOnlySourceDetails(source?.name)?.officialRankingUrl || "#";
 const sourceUpdateTime = (source) => {
   void store.timeData;
   const value = sourceResult(source)?.updateTime;
@@ -359,6 +455,7 @@ const rankClass = (rank) => ({
 const changeSourceSubtype = async (source, subtype) => {
   if (
     !source?.name ||
+    source?.directoryOnly ||
     source?.projectionInstanceId ||
     !subtype ||
     sourceSubtype(source) === subtype
@@ -407,6 +504,7 @@ const buildParams = (source, subtype = sourceSubtype(source)) =>
 const STREAM_REQUEST_TIMEOUT_MS = 6000;
 const STREAM_FALLBACK_DELAY_MS = 600;
 const loadSource = async (source, force = false) => {
+  if (source?.directoryOnly) return;
   const subtype = sourceSubtype(source);
   const runtimeKey = sourceRuntimeKey(source, subtype);
   if (!force && sourceResults[runtimeKey]) return;
@@ -441,7 +539,10 @@ const loadSource = async (source, force = false) => {
 };
 
 const loadSources = async (force = false, targets = props.sources) => {
-  const queue = targets.filter((source) => force || !sourceResult(source));
+  const queue = targets.filter(
+    (source) =>
+      !source?.directoryOnly && (force || !sourceResult(source)),
+  );
   let cursor = 0;
   const worker = async () => {
     while (cursor < queue.length) {
@@ -771,6 +872,39 @@ onBeforeUnmount(() => {
   background-clip: padding-box;
 }
 .category-source-section__rail.is-loading { min-height: 174px; }
+.category-source-section__directory {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-height: 132px;
+  padding: 18px;
+  border: 1px solid var(--csr-border);
+  border-radius: 13px;
+  background: var(--csr-panel-soft);
+}
+.category-source-section__directory p {
+  margin: 0;
+  color: var(--csr-text-3);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.category-source-section__directory-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.category-source-section__directory-variant {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--csr-border);
+  border-radius: 8px;
+  background: var(--csr-panel);
+  color: var(--csr-text-2);
+  font-size: 12px;
+}
 .category-story-card {
   position: relative;
   box-sizing: border-box;

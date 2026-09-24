@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { BUILTIN_CATEGORIES as SITE_BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
 import { GAME_DEAL_SOURCE_IDS } from "@/config/topics";
+import { isDirectoryOnlySourceKey } from "@/config/directorySources";
 import {
   SOURCE_CATEGORY_PROJECTIONS,
   getProjectedSourceCategoryIds,
@@ -180,6 +181,10 @@ const TRENDS_SOURCE_PRESENTATION = {
 const trendsCatalogSourceToNewsItem = (source, order) => {
   const defaults = TRENDS_CATEGORY_DEFAULTS[source?.category] || TRENDS_CATEGORY_DEFAULTS.general;
   const presentation = TRENDS_SOURCE_PRESENTATION[source?.key] || {};
+  const publicAvailable = Boolean(source?.publicAvailable);
+  const displayAvailable = Boolean(source?.displayAvailable);
+  const directoryOnly =
+    isDirectoryOnlySourceKey(source?.key) && !publicAvailable && !displayAvailable;
   return {
     label: source?.name || source?.key,
     name: source?.key,
@@ -189,8 +194,9 @@ const trendsCatalogSourceToNewsItem = (source, order) => {
     ...presentation,
     ...(source?.rankingLabel ? { subtype: source.rankingLabel } : {}),
     catalogManaged: true,
-    publicAvailable: Boolean(source?.publicAvailable),
-    displayAvailable: Boolean(source?.displayAvailable),
+    publicAvailable,
+    displayAvailable,
+    directoryOnly,
   };
 };
 
@@ -2209,11 +2215,15 @@ export const mainStore = defineStore("mainData", {
           const sourceKey = legacyProjection?.sourceName || String(item?.name || "");
           const source = catalogByKey.get(sourceKey);
           if (!source) return item;
+          const publicAvailable = Boolean(source.publicAvailable);
+          const displayAvailable = Boolean(source.displayAvailable);
           return {
             ...item,
             catalogManaged: true,
-            publicAvailable: Boolean(source.publicAvailable),
-            displayAvailable: Boolean(source.displayAvailable),
+            publicAvailable,
+            displayAvailable,
+            directoryOnly:
+              isDirectoryOnlySourceKey(sourceKey) && !publicAvailable && !displayAvailable,
           };
         });
       this.defaultNewsArr = filterReadableTrendsCatalogManagedSources(
@@ -2224,7 +2234,9 @@ export const mainStore = defineStore("mainData", {
       );
       const candidates = catalogSources.filter(
         (source) =>
-          (source.publicAvailable || source.displayAvailable) &&
+          (source.publicAvailable ||
+            source.displayAvailable ||
+            isDirectoryOnlySourceKey(source.key)) &&
           (source.priorityTier === "A" || source.priorityTier === "B"),
       );
       const known = new Set(this.defaultNewsArr.map((item) => item?.name).filter(Boolean));
