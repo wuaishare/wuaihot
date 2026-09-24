@@ -31,6 +31,52 @@
       :sources="scopedNews"
       @reorder="saveStreamOrder"
     />
+    <div
+      v-else-if="showAllSplitDirectory"
+      class="all-split-layout"
+    >
+      <nav class="all-category-toc" :aria-label="allPageCopy.categoryDirectory">
+        <button
+          v-for="section in allCategorySections"
+          :key="section.id"
+          type="button"
+          :class="{ 'is-active': activeAllCategoryId === section.id }"
+          @click="scrollToAllCategory(section.id)"
+        >
+          <span>{{ section.label }}</span>
+          <em>{{ section.items.length }}</em>
+        </button>
+      </nav>
+      <div class="all-category-groups">
+        <section
+          v-for="section in allCategorySections"
+          :id="'all-ranking-category-' + section.id"
+          :key="section.id"
+          class="all-category-section"
+          :data-all-category="section.id"
+        >
+          <header class="all-category-section__header">
+            <strong>{{ section.label }}</strong>
+            <span>{{ rankingCountLabel(section.items.length) }}</span>
+          </header>
+          <div
+            class="news-grid"
+            :class="{ 'is-compact': store.compactMode }"
+            :style="{ '--home-grid-columns': String(desktopColumns) }"
+          >
+            <div
+              v-for="(item, index) in section.items"
+              :key="item.cardKey"
+              class="news-card"
+              :class="{ 'with-entrance': enableCardEntrance }"
+              :style="{ animationDelay: index / 10 + 0.1 + 's' }"
+            >
+              <HotList :hotData="item" />
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
     <draggable
       v-else-if="sortableNews[0]"
       v-model="sortableNews"
@@ -94,6 +140,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import {
   buildFixedLocalePath,
+  getCategoryLabel,
   getCategoryNameBySlug,
   getLocaleFromRoute,
   normalizeLocale,
@@ -103,14 +150,20 @@ import {
   WOOL_TOPIC_METADATA,
 } from "@/config/site-metadata.mjs";
 import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
-import { sourceBelongsToCategory } from "@/utils/categoryTree";
+import {
+  getSourceCategoryIds,
+  sourceBelongsToCategory,
+} from "@/utils/categoryTree";
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
+import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
+import { getCategoryScopedVariantOptions } from "@/utils/categoryVariantScope";
 
 const store = mainStore();
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
+const subtypeCatalogRevision = useTrendsCatalogRevision();
 const enableCardEntrance = ref(true);
 const isCardDragging = ref(false);
 const isSubtypeInteracting = ref(false);
@@ -185,6 +238,38 @@ const categoryView = computed(() =>
   ),
 );
 const locale = computed(() => normalizeLocale(getLocaleFromRoute(route)));
+const ALL_PAGE_COPY = {
+  "zh-CN": {
+    categoryDirectory: "榜单分类目录",
+    rankingCount: "{count} 个榜单",
+    other: "其他",
+  },
+  "zh-TW": {
+    categoryDirectory: "榜單分類目錄",
+    rankingCount: "{count} 個榜單",
+    other: "其他",
+  },
+  en: {
+    categoryDirectory: "Ranking categories",
+    rankingCount: "{count} rankings",
+    other: "Other",
+  },
+  ja: {
+    categoryDirectory: "ランキング分類",
+    rankingCount: "{count}件",
+    other: "その他",
+  },
+  ko: {
+    categoryDirectory: "랭킹 카테고리",
+    rankingCount: "{count}개 랭킹",
+    other: "기타",
+  },
+};
+const allPageCopy = computed(
+  () => ALL_PAGE_COPY[locale.value] || ALL_PAGE_COPY["zh-CN"],
+);
+const rankingCountLabel = (count) =>
+  allPageCopy.value.rankingCount.replace("{count}", String(count));
 const queryValue = (value) =>
   String(Array.isArray(value) ? value[0] || "" : value || "").trim();
 const searchQuery = computed(() => queryValue(route.query.q).toLowerCase());
@@ -234,121 +319,239 @@ const currentCategoryName = computed(() =>
     : ""),
 );
 
-const categoryProjectionGroups = computed(() => {
-  const targetCategory = currentCategoryName.value;
-  const groups = new Map();
-  if (!targetCategory) return groups;
-  for (const item of renderNews.value) {
-    if (
-      !item.systemProjection ||
-      !sourceBelongsToCategory(item, targetCategory, store.categories)
-    ) {
+const ALL_SPLIT_SCOPE = "__all__";
+const normalizeVariantValues = (values = []) =>
+  [
+    ...new Set(
+      (Array.isArray(values) ? values : [])
+        .map((value) => String(value?.value ?? value ?? "").trim())
+        .filter(Boolean),
+    ),
+  ];
+
+const allSplitTargets = computed(() => {
+  subtypeCatalogRevision.value;
+  return renderNews.value
+    .filter((item) => !item.systemProjection && !item.projectionInstanceId)
+    .map((item) => {
+      const variants = normalizeVariantValues(
+        getSourceVariantOptions(item.name),
+      );
+      return variants.length > 1
+        ? { sourceName: item.name, variants }
+        : null;
+    })
+    .filter(Boolean);
+});
+
+const splitSelectionFor = (scopeRef, sourceName, variants = []) => {
+  const normalizedVariants = normalizeVariantValues(variants);
+  const allowed = new Set(normalizedVariants);
+  const configured = store
+    .getCategorySplitVariants(scopeRef, sourceName)
+    .filter((value) => allowed.has(String(value)));
+  if (configured.length) return configured;
+  return store.isCategorySourceSplit(scopeRef, sourceName)
+    ? normalizedVariants
+    : [];
+};
+
+const allScopeNews = computed(() => {
+  subtypeCatalogRevision.value;
+  const baseSources = renderNews.value.filter(
+    (item) => !item.systemProjection && !item.projectionInstanceId,
+  );
+  const scoped = [];
+
+  for (const base of baseSources) {
+    const options = getSourceVariantOptions(base.name)
+      .map((option) => ({
+        value: String(option?.value || "").trim(),
+        label: String(option?.label || option?.value || "").trim(),
+      }))
+      .filter((option) => option.value);
+    const variants = normalizeVariantValues(options);
+
+    if (variants.length < 2) {
+      scoped.push(base);
       continue;
     }
-    const group = groups.get(item.name) || [];
-    group.push(item);
-    groups.set(item.name, group);
+
+    const selected = splitSelectionFor(
+      ALL_SPLIT_SCOPE,
+      base.name,
+      variants,
+    );
+    const selectedSet = new Set(selected);
+    const remaining = variants.filter((variant) => !selectedSet.has(variant));
+    const sharedMeta = {
+      categorySplitRef: ALL_SPLIT_SCOPE,
+      categoryProjectionGroup: true,
+      categoryAllProjectionVariants: variants,
+      categorySplitVariants: selected,
+    };
+
+    if (remaining.length) {
+      scoped.push({
+        ...base,
+        ...sharedMeta,
+        categoryProjectionVariants: remaining,
+        cardKey: `all-group:${base.name}`,
+      });
+    }
+
+    options.forEach((option, index) => {
+      if (!selectedSet.has(option.value)) return;
+      const taxonomyProjection = VARIANT_CATEGORY_PROJECTIONS.find(
+        (item) =>
+          item.sourceName === base.name &&
+          String(item.variant || "") === option.value,
+      );
+      scoped.push({
+        ...base,
+        ...sharedMeta,
+        categoryIds: taxonomyProjection?.categoryIds?.length
+          ? taxonomyProjection.categoryIds.slice()
+          : Array.isArray(base.categoryIds)
+            ? base.categoryIds.slice()
+            : undefined,
+        order: Number(base.order || 0) + 0.0001 * (index + 1),
+        cardKey: `all-ranking:${base.name}:${option.value}`,
+        projectionInstanceId: `all:${base.name}:${option.value}`,
+        projectionVariant: option.value,
+        projectionLabel: option.label,
+        systemProjection: true,
+        categoryProjectionVariants: [option.value],
+        categorySplitProjection: true,
+        categorySplitPrimary: remaining.length === 0 && index === 0,
+      });
+    });
   }
-  return groups;
+
+  return scoped.sort(
+    (left, right) => Number(left.order || 0) - Number(right.order || 0),
+  );
 });
 
 const scopedNews = computed(() => {
   const targetCategory = currentCategoryName.value;
   if (!targetCategory) {
-    return renderNews.value.filter((item) => !item.systemProjection);
+    return allScopeNews.value;
   }
 
-  const matched = renderNews.value.filter((item) =>
-    sourceBelongsToCategory(item, targetCategory, store.categories),
+  subtypeCatalogRevision.value;
+  const baseSources = renderNews.value.filter(
+    (item) => !item.systemProjection && !item.projectionInstanceId,
   );
-  const projectionGroups = categoryProjectionGroups.value;
-  const scoped = matched.filter(
-    (item) => !item.systemProjection && !projectionGroups.has(item.name),
-  );
+  const scoped = [];
 
-  for (const [sourceName, projections] of projectionGroups) {
-    const variants = [
-      ...new Set(
-        projections
-          .map((item) => String(item.projectionVariant || ""))
-          .filter(Boolean),
-      ),
-    ];
-    const validVariants = new Set(variants);
-    const configuredSplitVariants = store
-      .getCategorySplitVariants(targetCategory, sourceName)
-      .filter((variant) => validVariants.has(String(variant)));
-    const splitVariants = configuredSplitVariants.length
-      ? configuredSplitVariants
-      : store.isCategorySourceSplit(targetCategory, sourceName)
-        ? variants
-        : [];
+  for (const base of baseSources) {
+    const allOptions = getSourceVariantOptions(base.name)
+      .map((option) => ({
+        value: String(option?.value || "").trim(),
+        label: String(option?.label || option?.value || "").trim(),
+      }))
+      .filter((option) => option.value);
+    const scopedOptions = getCategoryScopedVariantOptions(
+      base,
+      targetCategory,
+      store.categories,
+    );
+
+    if (!allOptions.length) {
+      if (
+        sourceBelongsToCategory(base, targetCategory, store.categories)
+      ) {
+        scoped.push(base);
+      }
+      continue;
+    }
+    if (!scopedOptions.length) continue;
+
+    const variants = scopedOptions.map((option) => option.value);
+    const splitVariants = splitSelectionFor(
+      targetCategory,
+      base.name,
+      variants,
+    );
     const splitSet = new Set(splitVariants);
-    const splitProjections = projections.filter((item) =>
-      splitSet.has(String(item.projectionVariant || "")),
+    const splitOptions = scopedOptions.filter((option) =>
+      splitSet.has(option.value),
     );
-    const groupedProjections = projections.filter(
-      (item) => !splitSet.has(String(item.projectionVariant || "")),
+    const groupedOptions = scopedOptions.filter(
+      (option) => !splitSet.has(option.value),
     );
-    const canSplit = variants.length > 1;
+    const allOptionIndex = new Map(
+      allOptions.map((option, index) => [option.value, index]),
+    );
     const sharedProjectionMeta = {
       categorySplitRef: targetCategory,
-      categoryProjectionGroup: canSplit,
+      categoryProjectionGroup: variants.length > 1,
       categoryAllProjectionVariants: variants,
       categorySplitVariants: splitVariants,
     };
 
-    if (splitProjections.length) {
-      scoped.push(
-        ...splitProjections.map((item, index) => ({
-          ...item,
-          ...sharedProjectionMeta,
-          categoryProjectionVariants: [item.projectionVariant],
-          categorySplitProjection: true,
-          categorySplitPrimary:
-            groupedProjections.length === 0 && index === 0,
-        })),
-      );
-    }
+    splitOptions.forEach((option, index) => {
+      scoped.push({
+        ...base,
+        ...sharedProjectionMeta,
+        categoryIds: Array.isArray(option.categoryIds)
+          ? option.categoryIds.slice()
+          : Array.isArray(base.categoryIds)
+            ? base.categoryIds.slice()
+            : undefined,
+        order:
+          Number(base.order || 0) +
+          0.0001 * (Number(allOptionIndex.get(option.value) ?? index) + 1),
+        cardKey:
+          "category-ranking:" +
+          targetCategory +
+          ":" +
+          base.name +
+          ":" +
+          option.value,
+        projectionInstanceId:
+          "category:" +
+          targetCategory +
+          ":" +
+          base.name +
+          ":" +
+          option.value,
+        projectionVariant: option.value,
+        projectionLabel:
+          option.projectionLabel || option.label || option.value,
+        systemProjection: true,
+        categoryProjectionVariants: [option.value],
+        categorySplitProjection: true,
+        categorySplitPrimary:
+          groupedOptions.length === 0 && index === 0,
+      });
+    });
 
-    if (!groupedProjections.length) continue;
+    if (!groupedOptions.length) continue;
 
-    const base = renderNews.value.find(
-      (item) =>
-        item.name === sourceName &&
-        !item.systemProjection &&
-        !item.projectionInstanceId,
-    );
-    if (!base) {
-      scoped.push(
-        ...groupedProjections.map((item) => ({
-          ...item,
-          ...sharedProjectionMeta,
-          categoryProjectionVariants: [item.projectionVariant],
-          categorySplitProjection: false,
-        })),
-      );
-      continue;
-    }
-
-    const groupedVariants = groupedProjections
-      .map((item) => String(item.projectionVariant || ""))
-      .filter(Boolean);
     scoped.push({
       ...base,
       ...sharedProjectionMeta,
-      categoryProjectionVariants: groupedVariants,
-      categoryIds: [
-        ...new Set(groupedProjections.flatMap((item) => item.categoryIds || [])),
-      ],
-      ...(groupedProjections.length === 1
-        ? { subtype: groupedProjections[0].projectionLabel || base.subtype }
-        : {}),
-      order: Math.min(
-        Number(base.order || 0),
-        ...groupedProjections.map((item) => Number(item.order || 0)),
+      categoryProjectionVariants: groupedOptions.map(
+        (option) => option.value,
       ),
-      cardKey: "category-group:" + targetCategory + ":" + sourceName,
+      categoryIds: [
+        ...new Set(
+          groupedOptions.flatMap((option) =>
+            Array.isArray(option.categoryIds) ? option.categoryIds : [],
+          ),
+        ),
+      ],
+      ...(groupedOptions.length === 1
+        ? {
+            subtype:
+              groupedOptions[0].projectionLabel ||
+              groupedOptions[0].label ||
+              base.subtype,
+          }
+        : {}),
+      cardKey: "category-group:" + targetCategory + ":" + base.name,
     });
   }
 
@@ -361,6 +564,136 @@ const filteredNews = computed(() =>
     ? scopedNews.value.filter(sourceMatchesSearch)
     : scopedNews.value,
 );
+
+const showAllSplitDirectory = computed(() =>
+  Boolean(
+    isHomeRoute.value &&
+      categoryView.value === "card" &&
+      allSplitTargets.value.length &&
+      allSplitTargets.value.every(
+        (target) =>
+          splitSelectionFor(
+            ALL_SPLIT_SCOPE,
+            target.sourceName,
+            target.variants,
+          ).length === target.variants.length,
+      ),
+  ),
+);
+
+const categoryPathForItem = (item) => {
+  const [categoryId] = getSourceCategoryIds(item, store.categories);
+  let node =
+    store.categories.find(
+      (category) => String(category.id) === String(categoryId || ""),
+    ) ||
+    store.categories.find((category) => category.name === item?.category) ||
+    store.categories.find((category) => category.id === "general") ||
+    null;
+  const path = [];
+  const seen = new Set();
+  while (node && !seen.has(String(node.id))) {
+    seen.add(String(node.id));
+    path.unshift(node);
+    node = node.parentId
+      ? store.categories.find(
+          (category) => String(category.id) === String(node.parentId),
+        )
+      : null;
+  }
+  return path;
+};
+const compareCategoryPaths = (left, right) => {
+  const a = categoryPathForItem(left);
+  const b = categoryPathForItem(right);
+  const depth = Math.max(a.length, b.length);
+  for (let index = 1; index < depth; index += 1) {
+    const aOrder = Number(a[index]?.order ?? 9999);
+    const bOrder = Number(b[index]?.order ?? 9999);
+    if (aOrder !== bOrder) return aOrder - bOrder;
+  }
+  const orderDiff = Number(left.order || 0) - Number(right.order || 0);
+  if (orderDiff) return orderDiff;
+  return String(left.projectionLabel || left.label || left.name).localeCompare(
+    String(right.projectionLabel || right.label || right.name),
+    locale.value,
+  );
+};
+
+const allCategorySections = computed(() => {
+  if (!showAllSplitDirectory.value) return [];
+  const groups = new Map();
+  for (const item of filteredNews.value) {
+    const path = categoryPathForItem(item);
+    const category = path[0] || null;
+    const id = String(category?.id || "other");
+    if (!groups.has(id)) {
+      groups.set(id, {
+        id,
+        category,
+        label: category
+          ? category.builtin
+            ? getCategoryLabel(category.name, locale.value)
+            : category.name
+          : allPageCopy.value.other,
+        order: Number(
+          category?.navOrder ?? category?.order ?? 9999,
+        ),
+        items: [],
+      });
+    }
+    groups.get(id).items.push(item);
+  }
+  return [...groups.values()]
+    .map((section) => ({
+      ...section,
+      items: section.items.slice().sort(compareCategoryPaths),
+    }))
+    .sort((left, right) => left.order - right.order);
+});
+
+const activeAllCategoryId = ref("");
+const scrollToAllCategory = (categoryId) => {
+  if (typeof document === "undefined") return;
+  activeAllCategoryId.value = categoryId;
+  document
+    .getElementById(`all-ranking-category-${categoryId}`)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+};
+const syncActiveAllCategoryFromScroll = () => {
+  if (typeof document === "undefined" || !showAllSplitDirectory.value) return;
+  const sections = allCategorySections.value
+    .map((section) => ({
+      id: section.id,
+      el: document.getElementById(`all-ranking-category-${section.id}`),
+    }))
+    .filter((item) => item.el);
+  if (!sections.length) return;
+  let active = sections[0].id;
+  const anchor = 128;
+  for (const section of sections) {
+    if (section.el.getBoundingClientRect().top <= anchor) active = section.id;
+    else break;
+  }
+  activeAllCategoryId.value = active;
+};
+
+watch(
+  () => allCategorySections.value.map((section) => section.id).join("|"),
+  () => {
+    const first = allCategorySections.value[0]?.id || "";
+    if (
+      !allCategorySections.value.some(
+        (section) => section.id === activeAllCategoryId.value,
+      )
+    ) {
+      activeAllCategoryId.value = first;
+    }
+    nextTick(syncActiveAllCategoryFromScroll);
+  },
+  { immediate: true },
+);
+
 const syncSortableNews = () => {
   sortableNews.value = filteredNews.value.slice();
 };
@@ -394,6 +727,10 @@ onMounted(() => {
     "dailyhot:subtype-interaction",
     handleSubtypeInteraction,
   );
+  window.addEventListener("scroll", syncActiveAllCategoryFromScroll, {
+    passive: true,
+  });
+  nextTick(syncActiveAllCategoryFromScroll);
 });
 
 onBeforeUnmount(() => {
@@ -403,6 +740,7 @@ onBeforeUnmount(() => {
     "dailyhot:subtype-interaction",
     handleSubtypeInteraction,
   );
+  window.removeEventListener("scroll", syncActiveAllCategoryFromScroll);
   if (subtypeInteractionTimer) clearTimeout(subtypeInteractionTimer);
 });
 
@@ -512,6 +850,93 @@ const reset = () => {
     white-space: nowrap;
   }
 
+  .all-split-layout {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .all-category-toc {
+    position: sticky;
+    top: 76px;
+    display: grid;
+    gap: 2px;
+    max-height: calc(100vh - 96px);
+    overflow-y: auto;
+    padding: 4px;
+
+    button {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      min-height: 30px;
+      padding: 5px 7px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--n-text-color-3);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.16s ease, color 0.16s ease;
+
+      &:hover,
+      &.is-active {
+        background: var(--n-action-color);
+        color: var(--n-text-color);
+      }
+
+      &.is-active {
+        font-weight: 650;
+      }
+
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      em {
+        font-size: 10px;
+        font-style: normal;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .all-category-groups {
+    min-width: 0;
+  }
+
+  .all-category-section {
+    scroll-margin-top: 92px;
+
+    & + & {
+      margin-top: 28px;
+    }
+  }
+
+  .all-category-section__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding: 0 2px;
+
+    strong {
+      font-size: 15px;
+    }
+
+    span {
+      color: var(--n-text-color-3);
+      font-size: 11px;
+    }
+  }
+
   .news-grid {
     display: grid;
     grid-template-columns: repeat(var(--home-grid-columns, 1), minmax(0, 1fr));
@@ -539,6 +964,32 @@ const reset = () => {
   .news-card-chosen,
   .news-card-drag {
     cursor: grabbing;
+  }
+}
+
+@media (max-width: 980px) {
+  .home .all-split-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .home .all-category-toc {
+    position: sticky;
+    top: 56px;
+    z-index: 3;
+    display: flex;
+    gap: 4px;
+    max-height: none;
+    overflow-x: auto;
+    padding: 6px 0;
+    background: var(--n-color);
+
+    button {
+      flex: 0 0 auto;
+      width: auto;
+      grid-template-columns: auto auto;
+      white-space: nowrap;
+    }
   }
 }
 

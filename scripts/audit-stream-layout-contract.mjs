@@ -27,6 +27,7 @@ const listView = fs.readFileSync("src/views/List.vue", "utf8");
 const readableTitles = fs.readFileSync("src/utils/readableTitles.js", "utf8");
 const sourceLogos = fs.readFileSync("src/utils/sourceLogos.js", "utf8");
 const sourceSubtypes = fs.readFileSync("src/utils/sourceSubtypes.js", "utf8");
+const categoryVariantScope = fs.readFileSync("src/utils/categoryVariantScope.js", "utf8");
 const taxonomyV3 = fs.readFileSync("src/config/taxonomy-v3.js", "utf8");
 const sharedBadges = fs.readFileSync("src/components/RankingBadgeGroup.vue", "utf8");
 const subtypeBar = fs.readFileSync("src/components/SubtypeBar.vue", "utf8");
@@ -312,12 +313,13 @@ assert.match(taxonomyV3, /sourceName: "baidu",[\s\S]{0,100}variant: "movie"[\s\S
 assert.match(home, /const systemProjected = VARIANT_CATEGORY_PROJECTIONS\.map/);
 assert.match(home, /getSourceVariantOptions\(projection\.sourceName\)/);
 assert.match(home, /availableVariants\.length[\s\S]{0,180}!availableVariants\.some/);
-assert.match(home, /const categoryProjectionGroups = computed/);
-assert.match(home, /!item\.systemProjection &&[\s\S]{0,120}!projectionGroups\.has\(item\.name\)/);
-assert.match(home, /projectionRemovable: false/);
-assert.match(home, /getCategorySplitVariants\(targetCategory, sourceName\)/);
-assert.match(home, /store\.isCategorySourceSplit\(targetCategory, sourceName\)[\s\S]{0,80}\? variants/);
-assert.match(home, /cardKey: "category-group:" \+ targetCategory \+ ":" \+ sourceName/);
+assert.match(home, /import \{ getCategoryScopedVariantOptions \} from "@\/utils\/categoryVariantScope"/);
+assert.match(home, /const scopedOptions = getCategoryScopedVariantOptions\(/);
+assert.match(home, /splitSelectionFor\([\s\S]{0,100}targetCategory,[\s\S]{0,100}base\.name,[\s\S]{0,100}variants/);
+assert.match(home, /cardKey: "category-group:" \+ targetCategory \+ ":" \+ base\.name/);
+assert.match(categoryVariantScope, /const projectedVariants = new Set/);
+assert.match(categoryVariantScope, /scopedProjectionByVariant/);
+assert.match(categoryVariantScope, /!baseBelongs \|\| projectedVariants\.has\(option\.value\)/);
 assert.doesNotMatch(hotList, /projectionRemovable/);
 assert.doesNotMatch(categoryRail, /projectionRemovable/);
 assert.match(component, /data-cover-presentation="mixed"[\s\S]{0,220}grid-template-columns: 42px 84px minmax\(0, 1fr\)/);
@@ -379,6 +381,8 @@ assert.match(store, /"showStreamDescriptions"/);
 assert.match(store, /categorySplitSources: \{\}/);
 assert.match(store, /categorySplitVariants: \{\}/);
 assert.match(store, /"categorySplitVariants"/);
+assert.match(store, /getCategorySplitScopeKey\(categoryRef\)/);
+assert.match(store, /if \(raw === "__all__"\) return raw/);
 assert.match(store, /getCategorySplitVariants\(categoryRef, sourceName\)/);
 assert.match(store, /setCategorySplitVariants\(categoryRef, sourceName, variants = \[\]\)/);
 assert.match(store, /setCategoryVariantSplit\(categoryRef, sourceName, variant, enabled = true\)/);
@@ -386,10 +390,24 @@ assert.match(home, /categoryAllProjectionVariants: variants/);
 assert.match(home, /categorySplitVariants: splitVariants/);
 assert.match(home, /categorySplitProjection: true/);
 assert.match(home, /categorySplitPrimary:/);
+assert.match(home, /const ALL_SPLIT_SCOPE = "__all__"/);
+assert.match(home, /const allScopeNews = computed/);
+assert.match(home, /const showAllSplitDirectory = computed/);
+assert.match(home, /const allCategorySections = computed/);
+assert.match(home, /class="all-category-toc"/);
+assert.match(home, /category\?\.navOrder \?\? category\?\.order/);
+assert.match(home, /compareCategoryPaths/);
 assert.doesNotMatch(home, /category-split-toolbar/);
 assert.doesNotMatch(home, /toggleAllCategorySplits/);
 assert.doesNotMatch(home, /music-platform-strip/);
 assert.doesNotMatch(home, /promotedRankings/);
+assert.match(contextToolbar, /const SPLIT_SCOPE_ALL = "__all__"/);
+assert.match(contextToolbar, /const splitScopeRef = computed/);
+assert.match(contextToolbar, /const splitTargets = computed/);
+assert.match(contextToolbar, /getCategoryScopedVariantOptions\(/);
+assert.match(contextToolbar, /const allScopeFullySplit = computed/);
+assert.match(contextToolbar, /const toggleScopeSplit = \(\) =>/);
+assert.match(contextToolbar, /context-breadcrumb__scope-action/);
 assert.match(categoryRail, /import RankingSplitControl/);
 assert.match(categoryRail, /categoryAllProjectionVariants\(source\)/);
 assert.match(categoryRail, /STREAM_REQUEST_TIMEOUT_MS = 6000/);
@@ -409,6 +427,16 @@ assert.match(component, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(component, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.match(component, /timeout: DETAIL_REQUEST_TIMEOUT_MS/);
 assert.match(component, /fallbackDelay: DETAIL_FALLBACK_DELAY_MS/);
+assert.match(
+  component,
+  /if \(response\?\.result\?\.code !== 200\) \{[\s\S]{0,180}sourceStates\[source\.name\] = "failed"/,
+  "CategoryStream must leave loading state when a provider returns a failure",
+);
+assert.match(
+  component,
+  /catch \{[\s\S]{0,180}sourceStates\[source\.name\] = "failed"/,
+  "CategoryStream must leave loading state when a provider throws or times out",
+);
 assert.match(listView, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(listView, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.equal(
