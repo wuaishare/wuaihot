@@ -200,6 +200,26 @@ assert.match(component, /const sourceNavigationPathFor = \(source\) => \{[\s\S]{
 assert.match(component, /const rememberSourceVariant = \(sourceName, variant\) => \{[\s\S]{0,260}persistSourceSubtype\(sourceName, resolved\)/);
 assert.match(contextToolbar, /\.context-breadcrumb__caret \{[\s\S]{0,180}stroke: currentColor;[\s\S]{0,80}opacity: 0\.66/);
 assert.match(contextToolbar, /routeKind === 'home'[\s\S]{0,100}routeKind === 'category'[\s\S]{0,100}routeKind === 'list'[\s\S]{0,160}context-toolbar__manager/);
+assert.match(
+  router,
+  /\["home", "home-locale", "category", "category-locale"\]\.includes\([\s\S]{0,80}String\(to\.name \|\| ""\)/,
+  "list routes must not mutate persisted activeCategory during route entry",
+);
+assert.match(
+  contextToolbar,
+  /routeKind\.value === "category"[\s\S]{0,140}store\.activeCategory !== category\.name[\s\S]{0,100}store\.setActiveCategory\(category\.name\)/,
+  "ContextToolbar must keep activeCategory writes scoped to category pages",
+);
+assert.doesNotMatch(
+  contextToolbar,
+  /\(routeKind\.value === "category" \|\| routeKind\.value === "list"\)[\s\S]{0,180}store\.setActiveCategory/,
+  "list detail routes must stay free of persisted activeCategory writes",
+);
+assert.match(
+  store,
+  /markAvailable\(name\) \{[\s\S]{0,100}!this\.unavailableSources\.includes\(name\)\) return;/,
+  "markAvailable must not mutate the persisted store when availability is already healthy",
+);
 assert.doesNotMatch(contextToolbar, /\.context-breadcrumb__caret \{[^}]*stroke: var\(--n-text-color-3\)/s);
 assert.match(component, /category-stream\.is-source-page \.category-stream__rank \{[\s\S]{0,100}align-self: center/);
 
