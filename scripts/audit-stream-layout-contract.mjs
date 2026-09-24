@@ -448,7 +448,12 @@ assert.match(contextToolbar, /const splitTargets = computed/);
 assert.match(contextToolbar, /getCategoryScopedVariantOptions\(/);
 assert.match(contextToolbar, /const allScopeFullySplit = computed/);
 assert.match(contextToolbar, /const toggleScopeSplit = \(\) =>/);
-assert.match(contextToolbar, /context-breadcrumb__scope-action/);
+assert.match(
+  contextToolbar,
+  /class="context-view-switch"[\s\S]{0,1800}v-if="showScopeSplitControl"[\s\S]{0,320}class="context-view-split"/,
+  "page-level split control must live beside the view switch rather than in the breadcrumb",
+);
+assert.doesNotMatch(contextToolbar, /context-breadcrumb__scope-action/);
 assert.match(categoryRail, /import RankingSplitControl/);
 assert.match(categoryRail, /categoryAllProjectionVariants\(source\)/);
 assert.match(categoryRail, /STREAM_REQUEST_TIMEOUT_MS = 6000/);

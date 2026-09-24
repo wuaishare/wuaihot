@@ -98,19 +98,6 @@
           </template>
         </template>
 
-        <template v-if="showScopeSplitControl">
-          <span class="context-breadcrumb__separator" aria-hidden="true">›</span>
-          <button
-            type="button"
-            class="context-breadcrumb__scope-action"
-            :class="{ 'is-active': allScopeFullySplit }"
-            :title="scopeSplitActionTitle"
-            :aria-label="scopeSplitActionTitle"
-            @click="toggleScopeSplit"
-          >
-            {{ allScopeFullySplit ? copy.mergeAll : copy.splitAll }}
-          </button>
-        </template>
       </div>
 
       <div v-else-if="currentTopic" class="context-breadcrumb">
@@ -225,6 +212,18 @@
           </svg>
         </button>
       </div>
+
+      <button
+        v-if="showScopeSplitControl"
+        type="button"
+        class="context-view-split"
+        :class="{ 'is-active': allScopeFullySplit }"
+        :title="scopeSplitActionTitle"
+        :aria-label="scopeSplitActionTitle"
+        @click="toggleScopeSplit"
+      >
+        {{ allScopeFullySplit ? copy.mergeAll : copy.splitAll }}
+      </button>
 
       <button
         v-if="routeKind === 'home' || routeKind === 'category' || routeKind === 'list'"
@@ -956,6 +955,7 @@ watchEffect(() => {
 
 .context-toolbar.is-compact .context-search,
 .context-toolbar.is-compact .context-view-switch,
+.context-toolbar.is-compact .context-view-split,
 .context-toolbar.is-compact .context-toolbar__manager {
   height: 32px;
   border-radius: 8px;
@@ -1198,11 +1198,12 @@ watchEffect(() => {
   font-weight: 550;
 }
 
-.context-breadcrumb__scope-action {
-  min-height: 30px;
-  padding: 0 7px;
+.context-view-split {
+  box-sizing: border-box;
+  height: 38px;
+  padding: 0 10px;
   border: 1px solid var(--context-stroke);
-  border-radius: 7px;
+  border-radius: 10px;
   background: var(--context-control);
   color: var(--context-muted);
   cursor: pointer;
@@ -1213,18 +1214,20 @@ watchEffect(() => {
   transition:
     border-color 0.15s ease,
     background 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.context-breadcrumb__scope-action:hover,
-.context-breadcrumb__scope-action.is-active {
+.context-view-split:hover,
+.context-view-split.is-active {
   border-color: var(--context-stroke-hover);
   background: var(--context-control-hover);
   color: var(--context-fg);
 }
 
-.context-breadcrumb__scope-action.is-active {
+.context-view-split.is-active {
   color: var(--n-primary-color);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--n-primary-color) 22%, transparent);
 }
 
 .context-breadcrumb__caret {
