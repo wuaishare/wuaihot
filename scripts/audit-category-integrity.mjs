@@ -23,6 +23,7 @@ try {
   const { mainStore } = await vite.ssrLoadModule("/src/store/index.js");
   const { applyTrendsSourceCatalog } = await vite.ssrLoadModule("/src/utils/sourceSubtypes.js");
   const { VARIANT_CATEGORY_PROJECTIONS } = await vite.ssrLoadModule("/src/config/taxonomy-v3.js");
+  const { getCategoryScopedVariantOptions } = await vite.ssrLoadModule("/src/utils/categoryVariantScope.js");
   const { getCanonicalCategorySlug, getCategoryNameBySlug } = await vite.ssrLoadModule("/src/utils/locale.js");
   const catalogFixture = {
     sources: [
@@ -366,6 +367,30 @@ try {
   assert.deepEqual(
     store.getCategorySplitVariants("entertainment", "apple-music"),
     [],
+  );
+
+  const ithome = store.newsArr.find((item) => item.name === "ithome");
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(ithome, "tech", store.categories).map(
+      (item) => item.value,
+    ),
+    ["day", "week", "month", "comments", "hot", "list"],
+    "native multi-ranking sources must remain fully splittable inside their own category",
+  );
+  const qqNews = store.newsArr.find((item) => item.name === "qq-news");
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(qqNews, "news", store.categories).map(
+      (item) => item.value,
+    ),
+    ["hot"],
+    "cross-domain entertainment/sports variants must not leak back into the QQ News base category",
+  );
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(qqNews, "entertainment", store.categories).map(
+      (item) => item.value,
+    ),
+    ["entertainment"],
+    "the entertainment category must expose only QQ News' entertainment projection",
   );
 
   assert.equal(

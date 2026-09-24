@@ -263,7 +263,6 @@ import { dropdownSelectionProps } from "@/utils/dropdownSelection";
 import {
   getCategoryByRef,
   getSourceCategoryIds,
-  sourceBelongsToCategory,
 } from "@/utils/categoryTree";
 import {
   buildCategoryPath,
@@ -286,7 +285,7 @@ import {
   getSubtypeLabel,
 } from "@/utils/sourceLabels";
 import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
-import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
+import { getCategoryScopedVariantOptions } from "@/utils/categoryVariantScope";
 import {
   TOPIC_REGISTRY,
   buildTopicPath,
@@ -662,40 +661,18 @@ const splitTargets = computed(() => {
 
   const categoryId = currentCategory.value?.id;
   if (!categoryId) return [];
-  const variantsBySource = new Map();
-  for (const projection of VARIANT_CATEGORY_PROJECTIONS) {
-    const source = visibleByName.get(String(projection.sourceName || ""));
-    if (!source) continue;
-    if (source.catalogManaged) {
-      const available = getSourceVariantOptions(source.name);
-      if (
-        available.length &&
-        !available.some(
-          (item) => String(item?.value || "") === String(projection.variant || ""),
-        )
-      ) {
-        continue;
-      }
-    }
-    if (
-      !sourceBelongsToCategory(
-        { ...source, categoryIds: projection.categoryIds || [] },
+  return [...visibleByName.values()]
+    .map((source) => {
+      const variants = getCategoryScopedVariantOptions(
+        source,
         categoryId,
         store.categories,
-      )
-    ) {
-      continue;
-    }
-    const variants = variantsBySource.get(source.name) || new Set();
-    if (projection.variant) variants.add(String(projection.variant));
-    variantsBySource.set(source.name, variants);
-  }
-  return [...variantsBySource.entries()]
-    .filter(([, variants]) => variants.size > 1)
-    .map(([sourceName, variants]) => ({
-      sourceName,
-      variants: [...variants],
-    }));
+      ).map((option) => option.value);
+      return variants.length > 1
+        ? { sourceName: source.name, variants }
+        : null;
+    })
+    .filter(Boolean);
 });
 const splitVariantsForTarget = (target) => {
   const scope = splitScopeRef.value;

@@ -158,6 +158,7 @@ import { getSourceDisplayLabel } from "@/utils/sourceLabels";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
 import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
+import { getCategoryScopedVariantOptions } from "@/utils/categoryVariantScope";
 
 const store = mainStore();
 const { t } = useI18n({ useScope: "global" });
@@ -432,121 +433,125 @@ const allScopeNews = computed(() => {
   );
 });
 
-const categoryProjectionGroups = computed(() => {
-  const targetCategory = currentCategoryName.value;
-  const groups = new Map();
-  if (!targetCategory) return groups;
-  for (const item of renderNews.value) {
-    if (
-      !item.systemProjection ||
-      !sourceBelongsToCategory(item, targetCategory, store.categories)
-    ) {
-      continue;
-    }
-    const group = groups.get(item.name) || [];
-    group.push(item);
-    groups.set(item.name, group);
-  }
-  return groups;
-});
-
 const scopedNews = computed(() => {
   const targetCategory = currentCategoryName.value;
   if (!targetCategory) {
     return allScopeNews.value;
   }
 
-  const matched = renderNews.value.filter((item) =>
-    sourceBelongsToCategory(item, targetCategory, store.categories),
+  subtypeCatalogRevision.value;
+  const baseSources = renderNews.value.filter(
+    (item) => !item.systemProjection && !item.projectionInstanceId,
   );
-  const projectionGroups = categoryProjectionGroups.value;
-  const scoped = matched.filter(
-    (item) => !item.systemProjection && !projectionGroups.has(item.name),
-  );
+  const scoped = [];
 
-  for (const [sourceName, projections] of projectionGroups) {
-    const variants = [
-      ...new Set(
-        projections
-          .map((item) => String(item.projectionVariant || ""))
-          .filter(Boolean),
-      ),
-    ];
-    const validVariants = new Set(variants);
-    const configuredSplitVariants = store
-      .getCategorySplitVariants(targetCategory, sourceName)
-      .filter((variant) => validVariants.has(String(variant)));
-    const splitVariants = configuredSplitVariants.length
-      ? configuredSplitVariants
-      : store.isCategorySourceSplit(targetCategory, sourceName)
-        ? variants
-        : [];
+  for (const base of baseSources) {
+    const allOptions = getSourceVariantOptions(base.name)
+      .map((option) => ({
+        value: String(option?.value || "").trim(),
+        label: String(option?.label || option?.value || "").trim(),
+      }))
+      .filter((option) => option.value);
+    const scopedOptions = getCategoryScopedVariantOptions(
+      base,
+      targetCategory,
+      store.categories,
+    );
+
+    if (!allOptions.length) {
+      if (
+        sourceBelongsToCategory(base, targetCategory, store.categories)
+      ) {
+        scoped.push(base);
+      }
+      continue;
+    }
+    if (!scopedOptions.length) continue;
+
+    const variants = scopedOptions.map((option) => option.value);
+    const splitVariants = splitSelectionFor(
+      targetCategory,
+      base.name,
+      variants,
+    );
     const splitSet = new Set(splitVariants);
-    const splitProjections = projections.filter((item) =>
-      splitSet.has(String(item.projectionVariant || "")),
+    const splitOptions = scopedOptions.filter((option) =>
+      splitSet.has(option.value),
     );
-    const groupedProjections = projections.filter(
-      (item) => !splitSet.has(String(item.projectionVariant || "")),
+    const groupedOptions = scopedOptions.filter(
+      (option) => !splitSet.has(option.value),
     );
-    const canSplit = variants.length > 1;
+    const allOptionIndex = new Map(
+      allOptions.map((option, index) => [option.value, index]),
+    );
     const sharedProjectionMeta = {
       categorySplitRef: targetCategory,
-      categoryProjectionGroup: canSplit,
+      categoryProjectionGroup: variants.length > 1,
       categoryAllProjectionVariants: variants,
       categorySplitVariants: splitVariants,
     };
 
-    if (splitProjections.length) {
-      scoped.push(
-        ...splitProjections.map((item, index) => ({
-          ...item,
-          ...sharedProjectionMeta,
-          categoryProjectionVariants: [item.projectionVariant],
-          categorySplitProjection: true,
-          categorySplitPrimary:
-            groupedProjections.length === 0 && index === 0,
-        })),
-      );
-    }
+    splitOptions.forEach((option, index) => {
+      scoped.push({
+        ...base,
+        ...sharedProjectionMeta,
+        categoryIds: Array.isArray(option.categoryIds)
+          ? option.categoryIds.slice()
+          : Array.isArray(base.categoryIds)
+            ? base.categoryIds.slice()
+            : undefined,
+        order:
+          Number(base.order || 0) +
+          0.0001 * (Number(allOptionIndex.get(option.value) ?? index) + 1),
+        cardKey:
+          "category-ranking:" +
+          targetCategory +
+          ":" +
+          base.name +
+          ":" +
+          option.value,
+        projectionInstanceId:
+          "category:" +
+          targetCategory +
+          ":" +
+          base.name +
+          ":" +
+          option.value,
+        projectionVariant: option.value,
+        projectionLabel:
+          option.projectionLabel || option.label || option.value,
+        systemProjection: true,
+        categoryProjectionVariants: [option.value],
+        categorySplitProjection: true,
+        categorySplitPrimary:
+          groupedOptions.length === 0 && index === 0,
+      });
+    });
 
-    if (!groupedProjections.length) continue;
+    if (!groupedOptions.length) continue;
 
-    const base = renderNews.value.find(
-      (item) =>
-        item.name === sourceName &&
-        !item.systemProjection &&
-        !item.projectionInstanceId,
-    );
-    if (!base) {
-      scoped.push(
-        ...groupedProjections.map((item) => ({
-          ...item,
-          ...sharedProjectionMeta,
-          categoryProjectionVariants: [item.projectionVariant],
-          categorySplitProjection: false,
-        })),
-      );
-      continue;
-    }
-
-    const groupedVariants = groupedProjections
-      .map((item) => String(item.projectionVariant || ""))
-      .filter(Boolean);
     scoped.push({
       ...base,
       ...sharedProjectionMeta,
-      categoryProjectionVariants: groupedVariants,
-      categoryIds: [
-        ...new Set(groupedProjections.flatMap((item) => item.categoryIds || [])),
-      ],
-      ...(groupedProjections.length === 1
-        ? { subtype: groupedProjections[0].projectionLabel || base.subtype }
-        : {}),
-      order: Math.min(
-        Number(base.order || 0),
-        ...groupedProjections.map((item) => Number(item.order || 0)),
+      categoryProjectionVariants: groupedOptions.map(
+        (option) => option.value,
       ),
-      cardKey: "category-group:" + targetCategory + ":" + sourceName,
+      categoryIds: [
+        ...new Set(
+          groupedOptions.flatMap((option) =>
+            Array.isArray(option.categoryIds) ? option.categoryIds : [],
+          ),
+        ),
+      ],
+      ...(groupedOptions.length === 1
+        ? {
+            subtype:
+              groupedOptions[0].projectionLabel ||
+              groupedOptions[0].label ||
+              base.subtype,
+          }
+        : {}),
+      cardKey: "category-group:" + targetCategory + ":" + base.name,
     });
   }
 
