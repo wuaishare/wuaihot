@@ -1965,7 +1965,8 @@ export const mainStore = defineStore("mainData", {
     },
     setCategoryViewMode(categoryRef, mode) {
       const nextMode = this.normalizeCategoryViewMode(mode);
-      const key = this.getCategorySplitScopeKey(categoryRef);
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
       if (!key) {
         this.categoryViewMode = nextMode;
         return;
@@ -1977,7 +1978,8 @@ export const mainStore = defineStore("mainData", {
       this.categoryViewPerCategory = true;
     },
     clearCategoryViewMode(categoryRef) {
-      const key = this.getCategorySplitScopeKey(categoryRef);
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
       if (!key || !this.categoryViewModes?.[key]) return;
       const next = { ...(this.categoryViewModes || {}) };
       delete next[key];
