@@ -2181,7 +2181,7 @@ export const mainStore = defineStore("mainData", {
       }
     },
     markAvailable(name) {
-      if (!name) return;
+      if (!name || !this.unavailableSources.includes(name)) return;
       this.unavailableSources = this.unavailableSources.filter(
         (item) => item !== name,
       );

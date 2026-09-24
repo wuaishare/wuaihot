@@ -30,7 +30,12 @@ router.beforeEach((to) => {
   const locale = getLocaleFromRoute(to);
   setDocumentLanguage(locale);
   savePreferredLocale(locale);
-  if (store?.setActiveCategory) {
+  if (
+    store?.setActiveCategory &&
+    ["home", "home-locale", "category", "category-locale"].includes(
+      String(to.name || ""),
+    )
+  ) {
     const categoryName = getCategoryNameBySlug(to.params?.categorySlug);
     store.setActiveCategory(categoryName || "全部");
   }
@@ -115,7 +120,12 @@ router.beforeEach((to) => {
   }
   const categoryName = getCategoryNameBySlug(canonicalCategorySlug);
   const store = mainStore();
-  if (store?.setActiveCategory) {
+  if (
+    store?.setActiveCategory &&
+    ["home", "home-locale", "category", "category-locale"].includes(
+      String(to.name || ""),
+    )
+  ) {
     store.setActiveCategory(categoryName || "全部");
   }
 });

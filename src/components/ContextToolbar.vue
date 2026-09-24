@@ -894,7 +894,7 @@ watchEffect(() => {
   }
   const category = currentCategory.value;
   if (
-    (routeKind.value === "category" || routeKind.value === "list") &&
+    routeKind.value === "category" &&
     category?.name &&
     store.activeCategory !== category.name
   ) {
