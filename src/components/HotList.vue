@@ -1716,7 +1716,7 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }    }    }
+    }
   }
 
   &.is-compact {
