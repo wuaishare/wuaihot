@@ -59,6 +59,17 @@
           </n-text>
           <n-skeleton v-else-if="!hotListData" width="60px" text round />
           <n-button
+            v-if="canToggleCategorySplit"
+            class="category-split-action no-card-drag"
+            text
+            size="tiny"
+            :title="isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource"
+            :aria-label="isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource"
+            @click.stop="toggleCategorySplit"
+          >
+            {{ isCategorySourceSplit ? projectionActionCopy.mergeSource : projectionActionCopy.splitSource }}
+          </n-button>
+          <n-button
             v-if="canPromoteCurrentRanking"
             class="projection-action no-card-drag"
             text
@@ -819,9 +830,21 @@ const syncReadableTitleDom = (items = []) => {
   });
 };
 const subtypeCatalogRevision = useTrendsCatalogRevision();
+const categoryProjectionVariants = computed(() =>
+  [...new Set(
+    (Array.isArray(props.hotData?.categoryProjectionVariants)
+      ? props.hotData.categoryProjectionVariants
+      : [])
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  )],
+);
 const subtypeOptions = computed(() => {
   subtypeCatalogRevision.value;
-  return getSourceVariantOptions(props.hotData.name);
+  const options = getSourceVariantOptions(props.hotData.name);
+  if (!categoryProjectionVariants.value.length) return options;
+  const allowed = new Set(categoryProjectionVariants.value);
+  return options.filter((item) => allowed.has(String(item?.value || "")));
 });
 const resolveActiveSubtype = (preferred = readSourceSubtype(props.hotData.name)) => {
   if (isProjectionInstance.value && projectionVariant.value) {
@@ -835,24 +858,53 @@ const activeSubType = ref(resolveActiveSubtype());
 const subtypeGroups = computed(() => {
   subtypeCatalogRevision.value;
   if (isProjectionInstance.value) return [];
+  const allowed = categoryProjectionVariants.value.length
+    ? new Set(categoryProjectionVariants.value)
+    : null;
   return localizeSubtypeGroups(
     getSourceSubtypeControlGroups(props.hotData.name, activeSubType.value),
     locale.value,
-  );
+  )
+    .map((group) => ({
+      ...group,
+      items: (group.items || []).filter(
+        (item) => !allowed || allowed.has(String(item?.value || "")),
+      ),
+    }))
+    .filter((group) => (group.items || []).length);
 });
 const activeVariantOption = computed(() =>
   getSourceVariantOption(props.hotData.name, activeSubType.value),
 );
 const projectionActionCopy = computed(() => {
   const copies = {
-    "zh-CN": { promote: "独立显示当前榜单", remove: "移除独立榜单" },
-    "zh-TW": { promote: "獨立顯示目前榜單", remove: "移除獨立榜單" },
-    en: { promote: "Show as a separate ranking", remove: "Remove separate ranking" },
-    ja: { promote: "このランキングを独立表示", remove: "独立ランキングを削除" },
-    ko: { promote: "현재 랭킹을 별도로 표시", remove: "별도 랭킹 제거" },
+    "zh-CN": { promote: "独立显示当前榜单", remove: "移除独立榜单", splitSource: "拆分榜单", mergeSource: "合并平台" },
+    "zh-TW": { promote: "獨立顯示目前榜單", remove: "移除獨立榜單", splitSource: "拆分榜單", mergeSource: "合併平台" },
+    en: { promote: "Show as a separate ranking", remove: "Remove separate ranking", splitSource: "Split rankings", mergeSource: "Group platform" },
+    ja: { promote: "このランキングを独立表示", remove: "独立ランキングを削除", splitSource: "ランキングを分割", mergeSource: "プラットフォームを統合" },
+    ko: { promote: "현재 랭킹을 별도로 표시", remove: "별도 랭킹 제거", splitSource: "랭킹 분리", mergeSource: "플랫폼 묶기" },
   };
   return copies[locale.value] || copies["zh-CN"];
 });
+const canToggleCategorySplit = computed(() =>
+  Boolean(
+    props.hotData?.categoryProjectionGroup &&
+      props.hotData?.categorySplitRef &&
+      categoryProjectionVariants.value.length > 1,
+  ),
+);
+const isCategorySourceSplit = computed(() =>
+  canToggleCategorySplit.value &&
+  store.isCategorySourceSplit(props.hotData.categorySplitRef, props.hotData.name),
+);
+const toggleCategorySplit = () => {
+  if (!canToggleCategorySplit.value) return;
+  store.setCategorySourceSplit(
+    props.hotData.categorySplitRef,
+    props.hotData.name,
+    !isCategorySourceSplit.value,
+  );
+};
 const canPromoteCurrentRanking = computed(() => {
   if (isProjectionInstance.value || !activeSubType.value) return false;
   if (subtypeOptions.value.length < 2) return false;
@@ -1722,6 +1774,19 @@ onBeforeUnmount(() => {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .category-split-action {
+      flex: 0 0 auto;
+      min-height: 24px;
+      padding: 0 7px;
+      color: var(--n-text-color-2);
+      font-size: 11px;
+      white-space: nowrap;
+
+      &:hover {
+        color: var(--n-primary-color);
+      }
     }
 
     .projection-action {

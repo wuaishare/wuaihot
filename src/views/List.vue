@@ -699,6 +699,9 @@ const applyListFailureResult = (item, result = {}) => {
 const isCurrentListRequest = (requestId, name) =>
   requestId === listRequestId && listType.value === name;
 
+const DETAIL_REQUEST_TIMEOUT_MS = 6000;
+const DETAIL_FALLBACK_DELAY_MS = 600;
+
 // 获取热榜数据
 const getHotListsData = async (name, isNew = false) => {
   if (!name || useStreamSourcePage.value) return;
@@ -747,6 +750,8 @@ const getHotListsData = async (name, isNew = false) => {
       {
         useApi2,
         forceNoCache: Boolean(isNew),
+        timeout: DETAIL_REQUEST_TIMEOUT_MS,
+        fallbackDelay: DETAIL_FALLBACK_DELAY_MS,
       },
     );
     if (
@@ -757,6 +762,8 @@ const getHotListsData = async (name, isNew = false) => {
       response = await getSharedRanking(item.name, true, requestParams, {
         useApi2,
         forceNoCache: true,
+        timeout: DETAIL_REQUEST_TIMEOUT_MS,
+        fallbackDelay: DETAIL_FALLBACK_DELAY_MS,
       });
     }
     const { result, usedFallback, fallbackSuccess } = response;
@@ -787,6 +794,8 @@ const getHotListsData = async (name, isNew = false) => {
         {
           useApi2,
           forceNoCache: true,
+          timeout: DETAIL_REQUEST_TIMEOUT_MS,
+          fallbackDelay: DETAIL_FALLBACK_DELAY_MS,
         },
       );
       if (!isCurrentListRequest(requestId, item.name)) return;

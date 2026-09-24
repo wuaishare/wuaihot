@@ -313,6 +313,35 @@ try {
   assert.equal(getCanonicalCategorySlug("wool"), "deals");
   assert.equal(getCategoryNameBySlug("wool"), "优惠省钱");
 
+  assert.equal(
+    store.isCategorySourceSplit("entertainment", "apple-music"),
+    false,
+    "multi-ranking sources must remain grouped by default",
+  );
+  assert.equal(
+    store.setCategorySourceSplit("entertainment", "apple-music", true),
+    true,
+  );
+  assert.equal(store.isCategorySourceSplit("entertainment", "apple-music"), true);
+  assert.equal(
+    store.setCategorySourcesSplit(
+      "entertainment",
+      ["apple-music", "ximalaya-rankings"],
+      true,
+    ),
+    true,
+  );
+  assert.deepEqual(
+    [...store.getCategorySplitSources("entertainment")].sort(),
+    ["apple-music", "ximalaya-rankings"],
+  );
+  store.setCategorySourcesSplit(
+    "entertainment",
+    ["apple-music", "ximalaya-rankings"],
+    false,
+  );
+  assert.deepEqual(store.getCategorySplitSources("entertainment"), []);
+
   console.log("[category-integrity] taxonomy v3 migration, source projections and canonical tree verified");
 } finally {
   await vite.close();
