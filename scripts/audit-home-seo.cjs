@@ -47,5 +47,10 @@ const seoSource = fs.readFileSync(
 );
 assert.match(seoSource, /setJsonLd\("dailyhot-route-jsonld", jsonLd\)/);
 assert.doesNotMatch(seoSource, /setJsonLd\("page-schema", jsonLd\)/);
+assert.match(
+  seoSource,
+  /locale === "zh-CN"[\s\S]{0,120}categoryMeta\?\.title[\s\S]{0,120}categoryMeta\?\.description/,
+  "runtime category SEO must only use a zh-CN specialized entry when title and description both exist",
+);
 
 console.log("[home-seo-audit] homepage title, social metadata and WebSite identity are consistent");

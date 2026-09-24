@@ -1583,7 +1583,11 @@ const getCategorySeo = (route, canonical) => {
     : "";
   if (!categoryName) return null;
   const categoryMeta = CATEGORY_SEO_MAP[rawCategoryName];
-  if (locale === "zh-CN" && categoryMeta) {
+  if (
+    locale === "zh-CN" &&
+    categoryMeta?.title &&
+    categoryMeta?.description
+  ) {
     const title = buildZhTitle(categoryMeta.title, categoryMeta.titleTail);
     const description = categoryMeta.description;
     const keywords = mergeKeywords(

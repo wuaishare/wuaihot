@@ -28,14 +28,54 @@ for (const file of htmlFiles) {
     malformed.push({ file: path.relative(distRoot, file), title });
   }
 }
-if (malformed.length) {
-  console.error("[seo-shell-audit] malformed generated titles detected:");
+const expectedCategoryShells = [
+  ["category/entertainment/index.html", "文娱热榜 - 吾爱热榜"],
+  ["category/music/index.html", "音乐热榜 - 吾爱热榜"],
+  ["category/games/index.html", "游戏热榜 - 游戏资讯、官方公告与玩家社区讨论聚合 | 吾爱热榜"],
+];
+const missingOrWrongCategoryShells = [];
+for (const [relativePath, expectedTitle] of expectedCategoryShells) {
+  const file = path.join(distRoot, relativePath);
+  if (!fs.existsSync(file)) {
+    missingOrWrongCategoryShells.push({
+      file: relativePath,
+      title: "(missing)",
+      expectedTitle,
+    });
+    continue;
+  }
+  const html = fs.readFileSync(file, "utf8");
+  const title = html
+    .match(/<title>([\s\S]*?)<\/title>/i)?.[1]
+    ?.replace(/\s+/g, " ")
+    .trim();
+  if (title !== expectedTitle) {
+    missingOrWrongCategoryShells.push({
+      file: relativePath,
+      title: title || "(missing title)",
+      expectedTitle,
+    });
+  }
+}
+
+if (malformed.length || missingOrWrongCategoryShells.length) {
+  if (malformed.length) {
+    console.error("[seo-shell-audit] malformed generated titles detected:");
+  }
   for (const row of malformed) {
     console.error(`- ${row.file}: ${row.title}`);
+  }
+  if (missingOrWrongCategoryShells.length) {
+    console.error("[seo-shell-audit] category fallback shells are missing or incorrect:");
+    for (const row of missingOrWrongCategoryShells) {
+      console.error(
+        `- ${row.file}: got "${row.title}", expected "${row.expectedTitle}"`,
+      );
+    }
   }
   process.exitCode = 1;
 } else {
   console.log(
-    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0`,
+    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}`,
   );
 }
