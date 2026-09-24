@@ -1476,8 +1476,10 @@ export const mainStore = defineStore("mainData", {
       categoryViewMode: "card",
       categoryViewPerCategory: true,
       categoryViewModes: {},
-      // 分类页多榜平台默认合并；仅记录用户显式选择拆分的平台。
+      // 旧版“整个平台全部拆分”状态，仅用于兼容迁移。
       categorySplitSources: {},
+      // 分类页多榜平台按 source + variant 精确记录独立拆分项。
+      categorySplitVariants: {},
       // 分类
       categoryEnabled: true,
       activeCategory: "全部",
@@ -1594,6 +1596,23 @@ export const mainStore = defineStore("mainData", {
         Object.entries(this.categorySplitSources || {}).map(([ref, names]) => [
           resolveRef(ref),
           [...new Set((Array.isArray(names) ? names : []).map(String).filter(Boolean))],
+        ]),
+      );
+      this.categorySplitVariants = Object.fromEntries(
+        Object.entries(this.categorySplitVariants || {}).map(([ref, sources]) => [
+          resolveRef(ref),
+          Object.fromEntries(
+            Object.entries(sources || {})
+              .map(([sourceName, variants]) => [
+                String(sourceName || "").trim(),
+                [...new Set(
+                  (Array.isArray(variants) ? variants : [])
+                    .map((value) => String(value || "").trim())
+                    .filter(Boolean),
+                )],
+              ])
+              .filter(([sourceName, variants]) => sourceName && variants.length),
+          ),
         ]),
       );
       if (nameAliases.has(this.activeCategory)) {
@@ -2010,6 +2029,55 @@ export const mainStore = defineStore("mainData", {
       };
       return true;
     },
+    getCategorySplitVariants(categoryRef, sourceName) {
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
+      const source = String(sourceName || "").trim();
+      const variants = key && source
+        ? this.categorySplitVariants?.[key]?.[source]
+        : null;
+      return Array.isArray(variants) ? variants : [];
+    },
+    setCategorySplitVariants(categoryRef, sourceName, variants = []) {
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
+      const source = String(sourceName || "").trim();
+      if (!key || !source) return false;
+
+      const normalized = [...new Set(
+        (Array.isArray(variants) ? variants : [])
+          .map((value) => String(value || "").trim())
+          .filter(Boolean),
+      )];
+      const categoryState = {
+        ...(this.categorySplitVariants?.[key] || {}),
+      };
+      if (normalized.length) categoryState[source] = normalized;
+      else delete categoryState[source];
+
+      const next = { ...(this.categorySplitVariants || {}) };
+      if (Object.keys(categoryState).length) next[key] = categoryState;
+      else delete next[key];
+      this.categorySplitVariants = next;
+
+      // 一旦用户使用新版 variant 级拆分，旧版整平台状态立即退役，避免双真源。
+      this.setCategorySourceSplit(categoryRef, source, false);
+      return true;
+    },
+    setCategoryVariantSplit(categoryRef, sourceName, variant, enabled = true) {
+      const value = String(variant || "").trim();
+      if (!value) return false;
+      const current = new Set(
+        this.getCategorySplitVariants(categoryRef, sourceName),
+      );
+      if (enabled) current.add(value);
+      else current.delete(value);
+      return this.setCategorySplitVariants(
+        categoryRef,
+        sourceName,
+        [...current],
+      );
+    },
     setActiveCategory(name) {
       this.activeCategory = name;
     },
@@ -2247,6 +2315,7 @@ export const mainStore = defineStore("mainData", {
         "categoryViewPerCategory",
         "categoryViewModes",
         "categorySplitSources",
+        "categorySplitVariants",
         "categoryEnabled",
         "activeCategory",
         "categories",
