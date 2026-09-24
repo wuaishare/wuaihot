@@ -127,6 +127,27 @@ const catalog = {
       displayAvailable: true,
     },
     {
+      key: "qq-music",
+      name: "QQ音乐",
+      category: "culture",
+      priorityTier: "A",
+      rankingLabel: "飙升榜",
+      defaultVariant: "rising",
+      variantSelectorEnabled: true,
+      variantGroups: [
+        {
+          key: "ranking",
+          label: "榜单",
+          options: [
+            { key: "rising", label: "飙升榜" },
+            { key: "hot", label: "热歌榜" },
+          ],
+        },
+      ],
+      publicAvailable: false,
+      displayAvailable: false,
+    },
+    {
       key: "xiaohongshu",
       defaultVariant: "hot",
       variantSelectorEnabled: false,
@@ -143,7 +164,7 @@ const catalog = {
   ],
 };
 
-assert.equal(applyTrendsSourceCatalog(catalog), 3);
+assert.equal(applyTrendsSourceCatalog(catalog), 4);
 assert.equal(hasTrendsCatalogSource("modeldial-radar"), true);
 assert.deepEqual(
   getTrendsCatalogSources().find((source) => source.key === "modeldial-radar"),
@@ -165,6 +186,10 @@ assert.equal(hasTrendsCatalogSource("bilibili-ai-arena"), true);
 assert.equal(hasTrendsPublicCatalogSource("bilibili-ai-arena"), false);
 assert.equal(hasTrendsDisplayCatalogSource("bilibili-ai-arena"), true);
 assert.equal(getTrendsCatalogReadSurface("bilibili-ai-arena"), "display");
+assert.equal(hasTrendsCatalogSource("qq-music"), true);
+assert.equal(hasTrendsPublicCatalogSource("qq-music"), false);
+assert.equal(hasTrendsDisplayCatalogSource("qq-music"), false);
+assert.equal(getTrendsCatalogReadSurface("qq-music"), null);
 assert.equal(hasTrendsPublicCatalogSource("not-in-catalog"), false);
 assert.equal(hasTrendsDisplayCatalogSource("not-in-catalog"), false);
 assert.equal(getTrendsCatalogReadSurface("not-in-catalog"), null);
@@ -173,9 +198,16 @@ assert.deepEqual(
     { name: "weibo", show: true },
     { name: "modeldial-radar", catalogManaged: true, show: true },
     { name: "bilibili-ai-arena", catalogManaged: true, show: true },
-    { name: "stale-catalog-source", catalogManaged: true, show: true },
-  ]).map((item) => item.name),
-  ["weibo", "modeldial-radar", "bilibili-ai-arena"],
+    { name: "qq-music", catalogManaged: true, directoryOnly: true, show: true },
+    { name: "qq-music", catalogManaged: true, show: true },
+    { name: "stale-catalog-source", catalogManaged: true, directoryOnly: true, show: true },
+  ]).map((item) => [item.name, Boolean(item.directoryOnly)]),
+  [
+    ["weibo", false],
+    ["modeldial-radar", false],
+    ["bilibili-ai-arena", false],
+    ["qq-music", true],
+  ],
 );
 assert.deepEqual(
   getSourceSubtypeGroups("weibo").flatMap((group) => group.items.map((item) => item.value)),
