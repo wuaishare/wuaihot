@@ -31,6 +31,7 @@ for (const file of htmlFiles) {
 const expectedCategoryShells = [
   ["category/entertainment/index.html", "文娱热榜 - 吾爱热榜"],
   ["category/music/index.html", "音乐热榜 - 吾爱热榜"],
+  ["category/games/index.html", "游戏热榜 - 吾爱热榜"],
 ];
 const missingOrWrongCategoryShells = [];
 for (const [relativePath, expectedTitle] of expectedCategoryShells) {

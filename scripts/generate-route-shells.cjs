@@ -795,7 +795,7 @@ async function main() {
     const categoryConfig = categoryConfigBySlug.get(category.slug);
     if (locale === "zh-CN") {
       const meta = categorySeoMap[category.name];
-      if (meta) {
+      if (meta?.title && meta?.description) {
         const title = buildZhTitle(meta.title, meta.titleTail);
         const description = meta.description;
         return {
