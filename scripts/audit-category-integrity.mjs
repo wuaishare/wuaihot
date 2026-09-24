@@ -318,29 +318,55 @@ try {
     false,
     "multi-ranking sources must remain grouped by default",
   );
+  assert.deepEqual(
+    store.getCategorySplitVariants("entertainment", "apple-music"),
+    [],
+    "variant-level split state must also start grouped",
+  );
+
+  // Old all-or-nothing state remains readable only for migration.
   assert.equal(
     store.setCategorySourceSplit("entertainment", "apple-music", true),
     true,
   );
   assert.equal(store.isCategorySourceSplit("entertainment", "apple-music"), true);
+
+  // The first new-style operation becomes authoritative and retires the legacy flag.
   assert.equal(
-    store.setCategorySourcesSplit(
+    store.setCategorySplitVariants(
       "entertainment",
-      ["apple-music", "ximalaya-rankings"],
-      true,
+      "apple-music",
+      ["songs", "albums"],
     ),
     true,
   );
   assert.deepEqual(
-    [...store.getCategorySplitSources("entertainment")].sort(),
-    ["apple-music", "ximalaya-rankings"],
+    store.getCategorySplitVariants("entertainment", "apple-music"),
+    ["songs", "albums"],
   );
-  store.setCategorySourcesSplit(
-    "entertainment",
-    ["apple-music", "ximalaya-rankings"],
+  assert.equal(
+    store.isCategorySourceSplit("entertainment", "apple-music"),
     false,
+    "variant-level state must retire the old platform-wide split flag",
   );
-  assert.deepEqual(store.getCategorySplitSources("entertainment"), []);
+  assert.equal(
+    store.setCategoryVariantSplit(
+      "entertainment",
+      "apple-music",
+      "albums",
+      false,
+    ),
+    true,
+  );
+  assert.deepEqual(
+    store.getCategorySplitVariants("entertainment", "apple-music"),
+    ["songs"],
+  );
+  store.setCategorySplitVariants("entertainment", "apple-music", []);
+  assert.deepEqual(
+    store.getCategorySplitVariants("entertainment", "apple-music"),
+    [],
+  );
 
   console.log("[category-integrity] taxonomy v3 migration, source projections and canonical tree verified");
 } finally {

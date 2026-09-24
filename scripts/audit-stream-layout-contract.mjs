@@ -21,6 +21,7 @@ const home = fs.readFileSync("src/views/Home.vue", "utf8");
 const router = fs.readFileSync("src/router/index.js", "utf8");
 const categoryRail = fs.readFileSync("src/components/CategorySourceRail.vue", "utf8");
 const hotList = fs.readFileSync("src/components/HotList.vue", "utf8");
+const rankingSplitControl = fs.readFileSync("src/components/RankingSplitControl.vue", "utf8");
 const contextToolbar = fs.readFileSync("src/components/ContextToolbar.vue", "utf8");
 const listView = fs.readFileSync("src/views/List.vue", "utf8");
 const readableTitles = fs.readFileSync("src/utils/readableTitles.js", "utf8");
@@ -293,8 +294,8 @@ assert.doesNotMatch(store, /label: "崩坏3",[\s\S]{0,80}name: "honkai"/);
 assert.match(store, /mergeGroup\(normalized, "miyoushe",[\s\S]{0,120}"genshin",[\s\S]{0,80}"starrail",[\s\S]{0,80}"honkai"/);
 assert.match(store, /promotedRankings: \[\]/);
 assert.match(store, /promoteRanking\(sourceName, variant, label = ""\)/);
-assert.match(home, /cardKey: `projection:\$\{projection\.id\}`/);
-assert.match(home, /projectionInstanceId: projection\.id/);
+assert.doesNotMatch(home, /promotedRankings/);
+assert.doesNotMatch(home, /cardKey: `projection:\$\{projection\.id\}`/);
 assert.match(hotList, /isProjectionInstance/);
 assert.match(hotList, /projectionVariant/);
 assert.match(categoryRail, /sourceInstanceKey\(source\)/);
@@ -314,10 +315,11 @@ assert.match(home, /availableVariants\.length[\s\S]{0,180}!availableVariants\.so
 assert.match(home, /const categoryProjectionGroups = computed/);
 assert.match(home, /!item\.systemProjection &&[\s\S]{0,120}!projectionGroups\.has\(item\.name\)/);
 assert.match(home, /projectionRemovable: false/);
-assert.match(home, /canSplit && store\.isCategorySourceSplit\(targetCategory, sourceName\)/);
+assert.match(home, /getCategorySplitVariants\(targetCategory, sourceName\)/);
+assert.match(home, /store\.isCategorySourceSplit\(targetCategory, sourceName\)[\s\S]{0,80}\? variants/);
 assert.match(home, /cardKey: "category-group:" \+ targetCategory \+ ":" \+ sourceName/);
-assert.match(hotList, /props\.hotData\?\.projectionRemovable !== false/);
-assert.match(categoryRail, /source\.projectionRemovable !== false/);
+assert.doesNotMatch(hotList, /projectionRemovable/);
+assert.doesNotMatch(categoryRail, /projectionRemovable/);
 assert.match(component, /data-cover-presentation="mixed"[\s\S]{0,220}grid-template-columns: 42px 84px minmax\(0, 1fr\)/);
 assert.match(component, /data-cover-presentation="portrait-uniform"[\s\S]{0,240}grid-template-columns: 42px 60px minmax\(0, 1fr\)/);
 assert.match(component, /category-stream\.is-source-page \.category-stream__list \{[\s\S]{0,100}overflow: visible;[\s\S]{0,100}border-radius: 14px;/);
@@ -375,26 +377,49 @@ assert.match(listView, /\.cover \{[\s\S]{0,100}width: 78px;[\s\S]{0,80}height: 1
 assert.match(store, /showStreamDescriptions: true/);
 assert.match(store, /"showStreamDescriptions"/);
 assert.match(store, /categorySplitSources: \{\}/);
-assert.match(store, /"categorySplitSources"/);
-assert.match(home, /category-split-toolbar/);
-assert.match(home, /toggleAllCategorySplits/);
-assert.match(home, /categoryProjectionGroups/);
+assert.match(store, /categorySplitVariants: \{\}/);
+assert.match(store, /"categorySplitVariants"/);
+assert.match(store, /getCategorySplitVariants\(categoryRef, sourceName\)/);
+assert.match(store, /setCategorySplitVariants\(categoryRef, sourceName, variants = \[\]\)/);
+assert.match(store, /setCategoryVariantSplit\(categoryRef, sourceName, variant, enabled = true\)/);
+assert.match(home, /categoryAllProjectionVariants: variants/);
+assert.match(home, /categorySplitVariants: splitVariants/);
+assert.match(home, /categorySplitProjection: true/);
+assert.match(home, /categorySplitPrimary:/);
+assert.doesNotMatch(home, /category-split-toolbar/);
+assert.doesNotMatch(home, /toggleAllCategorySplits/);
 assert.doesNotMatch(home, /music-platform-strip/);
-assert.match(categoryRail, /categoryProjectionVariants/);
-assert.match(categoryRail, /toggleCategorySplit/);
-assert.match(hotList, /categoryProjectionVariants/);
-assert.match(hotList, /toggleCategorySplit/);
+assert.doesNotMatch(home, /promotedRankings/);
+assert.match(categoryRail, /import RankingSplitControl/);
+assert.match(categoryRail, /categoryAllProjectionVariants\(source\)/);
+assert.match(categoryRail, /STREAM_REQUEST_TIMEOUT_MS = 6000/);
+assert.match(categoryRail, /STREAM_FALLBACK_DELAY_MS = 600/);
+assert.match(categoryRail, /timeout: STREAM_REQUEST_TIMEOUT_MS/);
+assert.match(categoryRail, /fallbackDelay: STREAM_FALLBACK_DELAY_MS/);
+assert.match(hotList, /import RankingSplitControl/);
+assert.match(hotList, /categoryAllProjectionVariants/);
+assert.match(hotList, /return itemCount > 1 \? groups : \[\]/);
+assert.doesNotMatch(hotList, /promoteCurrentRanking|removeProjectionInstance|toggleCategorySplit/);
+assert.match(rankingSplitControl, /variantOptions\.length === 2/);
+assert.match(rankingSplitControl, /draftVariants/);
+assert.match(rankingSplitControl, /setCategorySplitVariants/);
+assert.match(rankingSplitControl, /const mergeCurrent =/);
+assert.match(rankingSplitControl, /const mergeAll =/);
+assert.match(component, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
+assert.match(component, /DETAIL_FALLBACK_DELAY_MS = 600/);
+assert.match(component, /timeout: DETAIL_REQUEST_TIMEOUT_MS/);
+assert.match(component, /fallbackDelay: DETAIL_FALLBACK_DELAY_MS/);
 assert.match(listView, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(listView, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.equal(
   (listView.match(/timeout: DETAIL_REQUEST_TIMEOUT_MS/g) || []).length,
   3,
-  "detail ranking requests and retries must stay bounded",
+  "legacy detail path requests and retries must stay bounded",
 );
 assert.equal(
   (listView.match(/fallbackDelay: DETAIL_FALLBACK_DELAY_MS/g) || []).length,
   3,
-  "detail ranking fallback must remain progressive instead of blocking the page",
+  "legacy detail path fallback must remain progressive instead of blocking the page",
 );
 
 assert.doesNotMatch(categoryRail, /#\{\{ entry\.rank \}\}/);
