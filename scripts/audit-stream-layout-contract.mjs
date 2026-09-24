@@ -315,10 +315,11 @@ assert.match(home, /availableVariants\.length[\s\S]{0,180}!availableVariants\.so
 assert.match(home, /const categoryProjectionGroups = computed/);
 assert.match(home, /!item\.systemProjection &&[\s\S]{0,120}!projectionGroups\.has\(item\.name\)/);
 assert.match(home, /projectionRemovable: false/);
-assert.match(home, /canSplit && store\.isCategorySourceSplit\(targetCategory, sourceName\)/);
+assert.match(home, /getCategorySplitVariants\(targetCategory, sourceName\)/);
+assert.match(home, /store\.isCategorySourceSplit\(targetCategory, sourceName\)[\s\S]{0,80}\? variants/);
 assert.match(home, /cardKey: "category-group:" \+ targetCategory \+ ":" \+ sourceName/);
-assert.match(hotList, /props\.hotData\?\.projectionRemovable !== false/);
-assert.match(categoryRail, /source\.projectionRemovable !== false/);
+assert.doesNotMatch(hotList, /projectionRemovable/);
+assert.doesNotMatch(categoryRail, /projectionRemovable/);
 assert.match(component, /data-cover-presentation="mixed"[\s\S]{0,220}grid-template-columns: 42px 84px minmax\(0, 1fr\)/);
 assert.match(component, /data-cover-presentation="portrait-uniform"[\s\S]{0,240}grid-template-columns: 42px 60px minmax\(0, 1fr\)/);
 assert.match(component, /category-stream\.is-source-page \.category-stream__list \{[\s\S]{0,100}overflow: visible;[\s\S]{0,100}border-radius: 14px;/);
