@@ -23,23 +23,6 @@
       </div>
       <em>{{ woolTopicCopy.open }} →</em>
     </router-link>
-    <div
-      v-if="categorySplitSourceNames.length"
-      class="category-split-toolbar"
-    >
-      <div class="category-split-toolbar__copy">
-        <strong>{{ categorySplitCopy.title }}</strong>
-        <span>{{ categorySplitCopy.description }}</span>
-      </div>
-      <n-button
-        size="small"
-        secondary
-        strong
-        @click="toggleAllCategorySplits"
-      >
-        {{ allCategorySourcesSplit ? categorySplitCopy.mergeAll : categorySplitCopy.splitAll }}
-      </n-button>
-    </div>
     <!-- <n-alert type="info" :show-icon="false" style="margin-bottom: 20px">
       站点未完工
     </n-alert> -->
@@ -156,12 +139,6 @@ const renderNews = computed(() => {
       cardKey: `source:${item.name}`,
     }));
   const baseByName = new Map(baseSources.map((item) => [item.name, item]));
-  const variantProjectionByKey = new Map(
-    VARIANT_CATEGORY_PROJECTIONS.map((item) => [
-      `${item.sourceName}::${item.variant}`,
-      item,
-    ]),
-  );
   const systemProjected = VARIANT_CATEGORY_PROJECTIONS.map((projection, index) => {
     const base = baseByName.get(projection.sourceName);
     if (!base) return null;
@@ -186,30 +163,7 @@ const renderNews = computed(() => {
       systemProjection: true,
     };
   }).filter(Boolean);
-  const promoted = (store.promotedRankings || [])
-    .slice()
-    .sort((left, right) => Number(left?.order || 0) - Number(right?.order || 0))
-    .map((projection, index) => {
-      const base = baseByName.get(projection?.sourceName);
-      if (!base) return null;
-      const taxonomyProjection = variantProjectionByKey.get(
-        `${projection.sourceName}::${projection.variant}`,
-      );
-      return {
-        ...base,
-        ...(taxonomyProjection?.categoryIds?.length
-          ? { categoryIds: taxonomyProjection.categoryIds.slice() }
-          : {}),
-        order: Number(base.order || 0) + 0.001 * (index + 1),
-        cardKey: `projection:${projection.id}`,
-        projectionInstanceId: projection.id,
-        projectionVariant: projection.variant,
-        projectionLabel: projection.label,
-        projectionRemovable: true,
-      };
-    })
-    .filter(Boolean);
-  return [...baseSources, ...systemProjected, ...promoted].sort(
+  return [...baseSources, ...systemProjected].sort(
     (left, right) => Number(left.order || 0) - Number(right.order || 0),
   );
 });
@@ -259,41 +213,6 @@ const sourceMatchesSearch = (item) => {
 };
 const isWoolCategory = computed(() => forcedCategoryName.value === "羊毛");
 const isGamesCategory = computed(() => forcedCategoryName.value === "游戏");
-const CATEGORY_SPLIT_COPY = {
-  "zh-CN": {
-    title: "多榜平台",
-    description: "默认合并为一个平台卡片，可按需拆分成独立榜单。",
-    splitAll: "全部拆分",
-    mergeAll: "恢复合并",
-  },
-  en: {
-    title: "Multi-ranking sources",
-    description: "Grouped by platform by default; split rankings only when you need them.",
-    splitAll: "Split all",
-    mergeAll: "Group all",
-  },
-  "zh-TW": {
-    title: "多榜平台",
-    description: "預設合併為一個平台卡片，可按需拆分成獨立榜單。",
-    splitAll: "全部拆分",
-    mergeAll: "恢復合併",
-  },
-  ja: {
-    title: "複数ランキング",
-    description: "通常はプラットフォーム単位でまとめ、必要なときだけ分割表示します。",
-    splitAll: "すべて分割",
-    mergeAll: "すべて統合",
-  },
-  ko: {
-    title: "다중 랭킹 플랫폼",
-    description: "기본은 플랫폼 단위로 묶고 필요할 때만 개별 랭킹으로 분리합니다.",
-    splitAll: "모두 분리",
-    mergeAll: "모두 묶기",
-  },
-};
-const categorySplitCopy = computed(
-  () => CATEGORY_SPLIT_COPY[locale.value] || CATEGORY_SPLIT_COPY["zh-CN"],
-);
 const gameDealsTopicCopy = computed(
   () =>
     GAME_DEALS_TOPIC_METADATA[locale.value] ||
@@ -333,32 +252,6 @@ const categoryProjectionGroups = computed(() => {
   return groups;
 });
 
-const categorySplitSourceNames = computed(() =>
-  [...categoryProjectionGroups.value.entries()]
-    .filter(([, projections]) => projections.length > 1)
-    .map(([sourceName]) => sourceName),
-);
-
-const allCategorySourcesSplit = computed(() => {
-  const names = categorySplitSourceNames.value;
-  return Boolean(
-    names.length &&
-      names.every((sourceName) =>
-        store.isCategorySourceSplit(currentCategoryName.value, sourceName),
-      ),
-  );
-});
-
-const toggleAllCategorySplits = () => {
-  const names = categorySplitSourceNames.value;
-  if (!names.length) return;
-  store.setCategorySourcesSplit(
-    currentCategoryName.value,
-    names,
-    !allCategorySourcesSplit.value,
-  );
-};
-
 const scopedNews = computed(() => {
   const targetCategory = currentCategoryName.value;
   if (!targetCategory) {
@@ -370,33 +263,55 @@ const scopedNews = computed(() => {
   );
   const projectionGroups = categoryProjectionGroups.value;
   const scoped = matched.filter(
-    (item) =>
-      !item.systemProjection &&
-      (item.projectionInstanceId || !projectionGroups.has(item.name)),
+    (item) => !item.systemProjection && !projectionGroups.has(item.name),
   );
 
   for (const [sourceName, projections] of projectionGroups) {
     const variants = [
       ...new Set(
-        projections.map((item) => String(item.projectionVariant || "")).filter(Boolean),
+        projections
+          .map((item) => String(item.projectionVariant || ""))
+          .filter(Boolean),
       ),
     ];
+    const validVariants = new Set(variants);
+    const configuredSplitVariants = store
+      .getCategorySplitVariants(targetCategory, sourceName)
+      .filter((variant) => validVariants.has(String(variant)));
+    const splitVariants = configuredSplitVariants.length
+      ? configuredSplitVariants
+      : store.isCategorySourceSplit(targetCategory, sourceName)
+        ? variants
+        : [];
+    const splitSet = new Set(splitVariants);
+    const splitProjections = projections.filter((item) =>
+      splitSet.has(String(item.projectionVariant || "")),
+    );
+    const groupedProjections = projections.filter(
+      (item) => !splitSet.has(String(item.projectionVariant || "")),
+    );
     const canSplit = variants.length > 1;
     const sharedProjectionMeta = {
       categorySplitRef: targetCategory,
       categoryProjectionGroup: canSplit,
-      categoryProjectionVariants: variants,
+      categoryAllProjectionVariants: variants,
+      categorySplitVariants: splitVariants,
     };
 
-    if (canSplit && store.isCategorySourceSplit(targetCategory, sourceName)) {
+    if (splitProjections.length) {
       scoped.push(
-        ...projections.map((item) => ({
+        ...splitProjections.map((item, index) => ({
           ...item,
           ...sharedProjectionMeta,
+          categoryProjectionVariants: [item.projectionVariant],
+          categorySplitProjection: true,
+          categorySplitPrimary:
+            groupedProjections.length === 0 && index === 0,
         })),
       );
-      continue;
     }
+
+    if (!groupedProjections.length) continue;
 
     const base = renderNews.value.find(
       (item) =>
@@ -406,23 +321,32 @@ const scopedNews = computed(() => {
     );
     if (!base) {
       scoped.push(
-        ...projections.map((item) => ({
+        ...groupedProjections.map((item) => ({
           ...item,
           ...sharedProjectionMeta,
+          categoryProjectionVariants: [item.projectionVariant],
+          categorySplitProjection: false,
         })),
       );
       continue;
     }
 
+    const groupedVariants = groupedProjections
+      .map((item) => String(item.projectionVariant || ""))
+      .filter(Boolean);
     scoped.push({
       ...base,
       ...sharedProjectionMeta,
+      categoryProjectionVariants: groupedVariants,
       categoryIds: [
-        ...new Set(projections.flatMap((item) => item.categoryIds || [])),
+        ...new Set(groupedProjections.flatMap((item) => item.categoryIds || [])),
       ],
+      ...(groupedProjections.length === 1
+        ? { subtype: groupedProjections[0].projectionLabel || base.subtype }
+        : {}),
       order: Math.min(
         Number(base.order || 0),
-        ...projections.map((item) => Number(item.order || 0)),
+        ...groupedProjections.map((item) => Number(item.order || 0)),
       ),
       cardKey: "category-group:" + targetCategory + ":" + sourceName,
     });
@@ -513,11 +437,6 @@ const saveCardOrder = () => {
     .filter((item) => !item.projectionInstanceId)
     .map((item) => item.name);
   store.reorderVisibleNews(orderedBaseNames, scopedBaseNames);
-  store.reorderPromotedRankings(
-    sortableNews.value
-      .filter((item) => item.projectionInstanceId)
-      .map((item) => item.projectionInstanceId),
-  );
   isCardDragging.value = false;
   syncSortableNews();
 };
@@ -530,11 +449,6 @@ const saveStreamOrder = (orderedKeys = []) => {
     .filter((item) => !item.projectionInstanceId)
     .map((item) => item.name);
   store.reorderVisibleNews(baseNames, scopedBaseNames);
-  store.reorderPromotedRankings(
-    orderedKeys
-      .filter((key) => String(key).startsWith("projection:"))
-      .map((key) => String(key).slice("projection:".length)),
-  );
 };
 
 // 重置
@@ -598,32 +512,6 @@ const reset = () => {
     white-space: nowrap;
   }
 
-  .category-split-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 14px;
-    padding: 9px 11px;
-    border: 1px solid var(--n-border-color);
-    border-radius: 10px;
-    background: var(--n-color);
-  }
-  .category-split-toolbar__copy {
-    display: grid;
-    gap: 2px;
-    min-width: 0;
-  }
-  .category-split-toolbar__copy strong {
-    font-size: 12px;
-    line-height: 1.35;
-  }
-  .category-split-toolbar__copy span {
-    color: var(--n-text-color-3);
-    font-size: 11px;
-    line-height: 1.45;
-  }
-
   .news-grid {
     display: grid;
     grid-template-columns: repeat(var(--home-grid-columns, 1), minmax(0, 1fr));
@@ -651,15 +539,6 @@ const reset = () => {
   .news-card-chosen,
   .news-card-drag {
     cursor: grabbing;
-  }
-}
-
-@media (max-width: 720px) {
-  .home .category-split-toolbar {
-    align-items: flex-start;
-  }
-  .home .category-split-toolbar__copy span {
-    max-width: 42ch;
   }
 }
 
