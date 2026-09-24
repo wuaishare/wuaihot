@@ -23,31 +23,23 @@
       </div>
       <em>{{ woolTopicCopy.open }} →</em>
     </router-link>
-    <section
-      v-if="showMusicPlatformStrip"
-      class="music-platform-strip"
-      :aria-label="musicPlatformCopy.title"
+    <div
+      v-if="categorySplitSourceNames.length"
+      class="category-split-toolbar"
     >
-      <div class="music-platform-strip__intro">
-        <strong>{{ musicPlatformCopy.title }}</strong>
-        <span>{{ musicPlatformCopy.description }}</span>
+      <div class="category-split-toolbar__copy">
+        <strong>{{ categorySplitCopy.title }}</strong>
+        <span>{{ categorySplitCopy.description }}</span>
       </div>
-      <div class="music-platform-strip__items">
-        <component
-          :is="item.external ? 'a' : 'router-link'"
-          v-for="item in musicPlatformLinks"
-          :key="item.source"
-          class="music-platform-strip__item"
-          v-bind="item.external
-            ? { href: item.href, target: '_blank', rel: 'noopener noreferrer' }
-            : { to: item.to }"
-        >
-          <img :src="getSourceLogo(item.source)" :alt="item.label" />
-          <span>{{ item.label }}</span>
-          <em>{{ item.external ? musicPlatformCopy.official : musicPlatformCopy.ranking }}</em>
-        </component>
-      </div>
-    </section>
+      <n-button
+        size="small"
+        secondary
+        strong
+        @click="toggleAllCategorySplits"
+      >
+        {{ allCategorySourcesSplit ? categorySplitCopy.mergeAll : categorySplitCopy.splitAll }}
+      </n-button>
+    </div>
     <!-- <n-alert type="info" :show-icon="false" style="margin-bottom: 20px">
       站点未完工
     </n-alert> -->
@@ -119,7 +111,6 @@ import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import {
   buildFixedLocalePath,
-  buildRankPath,
   getCategoryNameBySlug,
   getLocaleFromRoute,
   normalizeLocale,
@@ -132,7 +123,6 @@ import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
 import { sourceBelongsToCategory } from "@/utils/categoryTree";
 import { getSourceDisplayLabel } from "@/utils/sourceLabels";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
-import { getSourceLogo } from "@/utils/sourceLogos";
 import { resolveResponsiveCardColumns } from "@/utils/responsiveColumns";
 
 const store = mainStore();
@@ -269,67 +259,40 @@ const sourceMatchesSearch = (item) => {
 };
 const isWoolCategory = computed(() => forcedCategoryName.value === "羊毛");
 const isGamesCategory = computed(() => forcedCategoryName.value === "游戏");
-const MUSIC_PLATFORM_COPY = {
+const CATEGORY_SPLIT_COPY = {
   "zh-CN": {
-    title: "热门音乐平台",
-    description: "站内展示已准入榜单；其余主流平台直达官方排行榜。",
-    ranking: "站内榜单",
-    official: "官方榜单",
+    title: "多榜平台",
+    description: "默认合并为一个平台卡片，可按需拆分成独立榜单。",
+    splitAll: "全部拆分",
+    mergeAll: "恢复合并",
   },
   en: {
-    title: "Popular music platforms",
-    description: "Admitted rankings stay in-site; other major platforms link to their official chart pages.",
-    ranking: "On-site",
-    official: "Official charts",
+    title: "Multi-ranking sources",
+    description: "Grouped by platform by default; split rankings only when you need them.",
+    splitAll: "Split all",
+    mergeAll: "Group all",
   },
   "zh-TW": {
-    title: "熱門音樂平台",
-    description: "站內展示已准入榜單；其他主流平台直達官方排行榜。",
-    ranking: "站內榜單",
-    official: "官方榜單",
+    title: "多榜平台",
+    description: "預設合併為一個平台卡片，可按需拆分成獨立榜單。",
+    splitAll: "全部拆分",
+    mergeAll: "恢復合併",
   },
   ja: {
-    title: "人気の音楽プラットフォーム",
-    description: "公開対象のランキングはサイト内で表示し、その他は公式ランキングへ案内します。",
-    ranking: "サイト内",
-    official: "公式ランキング",
+    title: "複数ランキング",
+    description: "通常はプラットフォーム単位でまとめ、必要なときだけ分割表示します。",
+    splitAll: "すべて分割",
+    mergeAll: "すべて統合",
   },
   ko: {
-    title: "인기 음악 플랫폼",
-    description: "공개 허용된 랭킹은 사이트에서 보고, 그 외 주요 플랫폼은 공식 차트로 연결합니다.",
-    ranking: "사이트 내",
-    official: "공식 차트",
+    title: "다중 랭킹 플랫폼",
+    description: "기본은 플랫폼 단위로 묶고 필요할 때만 개별 랭킹으로 분리합니다.",
+    splitAll: "모두 분리",
+    mergeAll: "모두 묶기",
   },
 };
-
-const MUSIC_PLATFORM_LINKS = [
-  { source: "apple-music", label: "Apple Music", variant: "songs" },
-  { source: "qq-music", label: "QQ音乐", href: "https://y.qq.com/n/ryqq_v2/toplist/62" },
-  { source: "netease-music", label: "网易云音乐", href: "https://music.163.com/discover/toplist?id=19723756" },
-  { source: "kugou-music", label: "酷狗音乐", href: "https://www.kugou.com/yy/rank/home/1-6666.html" },
-  { source: "kuwo-music", label: "酷我音乐", href: "https://m.kuwo.cn/newh5app/ranklist_detail/16" },
-];
-
-const showMusicPlatformStrip = computed(() =>
-  ["文娱", "音乐"].includes(forcedCategoryName.value),
-);
-const musicPlatformCopy = computed(
-  () => MUSIC_PLATFORM_COPY[locale.value] || MUSIC_PLATFORM_COPY["zh-CN"],
-);
-const musicPlatformLinks = computed(() =>
-  MUSIC_PLATFORM_LINKS.map((item) => ({
-    ...item,
-    external: Boolean(item.href),
-    ...(item.href
-      ? {}
-      : {
-          to: buildRankPath(
-            locale.value,
-            item.source,
-            item.variant || "",
-          ),
-        }),
-  })),
+const categorySplitCopy = computed(
+  () => CATEGORY_SPLIT_COPY[locale.value] || CATEGORY_SPLIT_COPY["zh-CN"],
 );
 const gameDealsTopicCopy = computed(
   () =>
@@ -345,31 +308,129 @@ const woolTopicCopy = computed(
 const woolTopicPath = computed(() =>
   buildFixedLocalePath(locale.value, "/topic/wool"),
 );
-const scopedNews = computed(() => {
-  let scoped = renderNews.value;
-  const targetCategory =
-    forcedCategoryName.value ||
-    (store.categoryEnabled && store.activeCategory !== "全部"
-      ? store.activeCategory
-      : "");
-  if (targetCategory) {
-    scoped = scoped.filter((item) =>
-      sourceBelongsToCategory(item, targetCategory, store.categories),
-    );
-    const projectedSourceNames = new Set(
-      scoped
-        .filter((item) => item.systemProjection)
-        .map((item) => item.name),
-    );
-    if (projectedSourceNames.size) {
-      scoped = scoped.filter(
-        (item) => item.systemProjection || !projectedSourceNames.has(item.name),
-      );
+const currentCategoryName = computed(() =>
+  forcedCategoryName.value ||
+  (store.categoryEnabled && store.activeCategory !== "全部"
+    ? store.activeCategory
+    : ""),
+);
+
+const categoryProjectionGroups = computed(() => {
+  const targetCategory = currentCategoryName.value;
+  const groups = new Map();
+  if (!targetCategory) return groups;
+  for (const item of renderNews.value) {
+    if (
+      !item.systemProjection ||
+      !sourceBelongsToCategory(item, targetCategory, store.categories)
+    ) {
+      continue;
     }
-  } else {
-    scoped = scoped.filter((item) => !item.systemProjection);
+    const group = groups.get(item.name) || [];
+    group.push(item);
+    groups.set(item.name, group);
   }
-  return scoped;
+  return groups;
+});
+
+const categorySplitSourceNames = computed(() =>
+  [...categoryProjectionGroups.value.entries()]
+    .filter(([, projections]) => projections.length > 1)
+    .map(([sourceName]) => sourceName),
+);
+
+const allCategorySourcesSplit = computed(() => {
+  const names = categorySplitSourceNames.value;
+  return Boolean(
+    names.length &&
+      names.every((sourceName) =>
+        store.isCategorySourceSplit(currentCategoryName.value, sourceName),
+      ),
+  );
+});
+
+const toggleAllCategorySplits = () => {
+  const names = categorySplitSourceNames.value;
+  if (!names.length) return;
+  store.setCategorySourcesSplit(
+    currentCategoryName.value,
+    names,
+    !allCategorySourcesSplit.value,
+  );
+};
+
+const scopedNews = computed(() => {
+  const targetCategory = currentCategoryName.value;
+  if (!targetCategory) {
+    return renderNews.value.filter((item) => !item.systemProjection);
+  }
+
+  const matched = renderNews.value.filter((item) =>
+    sourceBelongsToCategory(item, targetCategory, store.categories),
+  );
+  const projectionGroups = categoryProjectionGroups.value;
+  const scoped = matched.filter(
+    (item) =>
+      !item.systemProjection &&
+      (item.projectionInstanceId || !projectionGroups.has(item.name)),
+  );
+
+  for (const [sourceName, projections] of projectionGroups) {
+    const variants = [
+      ...new Set(
+        projections.map((item) => String(item.projectionVariant || "")).filter(Boolean),
+      ),
+    ];
+    const canSplit = variants.length > 1;
+    const sharedProjectionMeta = {
+      categorySplitRef: targetCategory,
+      categoryProjectionGroup: canSplit,
+      categoryProjectionVariants: variants,
+    };
+
+    if (canSplit && store.isCategorySourceSplit(targetCategory, sourceName)) {
+      scoped.push(
+        ...projections.map((item) => ({
+          ...item,
+          ...sharedProjectionMeta,
+        })),
+      );
+      continue;
+    }
+
+    const base = renderNews.value.find(
+      (item) =>
+        item.name === sourceName &&
+        !item.systemProjection &&
+        !item.projectionInstanceId,
+    );
+    if (!base) {
+      scoped.push(
+        ...projections.map((item) => ({
+          ...item,
+          ...sharedProjectionMeta,
+        })),
+      );
+      continue;
+    }
+
+    scoped.push({
+      ...base,
+      ...sharedProjectionMeta,
+      categoryIds: [
+        ...new Set(projections.flatMap((item) => item.categoryIds || [])),
+      ],
+      order: Math.min(
+        Number(base.order || 0),
+        ...projections.map((item) => Number(item.order || 0)),
+      ),
+      cardKey: "category-group:" + targetCategory + ":" + sourceName,
+    });
+  }
+
+  return scoped.sort(
+    (left, right) => Number(left.order || 0) - Number(right.order || 0),
+  );
 });
 const filteredNews = computed(() =>
   categoryView.value === "card"
@@ -537,75 +598,30 @@ const reset = () => {
     white-space: nowrap;
   }
 
-  .music-platform-strip {
-    display: grid;
-    grid-template-columns: minmax(190px, 0.72fr) minmax(0, 2.2fr);
+  .category-split-toolbar {
+    display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 18px;
-    padding: 12px 14px;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 9px 11px;
     border: 1px solid var(--n-border-color);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--n-color);
   }
-  .music-platform-strip__intro {
+  .category-split-toolbar__copy {
     display: grid;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
   }
-  .music-platform-strip__intro strong {
-    font-size: 14px;
+  .category-split-toolbar__copy strong {
+    font-size: 12px;
     line-height: 1.35;
   }
-  .music-platform-strip__intro span {
+  .category-split-toolbar__copy span {
     color: var(--n-text-color-3);
     font-size: 11px;
     line-height: 1.45;
-  }
-  .music-platform-strip__items {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .music-platform-strip__items::-webkit-scrollbar {
-    display: none;
-  }
-  .music-platform-strip__item {
-    display: inline-grid;
-    grid-template-columns: 24px max-content auto;
-    align-items: center;
-    gap: 7px;
-    min-height: 38px;
-    padding: 5px 8px;
-    border: 1px solid var(--n-border-color);
-    border-radius: 9px;
-    color: var(--n-text-color);
-    text-decoration: none;
-    white-space: nowrap;
-    transition: border-color 0.16s ease, background-color 0.16s ease;
-  }
-  .music-platform-strip__item:hover {
-    border-color: var(--n-primary-color);
-    background: var(--n-action-color);
-  }
-  .music-platform-strip__item img {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    object-fit: contain;
-  }
-  .music-platform-strip__item span {
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .music-platform-strip__item em {
-    color: var(--n-text-color-3);
-    font-size: 10px;
-    font-style: normal;
   }
 
   .news-grid {
@@ -639,12 +655,11 @@ const reset = () => {
 }
 
 @media (max-width: 720px) {
-  .home .music-platform-strip {
-    grid-template-columns: 1fr;
-    gap: 9px;
+  .home .category-split-toolbar {
+    align-items: flex-start;
   }
-  .home .music-platform-strip__items {
-    justify-content: flex-start;
+  .home .category-split-toolbar__copy span {
+    max-width: 42ch;
   }
 }
 

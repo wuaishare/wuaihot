@@ -76,6 +76,15 @@
               </div>
             </div>
             <div class="category-source-section__tools">
+              <button
+                v-if="canToggleCategorySplit(source)"
+                type="button"
+                class="category-source-section__split-action"
+                :title="isCategorySourceSplit(source) ? copy.mergeSource : copy.splitSource"
+                @click.stop="toggleCategorySplit(source)"
+              >
+                {{ isCategorySourceSplit(source) ? copy.mergeSource : copy.splitSource }}
+              </button>
               <div class="category-source-section__freshness">
                 <span class="category-source-section__time">{{ sourceUpdateTime(source) || copy.updateFailed }}</span>
                 <span v-if="sourceCadenceLabel(source)" class="category-source-section__cadence">{{ sourceCadenceLabel(source) }}</span>
@@ -213,16 +222,33 @@ const { locale: i18nLocale } = useI18n({ useScope: 'global' });
 const catalogRevision = useTrendsCatalogRevision();
 const locale = computed(() => normalizeLocale(getLocaleFromRoute(route) || i18nLocale.value));
 const COPY = {
-  'zh-CN': { sourceDirectory: '来源目录', viewRanking: '查看榜单', loadFailed: '该来源暂时加载失败', retry: '重试', noSearchResults: '没有匹配当前搜索的条目', noContent: '暂无内容', heat: '热度', dragSort: '拖拽排序', refreshLatest: '更新', updateFailed: '更新时间未知', removeProjection: '移除独立榜单' },
-  en: { sourceDirectory: 'Sources', viewRanking: 'View ranking', loadFailed: 'This source is temporarily unavailable', retry: 'Retry', noSearchResults: 'No items match the current search', noContent: 'No content', heat: 'Heat', dragSort: 'Drag to reorder', refreshLatest: 'Refresh', updateFailed: 'Update time unavailable', removeProjection: 'Remove separate ranking' },
-  'zh-TW': { sourceDirectory: '來源目錄', viewRanking: '查看榜單', loadFailed: '此來源暫時載入失敗', retry: '重試', noSearchResults: '沒有符合目前搜尋的項目', noContent: '暫無內容', heat: '熱度', dragSort: '拖曳排序', refreshLatest: '更新', updateFailed: '更新時間未知', removeProjection: '移除獨立榜單' },
-  ja: { sourceDirectory: 'ソース目次', viewRanking: 'ランキングを見る', loadFailed: 'このソースは一時的に読み込めません', retry: '再試行', noSearchResults: '検索に一致する項目がありません', noContent: 'コンテンツがありません', heat: '注目度', dragSort: 'ドラッグで並べ替え', refreshLatest: '更新', updateFailed: '更新時刻不明', removeProjection: '独立ランキングを削除' },
-  ko: { sourceDirectory: '출처 목차', viewRanking: '랭킹 보기', loadFailed: '이 출처를 일시적으로 불러올 수 없습니다', retry: '다시 시도', noSearchResults: '검색과 일치하는 항목이 없습니다', noContent: '콘텐츠 없음', heat: '인기도', dragSort: '드래그하여 정렬', refreshLatest: '새로고침', updateFailed: '업데이트 시간 없음', removeProjection: '별도 랭킹 제거' },
+  'zh-CN': { sourceDirectory: '来源目录', viewRanking: '查看榜单', loadFailed: '该来源暂时加载失败', retry: '重试', noSearchResults: '没有匹配当前搜索的条目', noContent: '暂无内容', heat: '热度', dragSort: '拖拽排序', refreshLatest: '更新', updateFailed: '更新时间未知', removeProjection: '移除独立榜单', splitSource: '拆分榜单', mergeSource: '合并平台' },
+  en: { sourceDirectory: 'Sources', viewRanking: 'View ranking', loadFailed: 'This source is temporarily unavailable', retry: 'Retry', noSearchResults: 'No items match the current search', noContent: 'No content', heat: 'Heat', dragSort: 'Drag to reorder', refreshLatest: 'Refresh', updateFailed: 'Update time unavailable', removeProjection: 'Remove separate ranking', splitSource: 'Split rankings', mergeSource: 'Group platform' },
+  'zh-TW': { sourceDirectory: '來源目錄', viewRanking: '查看榜單', loadFailed: '此來源暫時載入失敗', retry: '重試', noSearchResults: '沒有符合目前搜尋的項目', noContent: '暫無內容', heat: '熱度', dragSort: '拖曳排序', refreshLatest: '更新', updateFailed: '更新時間未知', removeProjection: '移除獨立榜單', splitSource: '拆分榜單', mergeSource: '合併平台' },
+  ja: { sourceDirectory: 'ソース目次', viewRanking: 'ランキングを見る', loadFailed: 'このソースは一時的に読み込めません', retry: '再試行', noSearchResults: '検索に一致する項目がありません', noContent: 'コンテンツがありません', heat: '注目度', dragSort: 'ドラッグで並べ替え', refreshLatest: '更新', updateFailed: '更新時刻不明', removeProjection: '独立ランキングを削除', splitSource: 'ランキングを分割', mergeSource: 'プラットフォームを統合' },
+  ko: { sourceDirectory: '출처 목차', viewRanking: '랭킹 보기', loadFailed: '이 출처를 일시적으로 불러올 수 없습니다', retry: '다시 시도', noSearchResults: '검색과 일치하는 항목이 없습니다', noContent: '콘텐츠 없음', heat: '인기도', dragSort: '드래그하여 정렬', refreshLatest: '새로고침', updateFailed: '업데이트 시간 없음', removeProjection: '별도 랭킹 제거', splitSource: '랭킹 분리', mergeSource: '플랫폼 묶기' },
 };
 const copy = computed(() => COPY[locale.value] || COPY['zh-CN']);
 const removeProjection = (source) => {
   if (!source?.projectionInstanceId) return;
   store.removePromotedRanking(source.projectionInstanceId);
+};
+const canToggleCategorySplit = (source) =>
+  Boolean(
+    source?.categoryProjectionGroup &&
+      source?.categorySplitRef &&
+      categoryProjectionVariants(source).length > 1,
+  );
+const isCategorySourceSplit = (source) =>
+  canToggleCategorySplit(source) &&
+  store.isCategorySourceSplit(source.categorySplitRef, source.name);
+const toggleCategorySplit = (source) => {
+  if (!canToggleCategorySplit(source)) return;
+  store.setCategorySourceSplit(
+    source.categorySplitRef,
+    source.name,
+    !isCategorySourceSplit(source),
+  );
 };
 const sourceResults = reactive({});
 const sourceSubtypes = reactive({});
@@ -262,12 +288,29 @@ const sourceLabel = (source) => {
     ? `${base} · ${projectionLabel}`
     : base;
 };
+const categoryProjectionVariants = (source) =>
+  [...new Set(
+    (Array.isArray(source?.categoryProjectionVariants)
+      ? source.categoryProjectionVariants
+      : [])
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  )];
+
+const availableSourceSubtypeOptions = (source) => {
+  const options = getSourceSubtypeOptions(source?.name || "");
+  const projected = categoryProjectionVariants(source);
+  if (!projected.length) return options;
+  const allowed = new Set(projected);
+  return options.filter((item) => allowed.has(String(item?.value || "")));
+};
+
 const sourceSubtype = (source) => {
   if (source?.projectionInstanceId && source?.projectionVariant) {
     return String(source.projectionVariant);
   }
   const sourceName = source?.name || "";
-  const options = getSourceSubtypeOptions(sourceName);
+  const options = availableSourceSubtypeOptions(source);
   const key = sourceInstanceKey(source);
   const preferred =
     sourceSubtypes[key] ||
@@ -277,13 +320,22 @@ const sourceSubtype = (source) => {
     ? resolveSourceSubtype(options, preferred)
     : getDefaultSourceSubtype(sourceName);
 };
-const sourceSubtypeGroups = (source) =>
-  source?.projectionInstanceId
-    ? []
-    : localizeSubtypeGroups(
-        getSourceSubtypeControlGroups(source.name, sourceSubtype(source)),
-        locale.value,
-      );
+const sourceSubtypeGroups = (source) => {
+  if (source?.projectionInstanceId) return [];
+  const projected = categoryProjectionVariants(source);
+  const allowed = projected.length ? new Set(projected) : null;
+  return localizeSubtypeGroups(
+    getSourceSubtypeControlGroups(source.name, sourceSubtype(source)),
+    locale.value,
+  )
+    .map((group) => ({
+      ...group,
+      items: (group.items || []).filter(
+        (item) => !allowed || allowed.has(String(item?.value || "")),
+      ),
+    }))
+    .filter((group) => (group.items || []).length);
+};
 const sourceSubtypeOptions = (source) =>
   sourceSubtypeGroups(source).flatMap((group) => group.items || []);
 const sourceRuntimeKey = (source, subtype = sourceSubtype(source)) =>
@@ -691,6 +743,8 @@ onBeforeUnmount(() => {
 .category-source-section__subtype.is-loading .category-source-section__subtype-state { background: #f0a020; }
 .category-source-section__subtype.is-failed .category-source-section__subtype-state { background: #d03050; }
 .category-source-section__tools { display: flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 0; }
+.category-source-section__split-action { display: inline-flex; align-items: center; min-height: 26px; padding: 0 8px; border: 1px solid var(--csr-border); border-radius: 7px; background: transparent; color: var(--csr-text-2); cursor: pointer; font: inherit; font-size: 11px; font-weight: 650; white-space: nowrap; }
+.category-source-section__split-action:hover { border-color: var(--csr-primary); color: var(--csr-primary); background: color-mix(in srgb, var(--csr-primary) 7%, transparent); }
 .category-source-section__freshness { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
 .category-source-section__time { max-width: 92px; overflow: hidden; color: var(--csr-text-3); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .category-source-section__cadence { color: var(--csr-text-3); font-size: 9px; white-space: nowrap; }

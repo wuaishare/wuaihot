@@ -1476,6 +1476,8 @@ export const mainStore = defineStore("mainData", {
       categoryViewMode: "card",
       categoryViewPerCategory: true,
       categoryViewModes: {},
+      // 分类页多榜平台默认合并；仅记录用户显式选择拆分的平台。
+      categorySplitSources: {},
       // 分类
       categoryEnabled: true,
       activeCategory: "全部",
@@ -1586,6 +1588,12 @@ export const mainStore = defineStore("mainData", {
         Object.entries(this.categoryViewModes || {}).map(([ref, mode]) => [
           resolveRef(ref),
           mode,
+        ]),
+      );
+      this.categorySplitSources = Object.fromEntries(
+        Object.entries(this.categorySplitSources || {}).map(([ref, names]) => [
+          resolveRef(ref),
+          [...new Set((Array.isArray(names) ? names : []).map(String).filter(Boolean))],
         ]),
       );
       if (nameAliases.has(this.activeCategory)) {
@@ -1961,6 +1969,47 @@ export const mainStore = defineStore("mainData", {
     setCategoryViewPerCategory(enabled) {
       this.categoryViewPerCategory = Boolean(enabled);
     },
+    getCategorySplitSources(categoryRef) {
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
+      return key && Array.isArray(this.categorySplitSources?.[key])
+        ? this.categorySplitSources[key]
+        : [];
+    },
+    isCategorySourceSplit(categoryRef, sourceName) {
+      const source = String(sourceName || "").trim();
+      return Boolean(source && this.getCategorySplitSources(categoryRef).includes(source));
+    },
+    setCategorySourceSplit(categoryRef, sourceName, enabled = true) {
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
+      const source = String(sourceName || "").trim();
+      if (!key || !source) return false;
+      const current = new Set(this.getCategorySplitSources(categoryRef));
+      if (enabled) current.add(source);
+      else current.delete(source);
+      this.categorySplitSources = {
+        ...(this.categorySplitSources || {}),
+        [key]: [...current],
+      };
+      return true;
+    },
+    setCategorySourcesSplit(categoryRef, sourceNames = [], enabled = true) {
+      const category = getCategoryByRef(this.categories, categoryRef);
+      const key = String(category?.id || "");
+      if (!key) return false;
+      const names = [...new Set((Array.isArray(sourceNames) ? sourceNames : []).map(String).filter(Boolean))];
+      const current = new Set(this.getCategorySplitSources(categoryRef));
+      for (const source of names) {
+        if (enabled) current.add(source);
+        else current.delete(source);
+      }
+      this.categorySplitSources = {
+        ...(this.categorySplitSources || {}),
+        [key]: [...current],
+      };
+      return true;
+    },
     setActiveCategory(name) {
       this.activeCategory = name;
     },
@@ -2197,6 +2246,7 @@ export const mainStore = defineStore("mainData", {
         "categoryViewMode",
         "categoryViewPerCategory",
         "categoryViewModes",
+        "categorySplitSources",
         "categoryEnabled",
         "activeCategory",
         "categories",

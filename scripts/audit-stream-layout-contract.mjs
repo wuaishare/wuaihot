@@ -79,12 +79,14 @@ assert.match(home, /store\.compactMode[\s\S]{0,180}store\.homeCompactColumns[\s\
 assert.match(home, /resolveResponsiveCardColumns/);
 assert.match(home, /ResizeObserver/);
 assert.match(home, /repeat\(var\(--home-grid-columns, 1\), minmax\(0, 1fr\)\)/);
-assert.match(home, /class="music-platform-strip"/);
-assert.match(home, /"apple-music"[\s\S]{0,180}"qq-music"[\s\S]{0,240}"netease-music"[\s\S]{0,240}"kugou-music"[\s\S]{0,240}"kuwo-music"/);
-assert.match(home, /"qq-music"[\s\S]{0,220}"netease-music"[\s\S]{0,220}"kugou-music"[\s\S]{0,220}"kuwo-music"/);
-assert.match(home, /item\.external \? musicPlatformCopy\.official : musicPlatformCopy\.ranking/);
-assert.match(home, /buildRankPath\([\s\S]{0,120}item\.source[\s\S]{0,100}item\.variant/);
-assert.match(home, /\.music-platform-strip__items[\s\S]{0,220}overflow-x: auto/);
+assert.doesNotMatch(home, /music-platform-strip/);
+for (const sourceName of ["qq-music", "netease-music", "kugou-music", "kuwo-music"]) {
+  assert.match(
+    store,
+    new RegExp(`"${sourceName}": \\{[\\s\\S]{0,180}categoryIds: \\["entertainment-music"\\]`),
+    `${sourceName} must remain a normal music-category source instead of a separate promo strip`,
+  );
+}
 assert.match(store, /"apple-music": \{[\s\S]{0,180}categoryIds: \["entertainment-music"\]/);
 assert.match(taxonomyV3, /"apple-music"[\s\S]{0,160}"songs"[\s\S]{0,160}"entertainment-music-songs"/);
 assert.match(taxonomyV3, /"ximalaya-rankings"[\s\S]{0,180}"classic-fiction-ticket"[\s\S]{0,180}"entertainment-reading-novels"/);
@@ -309,10 +311,11 @@ assert.match(taxonomyV3, /sourceName: "baidu",[\s\S]{0,100}variant: "movie"[\s\S
 assert.match(home, /const systemProjected = VARIANT_CATEGORY_PROJECTIONS\.map/);
 assert.match(home, /getSourceVariantOptions\(projection\.sourceName\)/);
 assert.match(home, /availableVariants\.length[\s\S]{0,180}!availableVariants\.some/);
-assert.match(home, /const projectedSourceNames = new Set\([\s\S]{0,240}item\.systemProjection/);
-assert.match(home, /item\.systemProjection \|\| !projectedSourceNames\.has\(item\.name\)/);
+assert.match(home, /const categoryProjectionGroups = computed/);
+assert.match(home, /!item\.systemProjection &&[\s\S]{0,120}!projectionGroups\.has\(item\.name\)/);
 assert.match(home, /projectionRemovable: false/);
-assert.match(home, /scoped = scoped\.filter\(\(item\) => !item\.systemProjection\)/);
+assert.match(home, /canSplit && store\.isCategorySourceSplit\(targetCategory, sourceName\)/);
+assert.match(home, /cardKey: "category-group:" \+ targetCategory \+ ":" \+ sourceName/);
 assert.match(hotList, /props\.hotData\?\.projectionRemovable !== false/);
 assert.match(categoryRail, /source\.projectionRemovable !== false/);
 assert.match(component, /data-cover-presentation="mixed"[\s\S]{0,220}grid-template-columns: 42px 84px minmax\(0, 1fr\)/);
@@ -371,6 +374,28 @@ assert.match(component, /@media \(max-width: 680px\)[\s\S]*data-cover-presentati
 assert.match(listView, /\.cover \{[\s\S]{0,100}width: 78px;[\s\S]{0,80}height: 104px;[\s\S]{0,80}object-fit: cover;/);
 assert.match(store, /showStreamDescriptions: true/);
 assert.match(store, /"showStreamDescriptions"/);
+assert.match(store, /categorySplitSources: \{\}/);
+assert.match(store, /"categorySplitSources"/);
+assert.match(home, /category-split-toolbar/);
+assert.match(home, /toggleAllCategorySplits/);
+assert.match(home, /categoryProjectionGroups/);
+assert.doesNotMatch(home, /music-platform-strip/);
+assert.match(categoryRail, /categoryProjectionVariants/);
+assert.match(categoryRail, /toggleCategorySplit/);
+assert.match(hotList, /categoryProjectionVariants/);
+assert.match(hotList, /toggleCategorySplit/);
+assert.match(listView, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
+assert.match(listView, /DETAIL_FALLBACK_DELAY_MS = 600/);
+assert.equal(
+  (listView.match(/timeout: DETAIL_REQUEST_TIMEOUT_MS/g) || []).length,
+  3,
+  "detail ranking requests and retries must stay bounded",
+);
+assert.equal(
+  (listView.match(/fallbackDelay: DETAIL_FALLBACK_DELAY_MS/g) || []).length,
+  3,
+  "detail ranking fallback must remain progressive instead of blocking the page",
+);
 
 assert.doesNotMatch(categoryRail, /#\{\{ entry\.rank \}\}/);
 assert.match(categoryRail, /<span class="category-story-card__rank">\{\{ entry\.rank \}\}<\/span>/);
