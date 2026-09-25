@@ -446,6 +446,16 @@ assert.match(
   /const cardSubtitle = computed\(\(\) => \{[\s\S]{0,220}isProjectionInstance\.value[\s\S]{0,220}projectionLabel[\s\S]{0,160}return "";/,
   "split projection cards must not inherit a stale base-source subtitle",
 );
+assert.match(
+  hotList,
+  /const categoryScopeFullySplit = computed[\s\S]{0,260}categorySplitVariants\.value\.length === categoryAllProjectionVariants\.value\.length/,
+  "HotList must distinguish partial split from a fully split scope",
+);
+assert.match(
+  hotList,
+  /:show-merge-all="[\s\S]{0,160}Boolean\(hotData\.categorySplitPrimary\)[\s\S]{0,120}!categoryScopeFullySplit/,
+  "card-level merge-all must disappear when the page-level scope is already fully split",
+);
 assert.doesNotMatch(home, /promotedRankings/);
 assert.match(contextToolbar, /const SPLIT_SCOPE_ALL = "__all__"/);
 assert.match(contextToolbar, /const splitScopeRef = computed/);
