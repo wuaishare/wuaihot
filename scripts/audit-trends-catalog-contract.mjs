@@ -654,8 +654,8 @@ assert.match(
 );
 assert.match(
   apiSource,
-  /const useLocalRankingAdapter = LOCAL_RANKING_ADAPTER_SOURCES\.has\(type\)[\s\S]{0,360}!useLocalRankingAdapter && TRENDS_READ_SOURCES\.has\(type\)/,
-  "local ranking adapters must bypass authoritative Trends reads even if an environment read allowlist contains the source",
+  /const useLocalRankingAdapter = LOCAL_RANKING_ADAPTER_SOURCES\.has\(type\)[\s\S]{0,420}catalogReadSurface \|\| \(TRENDS_READ_SOURCES\.has\(type\) \? "public" : null\)/,
+  "catalog-declared read surfaces must outrank the legacy Public Feed allowlist, while local adapters bypass both",
 );
 assert.match(apiSource, /getTrendsCatalogReadSurface\(type\)/, "catalog-managed sources must resolve an explicit readable surface");
 assert.match(apiSource, /readSurface === "display"/, "Display-only reads must fail closed instead of falling back to legacy full-data endpoints");

@@ -567,10 +567,9 @@ export const getHotListsWithFallback = async (
   const catalogReadSurface = useLocalRankingAdapter
     ? null
     : getTrendsCatalogReadSurface(type);
-  const readSurface =
-    !useLocalRankingAdapter && TRENDS_READ_SOURCES.has(type)
-      ? "public"
-      : catalogReadSurface;
+  const readSurface = useLocalRankingAdapter
+    ? null
+    : catalogReadSurface || (TRENDS_READ_SOURCES.has(type) ? "public" : null);
   if (readSurface) {
     const startedAt = performance.now();
     try {
