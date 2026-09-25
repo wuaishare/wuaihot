@@ -479,7 +479,7 @@ assert.deepEqual(
   bilibiliStaticValues,
   [
     "popular", "all", "animation", "music", "game", "entertainment", "tech",
-    "kichiku", "dance", "fashion", "life", "guochuang", "film", "knowledge",
+    "film", "kichiku", "dance", "fashion", "life", "guochuang", "knowledge",
     "food", "animals", "auto", "sports",
   ],
   "Bilibili static fallback must stay aligned with the current governed Directory Catalog",
