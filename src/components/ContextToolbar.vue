@@ -595,7 +595,11 @@ const categoryLabel = (category) =>
     : category?.name || "";
 const categoryPageHeading = (category) => {
   const label = categoryLabel(category);
-  if (!label || category?.parentId) return label;
+  if (!label) return label;
+  if (locale.value === "zh-CN" && category?.name === "音乐") {
+    return "音乐热榜";
+  }
+  if (category?.parentId) return label;
   return `${label}${copy.value.rankingSuffix}`;
 };
 

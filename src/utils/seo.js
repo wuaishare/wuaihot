@@ -1892,6 +1892,10 @@ export const applySeoMeta = (route) => {
     : null;
   const pageSeo = getPageSeo(route, locale);
   const localizedHomeTitle = i18n.global.t("seo.homeTitle", {}, { locale });
+  const homeTitle =
+    locale === "zh-CN"
+      ? resolveValue(meta.seoTitle, context) || DEFAULT_SEO.title
+      : localizedHomeTitle;
   const localizedHomeDescription = i18n.global.t(
     "seo.homeDescription",
     {},
@@ -1912,7 +1916,7 @@ export const applySeoMeta = (route) => {
     listSeo?.title ||
     categorySeo?.title ||
     pageSeo?.title ||
-    (isHomeRoute ? localizedHomeTitle : null) ||
+    (isHomeRoute ? homeTitle : null) ||
     (isListRoute ? localizedListTitle : null) ||
     resolveValue(meta.seoTitle || meta.title, context) ||
     localizedHomeTitle ||

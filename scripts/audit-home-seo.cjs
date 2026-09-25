@@ -72,5 +72,21 @@ assert.doesNotMatch(
   /<span class="context-breadcrumb__section">\{\{ allCategoryLabel \}\}<\/span>/,
   "homepage breadcrumb must not fall back to the generic all label as its primary heading",
 );
+assert.match(
+  contextToolbarSource,
+  /locale\.value === "zh-CN"[\s\S]{0,100}category\?\.name === "音乐"[\s\S]{0,100}return "音乐热榜"/,
+  "music category H1 must preserve the ranking intent used by its SEO title",
+);
+
+assert.match(
+  seoSource,
+  /const homeTitle =[\s\S]{0,220}locale === "zh-CN"[\s\S]{0,220}resolveValue\(meta\.seoTitle, context\)[\s\S]{0,220}: localizedHomeTitle/,
+  "zh-CN runtime homepage title must use route SEO metadata directly so Vue I18n cannot treat the pipe separator as plural syntax",
+);
+assert.match(
+  seoSource,
+  /\(isHomeRoute \? homeTitle : null\)/,
+  "runtime SEO title resolution must use the authoritative homeTitle value",
+);
 
 console.log("[home-seo-audit] homepage title, social metadata and WebSite identity are consistent");
