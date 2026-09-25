@@ -11,6 +11,7 @@ const subtypeSourcePath = path.join(repoRoot, "src", "utils", "sourceSubtypes.js
 const sourceLabelsPath = path.join(repoRoot, "src", "utils", "sourceLabels.js");
 const messagesPath = path.join(repoRoot, "src", "i18n", "messages.js");
 const siteMetadataPath = path.join(repoRoot, "src", "config", "site-metadata.mjs");
+const taxonomySourcePath = path.join(repoRoot, "src", "config", "taxonomy-v3.js");
 
 const SYSTEM_ROUTES = [
   { pathname: "/setting", seoKey: "setting", robots: "noindex,nofollow" },
@@ -95,6 +96,14 @@ const extractLiteral = (source, constName) => {
 
 const parseConstant = (source, constName) =>
   Function(`"use strict"; return (${extractLiteral(source, constName)});`)();
+
+const parseSourceCategoryProjections = (source) =>
+  Function(
+    `"use strict"; const single = (categoryId) => [categoryId]; return (${extractLiteral(
+      source,
+      "SOURCE_CATEGORY_PROJECTIONS",
+    )});`,
+  )();
 
 const mergeOverrideMaps = (...maps) => {
   const merged = {};
@@ -483,6 +492,15 @@ const setRouteJsonLd = (html, jsonLd) => {
   );
 };
 
+const setBreadcrumbJsonLd = (html, jsonLd) => {
+  const matcher =
+    /<script\s+id="dailyhot-breadcrumb-jsonld"[\s\S]*?<\/script>/;
+  if (!jsonLd) return html.replace(matcher, "");
+  const serialized = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+  const script = `<script id="dailyhot-breadcrumb-jsonld" type="application/ld+json">${serialized}</script>`;
+  return ensureMetaTag(html, matcher, script);
+};
+
 const setAlternateLinks = (html, alternateLinks = []) => {
   const withoutAlternates = html.replace(
     /\n?\s*<link\s+rel="alternate"\s+hreflang="[^"]+"\s+href="[^"]+"\s*\/?>/g,
@@ -515,6 +533,13 @@ const setHtmlMeta = (
     robots,
     alternateLinks,
     jsonLd,
+    breadcrumbJsonLd,
+    ogImage,
+    ogImageType,
+    ogImageWidth,
+    ogImageHeight,
+    ogImageAlt,
+    twitterCard,
   }
 ) => {
   let next = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
@@ -558,6 +583,58 @@ const setHtmlMeta = (
     /<meta\s+name="twitter:description"\s+content="[^"]*"\s*\/?>/,
     `<meta name="twitter:description" content="${description}" />`
   );
+  if (ogImage) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+property="og:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image" content="${ogImage}" />`
+    );
+    next = ensureMetaTag(
+      next,
+      /<meta\s+name="twitter:image"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:image" content="${ogImage}" />`
+    );
+  }
+  if (ogImageType) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+property="og:image:type"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image:type" content="${ogImageType}" />`
+    );
+  }
+  if (ogImageWidth) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+property="og:image:width"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image:width" content="${ogImageWidth}" />`
+    );
+  }
+  if (ogImageHeight) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+property="og:image:height"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image:height" content="${ogImageHeight}" />`
+    );
+  }
+  if (ogImageAlt) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+property="og:image:alt"\s+content="[^"]*"\s*\/?>/,
+      `<meta property="og:image:alt" content="${ogImageAlt}" />`
+    );
+    next = ensureMetaTag(
+      next,
+      /<meta\s+name="twitter:image:alt"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:image:alt" content="${ogImageAlt}" />`
+    );
+  }
+  if (twitterCard) {
+    next = ensureMetaTag(
+      next,
+      /<meta\s+name="twitter:card"\s+content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:card" content="${twitterCard}" />`
+    );
+  }
   if (ogLocale) {
     next = ensureMetaTag(
       next,
@@ -581,6 +658,7 @@ const setHtmlMeta = (
 
   next = setAlternateLinks(next, alternateLinks);
   next = setRouteJsonLd(next, jsonLd);
+  next = setBreadcrumbJsonLd(next, breadcrumbJsonLd);
   return next;
 };
 
@@ -617,6 +695,146 @@ const getSeoMessages = (messages, locale) =>
 
 const getSiteName = (messages, locale) =>
   messages[locale]?.common?.siteName || messages["zh-CN"]?.common?.siteName || brandNameZh;
+
+const BREADCRUMB_HOME_LABELS = {
+  "zh-CN": "首页",
+  en: "Home",
+  "zh-TW": "首頁",
+  ja: "ホーム",
+  ko: "홈",
+};
+
+const CATEGORY_HEADING_SUFFIXES = {
+  "zh-CN": "热榜",
+  en: " Rankings",
+  "zh-TW": "熱榜",
+  ja: "ランキング",
+  ko: " 랭킹",
+};
+
+const buildBreadcrumbJsonLd = (items = []) => {
+  const normalized = items.filter((item) => item?.name);
+  if (normalized.length < 2) return undefined;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: normalized.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      ...(index < normalized.length - 1 && item.item
+        ? { item: item.item }
+        : {}),
+    })),
+  };
+};
+
+const getCategoryTrail = (categoryId, categoryConfigById) => {
+  const trail = [];
+  const seen = new Set();
+  let current = categoryConfigById.get(categoryId);
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    trail.unshift(current);
+    current = current.parentId
+      ? categoryConfigById.get(current.parentId)
+      : null;
+  }
+  return trail;
+};
+
+const getCategoryBreadcrumbLabel = (
+  category,
+  localeMeta,
+  isCurrent = false
+) => {
+  const locale = localeMeta.code;
+  const label = category?.labels?.[locale] || category?.name || "";
+  if (!isCurrent || !label) return label;
+  if (locale === "zh-CN" && category?.name === "音乐") return "音乐热榜";
+  if (category?.parentId) return label;
+  return `${label}${CATEGORY_HEADING_SUFFIXES[locale] || ""}`;
+};
+
+const buildCategoryBreadcrumbJsonLd = ({
+  category,
+  localeMeta,
+  categoryConfigById,
+}) => {
+  if (!category) return undefined;
+  const trail = getCategoryTrail(category.id, categoryConfigById);
+  return buildBreadcrumbJsonLd([
+    {
+      name:
+        BREADCRUMB_HOME_LABELS[localeMeta.code] ||
+        BREADCRUMB_HOME_LABELS["zh-CN"],
+      item: buildAbsoluteUrl(withLocalePrefix(localeMeta, "/")),
+    },
+    ...trail.map((item, index) => ({
+      name: getCategoryBreadcrumbLabel(
+        item,
+        localeMeta,
+        index === trail.length - 1
+      ),
+      item: buildAbsoluteUrl(
+        withLocalePrefix(localeMeta, `/category/${item.slug}`)
+      ),
+    })),
+  ]);
+};
+
+const buildRankBreadcrumbJsonLd = ({
+  sourceName,
+  subtypeValue,
+  sourceDisplayLabel,
+  subtypeLabel,
+  localeMeta,
+  categoryConfigById,
+  sourceCategoryProjections,
+  variantCategoryProjections,
+}) => {
+  const projectedCategoryId =
+    variantCategoryProjections.find(
+      (projection) =>
+        projection.sourceName === sourceName &&
+        String(projection.variant || "") === String(subtypeValue || "")
+    )?.categoryIds?.[0] ||
+    sourceCategoryProjections[sourceName]?.[0] ||
+    "general";
+  const trail = getCategoryTrail(projectedCategoryId, categoryConfigById);
+  const items = [
+    {
+      name:
+        BREADCRUMB_HOME_LABELS[localeMeta.code] ||
+        BREADCRUMB_HOME_LABELS["zh-CN"],
+      item: buildAbsoluteUrl(withLocalePrefix(localeMeta, "/")),
+    },
+    ...trail.map((item) => ({
+      name: getCategoryBreadcrumbLabel(item, localeMeta, false),
+      item: buildAbsoluteUrl(
+        withLocalePrefix(localeMeta, `/category/${item.slug}`)
+      ),
+    })),
+    {
+      name: sourceDisplayLabel,
+      item: buildAbsoluteUrl(
+        withLocalePrefix(localeMeta, `/rank/${sourceName}`)
+      ),
+    },
+  ];
+  if (subtypeLabel) {
+    items.push({
+      name: subtypeLabel,
+      item: buildAbsoluteUrl(
+        withLocalePrefix(
+          localeMeta,
+          `/rank/${sourceName}/${subtypeValue}`
+        )
+      ),
+    });
+  }
+  return buildBreadcrumbJsonLd(items);
+};
 
 const buildCollectionJsonLd = ({ title, description, canonical, htmlLang, listName }) => ({
   "@context": "https://schema.org",
@@ -667,6 +885,7 @@ async function main() {
   ensureFile(sourceLabelsPath);
   ensureFile(messagesPath);
   ensureFile(siteMetadataPath);
+  ensureFile(taxonomySourcePath);
 
   const template = fs.readFileSync(indexHtmlPath, "utf8");
   const seoSource = fs.readFileSync(seoSourcePath, "utf8");
@@ -675,7 +894,9 @@ async function main() {
   const sourceLabelsSource = fs.readFileSync(sourceLabelsPath, "utf8");
   const messagesSource = fs.readFileSync(messagesPath, "utf8");
   const siteMetadataSource = fs.readFileSync(siteMetadataPath, "utf8");
+  const taxonomySource = fs.readFileSync(taxonomySourcePath, "utf8");
 
+  const defaultSeo = parseConstant(seoSource, "DEFAULT_SEO");
   const categorySeoMap = parseConstant(seoSource, "CATEGORY_SEO_MAP");
   const categoryLocaleSeoMap = parseConstant(seoSource, "CATEGORY_LOCALE_SEO_MAP");
   const listSeoMap = parseConstant(seoSource, "LIST_SEO_MAP");
@@ -723,6 +944,12 @@ async function main() {
   const aiTopicMetadata = parseConstant(siteMetadataSource, "AI_TOPIC_METADATA");
   const gameDealsTopicMetadata = parseConstant(siteMetadataSource, "GAME_DEALS_TOPIC_METADATA");
   const chiguaTopicMetadata = parseConstant(siteMetadataSource, "CHIGUA_TOPIC_METADATA");
+  const sourceCategoryProjections =
+    parseSourceCategoryProjections(taxonomySource);
+  const variantCategoryProjections = parseConstant(
+    taxonomySource,
+    "VARIANT_CATEGORY_PROJECTIONS"
+  );
   const catalogPrioritySources = catalogSources.filter(
     (source) => source.priorityTier === "A" || source.priorityTier === "B",
   );
@@ -730,19 +957,41 @@ async function main() {
     ...new Set([
       ...getSourceNames(storeSource),
       ...catalogPrioritySources.map((source) => source.key),
+      ...variantCategoryProjections.map((projection) => projection.sourceName),
     ]),
   ];
   const catalogSourceNames = new Map(
     catalogPrioritySources.map((source) => [source.key, source.name]),
   );
   const subtypeValues = getSubtypeValues(sourceSubtypeGroups);
+  for (const projection of variantCategoryProjections) {
+    const sourceName = String(projection?.sourceName || "").trim();
+    const variant = String(projection?.variant || "").trim();
+    if (!sourceName || !variant) continue;
+    const values = subtypeValues.get(sourceName) || [];
+    if (!values.includes(variant)) {
+      subtypeValues.set(sourceName, [...values, variant]);
+    }
+  }
   const defaultSubtypeValues = getDefaultSubtypeValues(subtypeValues);
   for (const [sourceName, defaultSubtype] of catalogDefaultSubtypes) {
     defaultSubtypeValues.set(sourceName, defaultSubtype);
   }
   const subtypeLabelMap = getSubtypeLabelMap(sourceSubtypeGroups);
+  for (const projection of variantCategoryProjections) {
+    const sourceName = String(projection?.sourceName || "").trim();
+    const variant = String(projection?.variant || "").trim();
+    const label = String(projection?.label || "").trim();
+    if (!sourceName || !variant || !label) continue;
+    const labels = subtypeLabelMap.get(sourceName) || new Map();
+    if (!labels.has(variant)) labels.set(variant, label);
+    subtypeLabelMap.set(sourceName, labels);
+  }
   const categoryConfigBySlug = new Map(
     builtinCategories.map((category) => [category.slug, category])
+  );
+  const categoryConfigById = new Map(
+    builtinCategories.map((category) => [category.id, category])
   );
   let writtenShellCount = 0;
 
@@ -753,6 +1002,14 @@ async function main() {
       outputPath,
       setHtmlMeta(template, {
         ogLocale: meta.htmlLang ? meta.htmlLang.replace("-", "_") : undefined,
+        ogImage:
+          buildAbsoluteUrl(defaultSeo.ogImage) ||
+          defaultSeo.ogImage,
+        ogImageType: defaultSeo.ogImageType,
+        ogImageWidth: defaultSeo.ogImageWidth,
+        ogImageHeight: defaultSeo.ogImageHeight,
+        ogImageAlt: defaultSeo.ogImageAlt,
+        twitterCard: defaultSeo.twitterCard,
         ...meta,
       })
     );
@@ -793,6 +1050,11 @@ async function main() {
     const basePathname = `/category/${category.slug}`;
     const htmlLang = localeMeta.htmlLang;
     const categoryConfig = categoryConfigBySlug.get(category.slug);
+    const breadcrumbJsonLd = buildCategoryBreadcrumbJsonLd({
+      category: categoryConfig || category,
+      localeMeta,
+      categoryConfigById,
+    });
     if (locale === "zh-CN") {
       const meta = categorySeoMap[category.name];
       if (meta?.title && meta?.description) {
@@ -805,6 +1067,7 @@ async function main() {
           canonical,
           htmlLang,
           alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+          breadcrumbJsonLd,
           jsonLd: buildCollectionJsonLd({
             title,
             description,
@@ -825,6 +1088,7 @@ async function main() {
         canonical,
         htmlLang,
         alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+        breadcrumbJsonLd,
         jsonLd: buildCollectionJsonLd({
           title,
           description,
@@ -847,6 +1111,7 @@ async function main() {
       canonical,
       htmlLang,
       alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+      breadcrumbJsonLd,
       jsonLd: buildCollectionJsonLd({
         title,
         description,
@@ -1013,6 +1278,16 @@ async function main() {
       ) || sourceLabel;
     const sourceSeoLabel =
       locale === "zh-CN" && sourceMeta?.label ? sourceMeta.label : sourceLabel;
+    const breadcrumbJsonLd = buildRankBreadcrumbJsonLd({
+      sourceName,
+      subtypeValue: effectiveSubtypeValue,
+      sourceDisplayLabel,
+      subtypeLabel,
+      localeMeta,
+      categoryConfigById,
+      sourceCategoryProjections,
+      variantCategoryProjections,
+    });
 
     if (locale !== "zh-CN") {
       const seoMessages = getSeoMessages(messages, locale);
@@ -1041,6 +1316,7 @@ async function main() {
         canonical,
         htmlLang,
         alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+        breadcrumbJsonLd,
         jsonLd: buildCollectionJsonLd({
           title,
           description,
@@ -1106,6 +1382,7 @@ async function main() {
       canonical,
       htmlLang,
       alternateLinks: buildAlternateLinks(basePathname, supportedLocales),
+      breadcrumbJsonLd,
       jsonLd: buildCollectionJsonLd({
         title,
         description,

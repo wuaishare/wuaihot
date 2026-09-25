@@ -284,6 +284,7 @@ export default defineConfig(async ({ mode }) => {
           globPatterns: [
             "**/*.{js,css,woff2,woff,ttf,png,jpg,jpeg,svg,gif,webp,ico,webmanifest}",
           ],
+          globIgnores: ["brand/wuaihot-social.png"],
           navigateFallback: null,
           navigateFallbackDenylist: [
             /^\/api(?:[/?#]|$)/,

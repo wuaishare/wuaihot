@@ -60,7 +60,47 @@ for (const [relativePath, expectedTitle] of expectedCategoryShells) {
   }
 }
 
-if (malformed.length || missingOrWrongCategoryShells.length) {
+const expectedBreadcrumbShells = [
+  ["category/music/index.html", ["首页", "文娱", "音乐热榜"]],
+  ["rank/weibo/tech/index.html", ["首页", "科技", "微博", "科技榜"]],
+  ["rank/douyin/entertainment/index.html", ["首页", "文娱", "抖音", "娱乐榜"]],
+];
+const missingOrWrongBreadcrumbShells = [];
+for (const [relativePath, expectedNames] of expectedBreadcrumbShells) {
+  const file = path.join(distRoot, relativePath);
+  if (!fs.existsSync(file)) {
+    missingOrWrongBreadcrumbShells.push({
+      file: relativePath,
+      names: ["(missing)"],
+      expectedNames,
+    });
+    continue;
+  }
+  const html = fs.readFileSync(file, "utf8");
+  const jsonLdText = html.match(
+    /<script\s+id="dailyhot-breadcrumb-jsonld"\s+type="application\/ld\+json">([\s\S]*?)<\/script>/i,
+  )?.[1];
+  let names = [];
+  try {
+    const jsonLd = jsonLdText ? JSON.parse(jsonLdText) : null;
+    names = (jsonLd?.itemListElement || []).map((item) => item?.name);
+  } catch {
+    names = ["(invalid json)"];
+  }
+  if (JSON.stringify(names) !== JSON.stringify(expectedNames)) {
+    missingOrWrongBreadcrumbShells.push({
+      file: relativePath,
+      names,
+      expectedNames,
+    });
+  }
+}
+
+if (
+  malformed.length ||
+  missingOrWrongCategoryShells.length ||
+  missingOrWrongBreadcrumbShells.length
+) {
   if (malformed.length) {
     console.error("[seo-shell-audit] malformed generated titles detected:");
   }
@@ -75,9 +115,17 @@ if (malformed.length || missingOrWrongCategoryShells.length) {
       );
     }
   }
+  if (missingOrWrongBreadcrumbShells.length) {
+    console.error("[seo-shell-audit] breadcrumb shells are missing or incorrect:");
+    for (const row of missingOrWrongBreadcrumbShells) {
+      console.error(
+        `- ${row.file}: got ${JSON.stringify(row.names)}, expected ${JSON.stringify(row.expectedNames)}`,
+      );
+    }
+  }
   process.exitCode = 1;
 } else {
   console.log(
-    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}`,
+    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}; breadcrumb shells: ${expectedBreadcrumbShells.length}`,
   );
 }

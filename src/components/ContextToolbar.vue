@@ -299,6 +299,7 @@ import {
 } from "@/utils/sourceLabels";
 import { useTrendsCatalogRevision } from "@/composables/useTrendsCatalogRevision";
 import { getCategoryScopedVariantOptions } from "@/utils/categoryVariantScope";
+import { VARIANT_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
 import {
   TOPIC_REGISTRY,
   buildTopicPath,
@@ -545,8 +546,23 @@ const currentSourceMeta = computed(
 const currentSourceCategory = computed(() => {
   const source = currentSourceMeta.value;
   if (!source) return null;
-  const [categoryId] = getSourceCategoryIds(source, store.categories);
-  return getCategoryByRef(store.categories, categoryId);
+  const sourceName = currentSourceName.value;
+  const variant = resolveSourceSubtype(
+    getSourceSubtypeOptions(sourceName),
+    route.params?.subtypeSlug ||
+      route.query?.subtype ||
+      getDefaultSourceSubtype(sourceName),
+  );
+  const projectedCategoryId = VARIANT_CATEGORY_PROJECTIONS.find(
+    (projection) =>
+      projection.sourceName === sourceName &&
+      String(projection.variant || "") === String(variant || ""),
+  )?.categoryIds?.[0];
+  const [baseCategoryId] = getSourceCategoryIds(source, store.categories);
+  return getCategoryByRef(
+    store.categories,
+    projectedCategoryId || baseCategoryId,
+  );
 });
 const currentCategory = computed(() =>
   routeKind.value === "category"

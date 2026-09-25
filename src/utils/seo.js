@@ -1,7 +1,11 @@
 import i18n from "@/i18n";
 import {
+  buildCategoryPath,
+  buildHomePath,
   buildLocalePathFromRoute,
+  buildRankPath,
   getCategoryLabel,
+  getCategoryMetaById,
   getCategoryNameBySlug,
   getLocaleFromRoute,
   getLocaleMeta,
@@ -20,6 +24,11 @@ import {
   getSourceLabel as getLocalizedSourceLabel,
   getSubtypeLabel as getLocalizedSubtypeLabel,
 } from "@/utils/sourceLabels";
+import { BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
+import {
+  SOURCE_CATEGORY_PROJECTIONS,
+  VARIANT_CATEGORY_PROJECTIONS,
+} from "@/config/taxonomy-v3";
 
 const DEFAULT_SEO = {
   title: "今日热榜 - 全网热搜与实时热点聚合 | 吾爱热榜",
@@ -27,7 +36,12 @@ const DEFAULT_SEO = {
     "今日热榜聚合微博、百度、知乎、抖音、B站、头条等平台的全网热搜与实时热点。一站看全网，覆盖新闻、科技、AI、财经、文娱、游戏、体育、生活等分类，支持榜单切换与实时更新。",
   keywords:
     "今日热榜,全网热搜,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,吾爱热榜,wuaihot",
-  ogImage: "/ico/favicon.png",
+  ogImage: "/brand/wuaihot-social.png",
+  ogImageWidth: "1254",
+  ogImageHeight: "1254",
+  ogImageType: "image/png",
+  ogImageAlt: "吾爱热榜品牌标识",
+  twitterCard: "summary",
   siteName: "吾爱热榜",
   locale: "zh_CN",
 };
@@ -1617,6 +1631,147 @@ const buildAbsoluteUrl = (path, siteUrl) => {
   }
 };
 
+const BREADCRUMB_HOME_LABELS = {
+  "zh-CN": "首页",
+  en: "Home",
+  "zh-TW": "首頁",
+  ja: "ホーム",
+  ko: "홈",
+};
+
+const CATEGORY_HEADING_SUFFIXES = {
+  "zh-CN": "热榜",
+  en: " Rankings",
+  "zh-TW": "熱榜",
+  ja: "ランキング",
+  ko: " 랭킹",
+};
+
+const getBuiltinCategoryTrail = (categoryId) => {
+  const trail = [];
+  const seen = new Set();
+  let current = getCategoryMetaById(categoryId, BUILTIN_CATEGORIES);
+  while (current && !seen.has(current.id)) {
+    seen.add(current.id);
+    trail.unshift(current);
+    current = current.parentId
+      ? getCategoryMetaById(current.parentId, BUILTIN_CATEGORIES)
+      : null;
+  }
+  return trail;
+};
+
+const getCategoryBreadcrumbLabel = (category, locale, isCurrent = false) => {
+  const label =
+    category?.labels?.[locale] ||
+    getCategoryLabel(category?.name || "", locale) ||
+    category?.name ||
+    "";
+  if (!isCurrent || !label) return label;
+  if (locale === "zh-CN" && category?.name === "音乐") return "音乐热榜";
+  if (category?.parentId) return label;
+  return `${label}${CATEGORY_HEADING_SUFFIXES[locale] || ""}`;
+};
+
+const buildBreadcrumbJsonLd = (items = []) => {
+  const normalized = items.filter((item) => item?.name);
+  if (normalized.length < 2) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: normalized.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      ...(index < normalized.length - 1 && item.item
+        ? { item: item.item }
+        : {}),
+    })),
+  };
+};
+
+const getBreadcrumbJsonLd = (route, locale, siteUrl) => {
+  const routeName = String(route?.name || "");
+  const homeItem = {
+    name: BREADCRUMB_HOME_LABELS[locale] || BREADCRUMB_HOME_LABELS["zh-CN"],
+    item: buildAbsoluteUrl(buildHomePath(locale), siteUrl),
+  };
+
+  if (["category", "category-locale"].includes(routeName)) {
+    const categoryName = getCategoryNameBySlug(route?.params?.categorySlug || "");
+    const currentCategory = BUILTIN_CATEGORIES.find(
+      (category) => category.name === categoryName,
+    );
+    if (!currentCategory) return null;
+    const trail = getBuiltinCategoryTrail(currentCategory.id);
+    return buildBreadcrumbJsonLd([
+      homeItem,
+      ...trail.map((category, index) => ({
+        name: getCategoryBreadcrumbLabel(
+          category,
+          locale,
+          index === trail.length - 1,
+        ),
+        item: buildAbsoluteUrl(buildCategoryPath(locale, category.slug), siteUrl),
+      })),
+    ]);
+  }
+
+  if (["list", "list-locale", "list-legacy"].includes(routeName)) {
+    const sourceParam =
+      route?.query?.type ||
+      route?.params?.type ||
+      getSourceNameBySlug(route?.params?.sourceSlug);
+    const sourceKey = Array.isArray(sourceParam) ? sourceParam[0] : sourceParam;
+    if (!sourceKey) return null;
+    const subtypeParam = Array.isArray(route?.params?.subtypeSlug)
+      ? route.params.subtypeSlug[0]
+      : route?.params?.subtypeSlug;
+    const effectiveSubtype =
+      subtypeParam ||
+      (shouldCanonicalizeDefaultSubtype(sourceKey)
+        ? getDefaultSourceSubtype(sourceKey)
+        : "");
+    const projectedCategoryId =
+      VARIANT_CATEGORY_PROJECTIONS.find(
+        (projection) =>
+          projection.sourceName === sourceKey &&
+          String(projection.variant || "") === String(effectiveSubtype || ""),
+      )?.categoryIds?.[0] ||
+      SOURCE_CATEGORY_PROJECTIONS[sourceKey]?.[0] ||
+      "general";
+    const categoryTrail = getBuiltinCategoryTrail(projectedCategoryId);
+    const sourceLabel = getSourceLabel(sourceKey, locale);
+    const sourceDisplayLabel =
+      getLocalizedSourceDisplayLabel(sourceKey, locale, sourceLabel) ||
+      sourceLabel;
+    const subtypeLabel = getSubtypeLabel(sourceKey, effectiveSubtype, locale);
+    const items = [
+      homeItem,
+      ...categoryTrail.map((category) => ({
+        name: getCategoryBreadcrumbLabel(category, locale, false),
+        item: buildAbsoluteUrl(buildCategoryPath(locale, category.slug), siteUrl),
+      })),
+      {
+        name: sourceDisplayLabel,
+        item: buildAbsoluteUrl(buildRankPath(locale, sourceKey), siteUrl),
+      },
+    ];
+    if (subtypeLabel) {
+      items.push({
+        name: subtypeLabel,
+        item: buildAbsoluteUrl(
+          buildRankPath(locale, sourceKey, effectiveSubtype),
+          siteUrl,
+        ),
+      });
+    }
+    return buildBreadcrumbJsonLd(items);
+  }
+
+  return null;
+};
+
 const resolveValue = (val, ctx) => {
   return typeof val === "function" ? val(ctx) : val;
 };
@@ -1944,6 +2099,16 @@ export const applySeoMeta = (route) => {
     resolveValue(meta.ogImage, context) || DEFAULT_SEO.ogImage,
     siteUrl
   );
+  const ogImageWidth =
+    resolveValue(meta.ogImageWidth, context) || DEFAULT_SEO.ogImageWidth;
+  const ogImageHeight =
+    resolveValue(meta.ogImageHeight, context) || DEFAULT_SEO.ogImageHeight;
+  const ogImageType =
+    resolveValue(meta.ogImageType, context) || DEFAULT_SEO.ogImageType;
+  const ogImageAlt =
+    resolveValue(meta.ogImageAlt, context) || DEFAULT_SEO.ogImageAlt;
+  const twitterCard =
+    resolveValue(meta.twitterCard, context) || DEFAULT_SEO.twitterCard;
 
   document.title = title;
   setMetaTag("name", "description", description);
@@ -1955,6 +2120,10 @@ export const applySeoMeta = (route) => {
   setMetaTag("property", "og:description", description);
   setMetaTag("property", "og:url", canonical);
   setMetaTag("property", "og:image", ogImage);
+  setMetaTag("property", "og:image:type", ogImageType);
+  setMetaTag("property", "og:image:width", ogImageWidth);
+  setMetaTag("property", "og:image:height", ogImageHeight);
+  setMetaTag("property", "og:image:alt", ogImageAlt);
   setMetaTag("property", "og:site_name", i18n.global.t("common.siteName", {}, { locale }) || DEFAULT_SEO.siteName);
   setMetaTag(
     "property",
@@ -1962,10 +2131,11 @@ export const applySeoMeta = (route) => {
     (getLocaleMeta(locale)?.htmlLang || DEFAULT_SEO.locale).replace("-", "_")
   );
 
-  setMetaTag("name", "twitter:card", "summary_large_image");
+  setMetaTag("name", "twitter:card", twitterCard);
   setMetaTag("name", "twitter:title", title);
   setMetaTag("name", "twitter:description", description);
   setMetaTag("name", "twitter:image", ogImage);
+  setMetaTag("name", "twitter:image:alt", ogImageAlt);
 
   setLinkTag("canonical", canonical);
   setAlternateLinks(route, siteUrl);
@@ -1978,4 +2148,8 @@ export const applySeoMeta = (route) => {
       ? meta.jsonLd({ siteUrl, canonical, title, description, route })
       : meta.jsonLd);
   setJsonLd("dailyhot-route-jsonld", jsonLd);
+  setJsonLd(
+    "dailyhot-breadcrumb-jsonld",
+    getBreadcrumbJsonLd(route, locale, siteUrl),
+  );
 };

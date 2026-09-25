@@ -10,6 +10,13 @@ const expected = {
     "今日热榜,全网热搜,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,吾爱热榜,wuaihot",
   siteName: "吾爱热榜",
   alternateName: "wuaihot",
+  socialImage:
+    "/brand/wuaihot-social.png",
+  socialImageType: "image/png",
+  socialImageWidth: "1254",
+  socialImageHeight: "1254",
+  socialImageAlt: "吾爱热榜品牌标识",
+  twitterCard: "summary",
 };
 
 const html = fs.readFileSync(path.join(__dirname, "..", "dist", "index.html"), "utf8");
@@ -27,6 +34,46 @@ assert.equal(text(/<meta\s+property="og:description"\s+content="([^"]+)"/i, "og:
 assert.equal(text(/<meta\s+property="og:site_name"\s+content="([^"]+)"/i, "og:site_name"), expected.siteName);
 assert.equal(text(/<meta\s+name="twitter:title"\s+content="([^"]+)"/i, "twitter:title"), expected.title);
 assert.equal(text(/<meta\s+name="twitter:description"\s+content="([^"]+)"/i, "twitter:description"), expected.description);
+assert.ok(
+  text(/<meta\s+property="og:image"\s+content="([^"]+)"/i, "og:image").endsWith(
+    expected.socialImage,
+  ),
+);
+assert.equal(text(/<meta\s+property="og:image:type"\s+content="([^"]+)"/i, "og:image:type"), expected.socialImageType);
+assert.equal(text(/<meta\s+property="og:image:width"\s+content="([^"]+)"/i, "og:image:width"), expected.socialImageWidth);
+assert.equal(text(/<meta\s+property="og:image:height"\s+content="([^"]+)"/i, "og:image:height"), expected.socialImageHeight);
+assert.equal(text(/<meta\s+property="og:image:alt"\s+content="([^"]+)"/i, "og:image:alt"), expected.socialImageAlt);
+assert.equal(text(/<meta\s+name="twitter:card"\s+content="([^"]+)"/i, "twitter:card"), expected.twitterCard);
+assert.ok(
+  text(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i, "twitter:image").endsWith(
+    expected.socialImage,
+  ),
+);
+assert.equal(text(/<meta\s+name="twitter:image:alt"\s+content="([^"]+)"/i, "twitter:image:alt"), expected.socialImageAlt);
+
+const socialImagePath = path.join(
+  __dirname,
+  "..",
+  "dist",
+  expected.socialImage.replace(/^\//, ""),
+);
+assert.ok(
+  fs.existsSync(socialImagePath),
+  "social image must be emitted as a stable production asset",
+);
+const serviceWorkerPath = path.join(__dirname, "..", "dist", "sw.js");
+assert.ok(fs.existsSync(serviceWorkerPath), "service worker is missing");
+assert.doesNotMatch(
+  fs.readFileSync(serviceWorkerPath, "utf8"),
+  /brand\/wuaihot-social\.png/,
+  "social crawler image must not inflate the PWA precache",
+);
+
+assert.doesNotMatch(
+  html,
+  /<script\s+id="dailyhot-breadcrumb-jsonld"/i,
+  "homepage must not emit a redundant BreadcrumbList",
+);
 
 const jsonLdText = text(
   /<script\s+id="dailyhot-route-jsonld"\s+type="application\/ld\+json">([\s\S]*?)<\/script>/i,
