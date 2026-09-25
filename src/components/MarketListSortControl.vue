@@ -1,20 +1,17 @@
 <template>
   <div v-if="menu" class="market-sort-menu no-card-drag" @click.stop>
-    <span class="market-sort-menu__title">{{ t("hotList.marketSort") }}</span>
-    <div class="market-sort-menu__options">
-      <button
-        v-for="option in menuOptions"
-        :key="option.key"
-        type="button"
-        class="market-sort-menu__option"
-        :class="{ active: option.key === activeMode }"
-        :aria-pressed="option.key === activeMode"
-        @click.stop="selectMode(option.key)"
-      >
-        <n-icon :component="option.icon" />
-        <span>{{ option.label }}</span>
-      </button>
-    </div>
+    <button
+      v-for="option in menuOptions"
+      :key="option.key"
+      type="button"
+      class="market-sort-menu__option"
+      :class="{ active: option.key === activeMode }"
+      :aria-pressed="option.key === activeMode"
+      @click.stop="selectMode(option.key)"
+    >
+      <n-icon :component="option.icon" />
+      <span>{{ option.label }}</span>
+    </button>
   </div>
 
   <n-dropdown v-else trigger="click" :options="options" @select="selectMode">
@@ -39,13 +36,7 @@
 </template>
 
 <script setup>
-import {
-  ArrowDown,
-  ArrowUp,
-  RankingList,
-  SortAmountDown,
-  SortOne,
-} from "@icon-park/vue-next";
+import { ArrowDown, ArrowUp, RankingList, SortAmountDown, SortOne } from "@icon-park/vue-next";
 import { useI18n } from "vue-i18n";
 import { dropdownSelectionProps } from "@/utils/dropdownSelection";
 import {
@@ -57,22 +48,10 @@ import {
 } from "@/utils/marketListSort";
 
 const props = defineProps({
-  source: {
-    type: String,
-    required: true,
-  },
-  compact: {
-    type: Boolean,
-    default: true,
-  },
-  showStateLabel: {
-    type: Boolean,
-    default: false,
-  },
-  menu: {
-    type: Boolean,
-    default: false,
-  },
+  source: { type: String, required: true },
+  compact: { type: Boolean, default: true },
+  showStateLabel: { type: Boolean, default: false },
+  menu: { type: Boolean, default: false },
 });
 
 const { t } = useI18n({ useScope: "global" });
@@ -85,7 +64,7 @@ const activeMode = computed(() => {
 const activityLabel = computed(() =>
   getMarketListActivityKind(props.source) === "volume"
     ? t("hotList.marketSortVolume")
-    : t("hotList.marketSortAmount")
+    : t("hotList.marketSortAmount"),
 );
 
 const baseOptions = computed(() => [
@@ -96,67 +75,57 @@ const baseOptions = computed(() => [
 ]);
 
 const menuOptions = computed(() => baseOptions.value);
-const options = computed(() => baseOptions.value.map(({ key, label }) => ({
-  key,
-  label,
-  props: dropdownSelectionProps(key === activeMode.value),
-})));
-
+const options = computed(() =>
+  baseOptions.value.map(({ key, label }) => ({
+    key,
+    label,
+    props: dropdownSelectionProps(key === activeMode.value),
+  })),
+);
 const activeLabel = computed(
-  () => baseOptions.value.find((item) => item.key === activeMode.value)?.label || t("hotList.marketSortRank")
+  () => baseOptions.value.find((item) => item.key === activeMode.value)?.label || t("hotList.marketSortRank"),
 );
 
 const selectMode = (mode) => saveMarketListSortMode(props.source, mode);
 </script>
 
 <style scoped>
-.market-sort-trigger {
+.market-sort-trigger,
+.market-sort-menu {
   display: inline-flex;
+  align-items: center;
 }
 
 .market-sort-menu {
-  display: grid;
-  gap: 7px;
-  width: 100%;
-}
-
-.market-sort-menu__title {
-  color: var(--n-text-color-3, #8a8f99);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.market-sort-menu__options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 2px;
 }
 
 .market-sort-menu__option {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 7px;
-  min-height: 34px;
-  padding: 7px 10px;
-  border: 1px solid var(--n-border-color);
-  border-radius: 9px;
-  background: rgba(127, 127, 127, 0.05);
+  gap: 4px;
+  min-height: 26px;
+  padding: 3px 7px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
   color: var(--n-text-color-2, var(--n-text-color));
+  font: inherit;
   font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+  transition: background 0.16s ease, color 0.16s ease;
 }
 
 .market-sort-menu__option:hover,
 .market-sort-menu__option.active {
-  border-color: rgba(234, 68, 77, 0.35);
   background: rgba(234, 68, 77, 0.09);
-  color: #ea444d;
+  color: var(--n-primary-color, #ea444d);
 }
 
 .market-sort-menu__option.active {
-  font-weight: 700;
+  font-weight: 650;
 }
 </style>

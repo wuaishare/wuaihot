@@ -10,98 +10,119 @@
     @click.stop
   >
     <template v-if="embedded">
-      <div class="ranking-split-control__menu is-embedded" @click.stop>
-        <div class="ranking-split-control__heading">
-          <div class="ranking-split-control__heading-title">
-            <n-icon :component="isProjection ? Merge : Split" />
-            <strong>{{ isProjection ? copy.mergeCurrent : copy.splitMenu }}</strong>
-          </div>
-          <span>{{ isProjection ? copy.mergeHint : copy.splitHint }}</span>
-        </div>
-
+      <div class="ranking-split-control__inline" @click.stop>
         <template v-if="isProjection">
-          <div class="ranking-split-control__embedded-actions">
-            <n-button size="small" secondary @click.stop="mergeCurrent">
-              <template #icon>
-                <n-icon :component="Merge" />
-              </template>
-              {{ copy.mergeCurrent }}
-            </n-button>
-            <n-button
-              v-if="showMergeAll"
-              size="small"
-              quaternary
-              @click.stop="mergeAll"
-            >
-              {{ copy.mergeAll }}
-            </n-button>
-          </div>
+          <n-button
+            class="ranking-split-control__inline-action"
+            text
+            size="tiny"
+            @click.stop="mergeCurrent"
+          >
+            <template #icon>
+              <n-icon :component="Merge" />
+            </template>
+            {{ copy.mergeCurrentShort }}
+          </n-button>
+          <n-button
+            v-if="showMergeAll"
+            class="ranking-split-control__inline-action"
+            text
+            size="tiny"
+            @click.stop="mergeAll"
+          >
+            {{ copy.mergeAllShort }}
+          </n-button>
         </template>
 
         <template v-else>
-          <div class="ranking-split-control__embedded-actions is-primary">
-            <n-button
-              v-if="currentVariant && !splitVariantsNormalized.includes(currentVariant)"
-              size="small"
-              secondary
-              @click.stop="splitCurrent"
-            >
-              <template #icon>
-                <n-icon :component="Split" />
-              </template>
-              {{ copy.splitCurrent }}
-            </n-button>
-            <n-button size="small" quaternary @click.stop="toggleManage">
-              {{ manageOpen ? copy.closeManage : copy.manageSplit }}
-            </n-button>
-            <n-button
-              v-if="splitVariantsNormalized.length !== normalizedVariants.length"
-              size="small"
-              quaternary
-              @click.stop="splitAll"
-            >
-              {{ copy.splitAll }}
-            </n-button>
-            <n-button
-              v-if="splitVariantsNormalized.length"
-              size="small"
-              quaternary
-              @click.stop="mergeAll"
-            >
-              {{ copy.mergeAll }} {{ splitVariantsNormalized.length }}/{{ normalizedVariants.length }}
-            </n-button>
-          </div>
+          <n-button
+            v-if="currentVariant && !splitVariantsNormalized.includes(currentVariant)"
+            class="ranking-split-control__inline-action"
+            text
+            size="tiny"
+            @click.stop="splitCurrent"
+          >
+            <template #icon>
+              <n-icon :component="Split" />
+            </template>
+            {{ copy.splitCurrent }}
+          </n-button>
 
-          <template v-if="manageOpen">
-            <div class="ranking-split-control__options is-managed">
-              <button
-                v-for="option in variantOptions"
-                :key="option.value"
-                type="button"
-                class="ranking-split-control__option"
-                :class="{ 'is-selected': draftVariants.includes(option.value) }"
-                :aria-pressed="draftVariants.includes(option.value)"
-                @click.stop="toggleDraft(option.value)"
-              >
-                <span class="ranking-split-control__check" aria-hidden="true">
-                  {{ draftVariants.includes(option.value) ? "✓" : "" }}
-                </span>
-                <span>{{ option.label }}</span>
-              </button>
-            </div>
-
-            <div class="ranking-split-control__menu-actions">
-              <button type="button" @click.stop="selectAll">{{ copy.selectAll }}</button>
+          <n-popover
+            trigger="click"
+            placement="top-end"
+            :show="manageOpen"
+            :show-arrow="false"
+            @update:show="setManageOpen"
+          >
+            <template #trigger>
               <n-button
+                class="ranking-split-control__inline-action"
+                text
                 size="tiny"
-                type="primary"
-                :disabled="sameSelection"
-                @click.stop="applyDraft"
+                @click.stop
               >
-                {{ copy.apply }}
+                {{ copy.manageSplit }}
               </n-button>
+            </template>
+
+            <div class="ranking-split-control__manage" @click.stop>
+              <div class="ranking-split-control__options is-managed">
+                <button
+                  v-for="option in variantOptions"
+                  :key="option.value"
+                  type="button"
+                  class="ranking-split-control__option"
+                  :class="{ 'is-selected': draftVariants.includes(option.value) }"
+                  :aria-pressed="draftVariants.includes(option.value)"
+                  @click.stop="toggleDraft(option.value)"
+                >
+                  <span class="ranking-split-control__check" aria-hidden="true">
+                    {{ draftVariants.includes(option.value) ? "✓" : "" }}
+                  </span>
+                  <span>{{ option.label }}</span>
+                </button>
+              </div>
+              <div class="ranking-split-control__menu-actions">
+                <button type="button" @click.stop="selectAll">{{ copy.selectAll }}</button>
+                <button
+                  v-if="splitVariantsNormalized.length"
+                  type="button"
+                  @click.stop="mergeAll"
+                >
+                  {{ copy.mergeAll }}
+                </button>
+                <n-button
+                  size="tiny"
+                  type="primary"
+                  :disabled="sameSelection"
+                  @click.stop="applyDraft"
+                >
+                  {{ copy.apply }}
+                </n-button>
+              </div>
             </div>
-          </template>
+          </n-popover>
+
+          <n-button
+            v-if="splitVariantsNormalized.length !== normalizedVariants.length"
+            class="ranking-split-control__inline-action"
+            text
+            size="tiny"
+            @click.stop="splitAll"
+          >
+            {{ copy.splitAllShort }}
+          </n-button>
+          <n-button
+            v-if="splitVariantsNormalized.length"
+            class="ranking-split-control__inline-action"
+            text
+            size="tiny"
+            @click.stop="mergeAll"
+          >
+            {{ copy.mergeAllShort }}
+            <span class="ranking-split-control__count">{{ splitVariantsNormalized.length }}</span>
+          </n-button>
         </template>
       </div>
     </template>
@@ -250,9 +271,12 @@ const COPY = {
     apply: "应用",
     mergeAll: "全部合并",
     mergeCurrent: "收回当前榜单",
+    mergeCurrentShort: "收回",
+    splitAllShort: "全拆",
+    mergeAllShort: "全合并",
     mergeHint: "把独立榜单收回当前平台卡片",
-    splitCurrent: "拆分当前",
-    manageSplit: "管理拆分",
+    splitCurrent: "拆当前",
+    manageSplit: "管理",
     closeManage: "收起管理",
   },
   "zh-TW": {
@@ -264,9 +288,12 @@ const COPY = {
     apply: "套用",
     mergeAll: "全部合併",
     mergeCurrent: "收回目前榜單",
+    mergeCurrentShort: "收回",
+    splitAllShort: "全拆",
+    mergeAllShort: "全合併",
     mergeHint: "將獨立榜單收回目前平台卡片",
-    splitCurrent: "拆分目前榜單",
-    manageSplit: "管理拆分",
+    splitCurrent: "拆目前",
+    manageSplit: "管理",
     closeManage: "收起管理",
   },
   en: {
@@ -278,9 +305,12 @@ const COPY = {
     apply: "Apply",
     mergeAll: "Merge all",
     mergeCurrent: "Merge this ranking",
+    mergeCurrentShort: "Merge",
+    splitAllShort: "Split all",
+    mergeAllShort: "Merge all",
     mergeHint: "Return this ranking to the platform card",
-    splitCurrent: "Split current",
-    manageSplit: "Manage split",
+    splitCurrent: "Split",
+    manageSplit: "Manage",
     closeManage: "Close manager",
   },
   ja: {
@@ -292,9 +322,12 @@ const COPY = {
     apply: "適用",
     mergeAll: "すべて統合",
     mergeCurrent: "このランキングを戻す",
+    mergeCurrentShort: "戻す",
+    splitAllShort: "全分割",
+    mergeAllShort: "全統合",
     mergeHint: "独立ランキングをプラットフォームカードに戻す",
     splitCurrent: "現在を分割",
-    manageSplit: "分割を管理",
+    manageSplit: "管理",
     closeManage: "管理を閉じる",
   },
   ko: {
@@ -306,9 +339,12 @@ const COPY = {
     apply: "적용",
     mergeAll: "모두 합치기",
     mergeCurrent: "현재 랭킹 합치기",
+    mergeCurrentShort: "합치기",
+    splitAllShort: "전체 분리",
+    mergeAllShort: "전체 합치기",
     mergeHint: "독립 랭킹을 플랫폼 카드로 되돌리기",
     splitCurrent: "현재 분리",
-    manageSplit: "분리 관리",
+    manageSplit: "관리",
     closeManage: "관리 닫기",
   },
 };
@@ -398,8 +434,8 @@ const splitCurrent = () => {
   if (!allowedVariants.value.has(value)) return;
   persist([...new Set([...splitVariantsNormalized.value, value])]);
 };
-const toggleManage = () => {
-  manageOpen.value = !manageOpen.value;
+const setManageOpen = (show) => {
+  manageOpen.value = Boolean(show);
   if (manageOpen.value) syncDraft();
 };
 const applyDraft = () => {
@@ -441,8 +477,9 @@ watch(
   flex: 0 0 auto;
 }
 .ranking-split-control.is-embedded {
-  display: block;
-  width: 100%;
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
 }
 .ranking-split-control__trigger,
 .ranking-split-control__merge-all {
@@ -543,7 +580,7 @@ watch(
   color: var(--n-text-color-2);
   cursor: pointer;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 .ranking-split-control__menu-actions > button:not(.n-button):hover {
   color: var(--n-primary-color);
@@ -567,6 +604,50 @@ watch(
 .ranking-split-control.is-compact .ranking-split-control__merge-all {
   min-height: 22px;
   padding-inline: 4px;
-  font-size: 10px;
+  font-size: 11px;
 }
+.ranking-split-control__inline {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.ranking-split-control__inline-action {
+  min-height: 26px;
+  padding-inline: 6px;
+  color: var(--n-text-color-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.ranking-split-control__inline-action:hover {
+  color: var(--n-primary-color);
+  background: rgba(234, 68, 77, 0.08);
+}
+
+.ranking-split-control__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  margin-left: 2px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.1);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-split-control__manage {
+  width: min(278px, calc(100vw - 32px));
+  padding: 6px;
+}
+
+.ranking-split-control__manage .ranking-split-control__options.is-managed {
+  max-height: 250px;
+  margin-top: 0;
+}
+
 </style>

@@ -149,6 +149,7 @@ const props = defineProps({
   groups: { type: Array, default: () => [] },
   activeValue: { type: String, default: null },
   fallbackLabel: { type: String, default: "" },
+  showActions: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["change"]);
@@ -170,7 +171,7 @@ const flatItems = computed(() => props.groups.flatMap((group) => group.items || 
 const activeItem = computed(() =>
   flatItems.value.find((item) => item.value === props.activeValue) || flatItems.value[0] || null
 );
-const hasActions = computed(() => Boolean(slots.actions));
+const hasActions = computed(() => props.showActions && Boolean(slots.actions));
 const isDarkTheme = computed(() => store.siteTheme === "dark");
 
 const splitHierarchicalLabel = (label = "") => {
@@ -586,11 +587,13 @@ onBeforeUnmount(() => {
 }
 
 .subtype-menu-tools {
-  display: grid;
-  gap: 10px;
-  min-width: 240px;
-  margin-top: 10px;
-  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 6px;
+  min-width: 0;
+  margin-top: 8px;
+  padding-top: 7px;
   border-top: 1px solid var(--menu-border);
 }
 

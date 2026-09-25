@@ -42,6 +42,11 @@
               :groups="subtypeGroups"
               :active-value="activeSubType"
               :fallback-label="t('hotList.rankingOptions')"
+              :show-actions="
+                showNativeOrderControl ||
+                showMarketSortControl ||
+                hasCategorySplitControl
+              "
               @change="changeSubType"
               @click.stop
             >
