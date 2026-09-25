@@ -1,14 +1,20 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { subscribeTrendsSourceCatalog } from "@/utils/sourceSubtypes";
+import {
+  getTrendsSourceCatalogRevision,
+  subscribeTrendsSourceCatalog,
+} from "@/utils/sourceSubtypes";
 
 export const useTrendsCatalogRevision = () => {
-  const revision = ref(0);
+  const revision = ref(getTrendsSourceCatalogRevision());
   let unsubscribe = null;
 
   onMounted(() => {
     unsubscribe = subscribeTrendsSourceCatalog(() => {
-      revision.value += 1;
+      revision.value = getTrendsSourceCatalogRevision();
     });
+    // Catalog revalidation can finish between setup() and onMounted().
+    // Reconcile once after subscribing so that window cannot lose a revision.
+    revision.value = getTrendsSourceCatalogRevision();
   });
 
   onBeforeUnmount(() => {

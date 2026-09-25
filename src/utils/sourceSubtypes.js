@@ -961,6 +961,7 @@ const REMOTE_SOURCE_VARIANTS = new Map();
 const REMOTE_SOURCE_VARIANT_DIMENSIONS = new Map();
 const REMOTE_SOURCE_CATALOG_LISTENERS = new Set();
 let REMOTE_SOURCE_CATALOG_SIGNATURE = "";
+let REMOTE_SOURCE_CATALOG_REVISION = 0;
 
 const projectionSignature = (projection, sources = []) => JSON.stringify({
   sources,
@@ -969,6 +970,9 @@ const projectionSignature = (projection, sources = []) => JSON.stringify({
   variants: [...projection.variantsBySource.entries()].sort(([left], [right]) => left.localeCompare(right)),
   dimensions: [...projection.dimensionsBySource.entries()].sort(([left], [right]) => left.localeCompare(right)),
 });
+
+export const getTrendsSourceCatalogRevision = () =>
+  REMOTE_SOURCE_CATALOG_REVISION;
 
 export const subscribeTrendsSourceCatalog = (listener) => {
   if (typeof listener !== "function") return () => {};
@@ -1013,6 +1017,7 @@ export const applyTrendsSourceCatalog = (catalog = {}) => {
   }
   REMOTE_SOURCE_CATALOG_SIGNATURE = nextSignature;
   if (changed) {
+    REMOTE_SOURCE_CATALOG_REVISION += 1;
     for (const listener of REMOTE_SOURCE_CATALOG_LISTENERS) listener();
   }
   return REMOTE_SOURCE_SUBTYPE_GROUPS.size;

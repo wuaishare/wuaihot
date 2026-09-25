@@ -12,6 +12,7 @@ import {
   readSourceSubtype,
   persistSourceSubtype,
   getTrendsCatalogReadSurface,
+  getTrendsSourceCatalogRevision,
   getTrendsCatalogSources,
   hasTrendsCatalogSource,
   hasTrendsDisplayCatalogSource,
@@ -164,7 +165,20 @@ const catalog = {
   ],
 };
 
+const revisionBeforeInitialCatalog = getTrendsSourceCatalogRevision();
 assert.equal(applyTrendsSourceCatalog(catalog), 4);
+assert.equal(
+  getTrendsSourceCatalogRevision(),
+  revisionBeforeInitialCatalog + 1,
+  "a changed remote Catalog must advance the global revision exactly once",
+);
+const revisionAfterInitialCatalog = getTrendsSourceCatalogRevision();
+assert.equal(applyTrendsSourceCatalog(catalog), 4);
+assert.equal(
+  getTrendsSourceCatalogRevision(),
+  revisionAfterInitialCatalog,
+  "reapplying an identical remote Catalog must not create a phantom revision",
+);
 assert.equal(hasTrendsCatalogSource("modeldial-radar"), true);
 assert.deepEqual(
   getTrendsCatalogSources().find((source) => source.key === "modeldial-radar"),
@@ -491,6 +505,30 @@ const revisionComposable = fs.readFileSync(
   "utf8",
 );
 assert.match(revisionComposable, /subscribeTrendsSourceCatalog/, "catalog revision composable must subscribe to remote catalog changes");
+assert.match(
+  revisionComposable,
+  /ref\(getTrendsSourceCatalogRevision\(\)\)/,
+  "catalog revision composable must start from the current remote catalog revision",
+);
+assert.match(
+  revisionComposable,
+  /unsubscribe = subscribeTrendsSourceCatalog[\s\S]{0,260}revision\.value = getTrendsSourceCatalogRevision\(\)/,
+  "catalog revision composable must reconcile changes that land between setup and mounted subscription",
+);
+const subtypeSource = fs.readFileSync(
+  new URL("../src/utils/sourceSubtypes.js", import.meta.url).pathname,
+  "utf8",
+);
+assert.match(
+  subtypeSource,
+  /REMOTE_SOURCE_CATALOG_REVISION \+= 1/,
+  "remote catalog changes must advance a monotonic revision snapshot",
+);
+assert.match(
+  subtypeSource,
+  /export const getTrendsSourceCatalogRevision/,
+  "remote catalog revision snapshot must be readable by consumers",
+);
 const storeSource = fs.readFileSync(new URL("../src/store/index.js", import.meta.url).pathname, "utf8");
 const sourceLogosSource = fs.readFileSync(new URL("../src/utils/sourceLogos.js", import.meta.url).pathname, "utf8");
 for (const sourceKey of recentTrendsFrontendSources) {
