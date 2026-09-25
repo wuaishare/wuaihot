@@ -65,6 +65,35 @@ const expectedBreadcrumbShells = [
   ["rank/weibo/tech/index.html", ["首页", "科技", "微博", "科技榜"]],
   ["rank/douyin/entertainment/index.html", ["首页", "文娱", "抖音", "娱乐榜"]],
 ];
+const expectedSitemapPaths = [
+  "/category/music",
+  "/rank/weibo/tech",
+  "/rank/weibo/sports",
+  "/rank/weibo/acg",
+  "/rank/douyin/entertainment",
+];
+const sitemapPath = path.join(distRoot, "sitemap.xml");
+const missingSitemapPaths = [];
+if (!fs.existsSync(sitemapPath)) {
+  missingSitemapPaths.push("(sitemap.xml missing)");
+} else {
+  const sitemapXml = fs.readFileSync(sitemapPath, "utf8");
+  const sitemapPaths = new Set(
+    [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((match) => {
+        try {
+          return new URL(match[1]).pathname.replace(/\/$/, "") || "/";
+        } catch {
+          return "";
+        }
+      })
+      .filter(Boolean),
+  );
+  for (const expectedPath of expectedSitemapPaths) {
+    if (!sitemapPaths.has(expectedPath)) missingSitemapPaths.push(expectedPath);
+  }
+}
+
 const missingOrWrongBreadcrumbShells = [];
 for (const [relativePath, expectedNames] of expectedBreadcrumbShells) {
   const file = path.join(distRoot, relativePath);
@@ -99,7 +128,8 @@ for (const [relativePath, expectedNames] of expectedBreadcrumbShells) {
 if (
   malformed.length ||
   missingOrWrongCategoryShells.length ||
-  missingOrWrongBreadcrumbShells.length
+  missingOrWrongBreadcrumbShells.length ||
+  missingSitemapPaths.length
 ) {
   if (malformed.length) {
     console.error("[seo-shell-audit] malformed generated titles detected:");
@@ -123,9 +153,15 @@ if (
       );
     }
   }
+  if (missingSitemapPaths.length) {
+    console.error("[seo-shell-audit] governed sitemap routes are missing:");
+    for (const pathname of missingSitemapPaths) {
+      console.error(`- ${pathname}`);
+    }
+  }
   process.exitCode = 1;
 } else {
   console.log(
-    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}; breadcrumb shells: ${expectedBreadcrumbShells.length}`,
+    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}; breadcrumb shells: ${expectedBreadcrumbShells.length}; sitemap routes: ${expectedSitemapPaths.length}`,
   );
 }

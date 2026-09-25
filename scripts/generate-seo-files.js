@@ -82,15 +82,21 @@ async function main() {
   const metadataPath = path.resolve(process.cwd(), "src/config/site-metadata.mjs");
   const storePath = path.resolve(process.cwd(), "src/store/index.js");
   const subtypePath = path.resolve(process.cwd(), "src/utils/sourceSubtypes.js");
+  const taxonomyPath = path.resolve(process.cwd(), "src/config/taxonomy-v3.js");
   const { SUPPORTED_LOCALES, BUILTIN_CATEGORIES } = await import(metadataPath);
   const storeSource = fs.readFileSync(storePath, "utf8");
   const subtypeSource = fs.readFileSync(subtypePath, "utf8");
+  const taxonomySource = fs.readFileSync(taxonomyPath, "utf8");
   const newsSectionMatch = storeSource.match(/defaultNewsArr:\s*\[(.*?)\n\s*\],\n\s*newsArr:/s);
   const newsSection = newsSectionMatch?.[1] || "";
 
   const categorySlugs = BUILTIN_CATEGORIES.map((item) => item.slug).filter(Boolean);
   const staticSourceNames = [...newsSection.matchAll(/name:\s*"([^"]+)"/g)].map((m) => m[1]);
   const staticSourceSubtypeGroups = parseConstant(subtypeSource, "SOURCE_SUBTYPE_GROUPS");
+  const variantCategoryProjections = parseConstant(
+    taxonomySource,
+    "VARIANT_CATEGORY_PROJECTIONS",
+  );
   const {
     groups: sourceSubtypeGroups,
     sources: catalogSources,
@@ -101,7 +107,13 @@ async function main() {
   const catalogPrioritySourceNames = catalogSources
     .filter((source) => source.priorityTier === "A" || source.priorityTier === "B")
     .map((source) => source.key);
-  const sourceNames = [...new Set([...staticSourceNames, ...catalogPrioritySourceNames])];
+  const sourceNames = [
+    ...new Set([
+      ...staticSourceNames,
+      ...catalogPrioritySourceNames,
+      ...variantCategoryProjections.map((projection) => projection.sourceName),
+    ]),
+  ];
   const aggregateSubtypeSources = new Set(
     parseConstant(subtypeSource, "AGGREGATE_SUBTYPE_SOURCES")
   );
@@ -111,6 +123,15 @@ async function main() {
       (group.items || []).map((item) => item?.value).filter(Boolean)
     );
     subtypeMap.set(sourceName, values);
+  }
+  for (const projection of variantCategoryProjections) {
+    const sourceName = String(projection?.sourceName || "").trim();
+    const variant = String(projection?.variant || "").trim();
+    if (!sourceName || !variant) continue;
+    const values = subtypeMap.get(sourceName) || [];
+    if (!values.includes(variant)) {
+      subtypeMap.set(sourceName, [...values, variant]);
+    }
   }
   const shouldListBaseRankRoute = (source) =>
     !(subtypeMap.get(source)?.length && !aggregateSubtypeSources.has(source));
