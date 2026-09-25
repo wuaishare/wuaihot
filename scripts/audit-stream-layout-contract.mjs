@@ -141,6 +141,41 @@ assert.match(hotboardManager, /showDetailImages/);
 assert.match(hotboardManager, /showPreviewImages/);
 assert.match(hotboardManager, /--manager-grid-columns/);
 assert.match(hotboardManager, /is-current/);
+assert.match(hotboardManager, /getTrendsCatalogSources/);
+assert.match(
+  hotboardManager,
+  /!source\.publicAvailable/,
+  "HotboardManager catalog-only projection must exclude Public-readable sources",
+);
+assert.match(
+  hotboardManager,
+  /!source\.displayAvailable/,
+  "HotboardManager catalog-only projection must exclude Display-readable sources",
+);
+assert.match(
+  hotboardManager,
+  /catalogUnavailable: true/,
+  "HotboardManager must mark catalog-only sources as unavailable instead of admitting them",
+);
+assert.match(
+  hotboardManager,
+  /SOURCE_CATEGORY_PROJECTIONS\[source\.key\]/,
+  "unavailable catalog sources must keep the governed taxonomy projection",
+);
+assert.match(
+  hotboardManager,
+  /v-if="filteredUnavailableSources\.length"[\s\S]{0,900}board-item--unavailable/,
+  "catalog-only sources must remain visible in a dedicated read-only manager section",
+);
+const unavailableManagerSection = hotboardManager.slice(
+  hotboardManager.indexOf('v-if="filteredUnavailableSources.length"'),
+  hotboardManager.indexOf("</section>", hotboardManager.indexOf('v-if="filteredUnavailableSources.length"')),
+);
+assert.doesNotMatch(
+  unavailableManagerSection,
+  /<n-switch|@update:value|handle="\.source-drag"/,
+  "unavailable catalog sources must not expose enable, assignment, or drag controls",
+);
 assert.match(sourceLogos, /xiaohongshu:\s*"\/logo\/xiaohongshu\.svg"/);
 assert.doesNotMatch(sourceLogos, /xiaohongshu\.ico/);
 

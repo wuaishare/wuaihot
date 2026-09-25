@@ -177,7 +177,7 @@
           <div class="boards-toolbar">
             <div>
               <strong>{{ selectedCategoryLabel }}</strong>
-              <span>{{ filteredSources.length }} {{ copy.boards }}</span>
+              <span>{{ filteredManagerSourceCount }} {{ copy.boards }}</span>
             </div>
             <n-input
               v-model:value="search"
@@ -229,8 +229,53 @@
               </div>
             </template>
           </draggable>
+
+          <section
+            v-if="filteredUnavailableSources.length"
+            class="manager-unavailable"
+            aria-live="polite"
+          >
+            <div class="manager-unavailable__head">
+              <div>
+                <strong>{{ copy.unavailableTitle }}</strong>
+                <span>{{ copy.unavailableTip }}</span>
+              </div>
+              <n-tag size="small" :bordered="false">
+                {{ filteredUnavailableSources.length }}
+              </n-tag>
+            </div>
+            <div class="board-grid board-grid--unavailable">
+              <div
+                v-for="element in filteredUnavailableSources"
+                :key="element.name"
+                class="board-item board-item--unavailable"
+              >
+                <div class="board-main">
+                  <span
+                    class="source-drag source-drag--placeholder"
+                    aria-hidden="true"
+                  ></span>
+                  <img
+                    :src="logoSrc(element.name)"
+                    :alt="sourceLabel(element)"
+                    @error="handleLogoError"
+                  />
+                  <span class="board-name" :title="sourceLabel(element)">
+                    {{ sourceLabel(element) }}
+                  </span>
+                  <n-tag size="tiny" :bordered="false" type="warning">
+                    {{ copy.unavailableState }}
+                  </n-tag>
+                </div>
+                <div class="board-unavailable-note">
+                  {{ copy.unavailableSource }}
+                </div>
+              </div>
+            </div>
+          </section>
+
           <n-empty
-            v-if="!filteredSources.length"
+            v-if="!filteredManagerSourceCount"
             :description="copy.empty"
             class="manager-empty"
           />
@@ -270,6 +315,8 @@ import { getSourceLogo, getSourceLogoFallback } from "@/utils/sourceLogos";
 import { useI18n } from "vue-i18n";
 import { Drag } from "@icon-park/vue-next";
 import { BUILTIN_CATEGORIES } from "@/config/site-metadata.mjs";
+import { SOURCE_CATEGORY_PROJECTIONS } from "@/config/taxonomy-v3";
+import { getTrendsCatalogSources } from "@/utils/sourceSubtypes";
 import { useRoute } from "vue-router";
 
 const props = defineProps({
@@ -373,6 +420,10 @@ const COPY = {
     boards: "个榜单",
     search: "搜索榜单",
     assign: "分类归属",
+    unavailableTitle: "暂未开放",
+    unavailableTip: "目录中已登记，但当前没有可公开读取的榜单数据",
+    unavailableState: "未开放",
+    unavailableSource: "保留来源目录，暂不提供启用与排序",
     empty: "没有符合条件的榜单",
     restore: "恢复默认",
     done: "完成",
@@ -397,6 +448,10 @@ const COPY = {
     boards: "boards",
     search: "Search boards",
     assign: "Categories",
+    unavailableTitle: "Not available yet",
+    unavailableTip: "Registered in the directory, but no public ranking read surface is available",
+    unavailableState: "Unavailable",
+    unavailableSource: "Kept in the source directory; enable and sorting are disabled",
     empty: "No matching boards",
     restore: "Restore defaults",
     done: "Done",
@@ -421,6 +476,10 @@ const COPY = {
     boards: "個榜單",
     search: "搜尋榜單",
     assign: "分類歸屬",
+    unavailableTitle: "暫未開放",
+    unavailableTip: "已登記於來源目錄，但目前沒有可公開讀取的榜單資料",
+    unavailableState: "未開放",
+    unavailableSource: "保留來源目錄，暫不提供啟用與排序",
     empty: "沒有符合條件的榜單",
     restore: "恢復預設",
     done: "完成",
@@ -446,6 +505,10 @@ const COPY = {
     boards: "件",
     search: "ランキングを検索",
     assign: "カテゴリ所属",
+    unavailableTitle: "未公開",
+    unavailableTip: "ソース一覧には登録済みですが、公開ランキングの読み取り面はまだありません",
+    unavailableState: "未公開",
+    unavailableSource: "ソース一覧には保持し、有効化と並び替えはできません",
     empty: "該当するランキングはありません",
     restore: "初期設定に戻す",
     done: "完了",
@@ -471,6 +534,10 @@ const COPY = {
     boards: "개 목록",
     search: "목록 검색",
     assign: "분류 소속",
+    unavailableTitle: "아직 미공개",
+    unavailableTip: "소스 디렉터리에는 등록되어 있지만 공개 랭킹 읽기 경로가 없습니다",
+    unavailableState: "미공개",
+    unavailableSource: "소스 디렉터리에 유지되며 활성화와 정렬은 사용할 수 없습니다",
     empty: "조건에 맞는 목록이 없습니다",
     restore: "기본값 복원",
     done: "완료",
@@ -480,7 +547,51 @@ const copy = computed(() => COPY[locale.value] || COPY["zh-CN"]);
 const localizedCategory = (item) =>
   item.builtin ? getCategoryLabel(item.name, locale.value) : item.name;
 const categoryDepth = (item) => getCategoryDepth(store.categories, item.id);
-const visibleSourceCount = computed(() => store.newsArr.length);
+
+const CATALOG_CATEGORY_FALLBACKS = {
+  general: ["general"],
+  tech: ["tech"],
+  ai: ["ai"],
+  culture: ["life"],
+  finance: ["finance"],
+};
+
+const unavailableCatalogSources = computed(() => {
+  const existing = new Set(
+    store.newsArr.map((item) => item?.name).filter(Boolean),
+  );
+  return getTrendsCatalogSources()
+    .filter(
+      (source) =>
+        source?.key &&
+        !source.publicAvailable &&
+        !source.displayAvailable &&
+        ["A", "B"].includes(source.priorityTier) &&
+        source.dataKind === "ranking" &&
+        source.hotspotEligible === true &&
+        !existing.has(source.key),
+    )
+    .map((source, index) => ({
+      label: source.name || source.key,
+      name: source.key,
+      order: 100000 + index,
+      show: false,
+      catalogManaged: true,
+      catalogUnavailable: true,
+      publicAvailable: false,
+      displayAvailable: false,
+      categoryIds:
+        SOURCE_CATEGORY_PROJECTIONS[source.key] ||
+        CATALOG_CATEGORY_FALLBACKS[source.category] ||
+        ["general"],
+    }));
+});
+
+const managerSources = computed(() => [
+  ...store.newsArr,
+  ...unavailableCatalogSources.value,
+]);
+const visibleSourceCount = computed(() => managerSources.value.length);
 const selectedCategory = computed(() =>
   selectedCategoryId.value === "all"
     ? null
@@ -514,7 +625,7 @@ const selectedCategoryLabel = computed(() =>
     : copy.value.allBoards,
 );
 const categoryCount = (category) =>
-  store.newsArr.filter((item) =>
+  managerSources.value.filter((item) =>
     sourceBelongsToCategory(item, category.id, store.categories),
   ).length;
 const sourceLabel = (item) =>
@@ -562,25 +673,36 @@ const parentOptionsForSelected = computed(() =>
   ),
 );
 
-const filteredSources = computed(() => {
+const sourceMatchesManagerFilter = (item) => {
   const query = search.value.trim().toLowerCase();
-  return store.newsArr
-    .filter(
-      (item) =>
-        selectedCategoryId.value === "all" ||
-        sourceBelongsToCategory(
-          item,
-          selectedCategoryId.value,
-          store.categories,
-        ),
-    )
-    .filter(
-      (item) =>
-        !query ||
-        `${sourceLabel(item)} ${item.name}`.toLowerCase().includes(query),
-    )
-    .sort((a, b) => a.order - b.order);
-});
+  const categoryMatches =
+    selectedCategoryId.value === "all" ||
+    sourceBelongsToCategory(
+      item,
+      selectedCategoryId.value,
+      store.categories,
+    );
+  const searchMatches =
+    !query ||
+    (sourceLabel(item) + " " + item.name).toLowerCase().includes(query);
+  return categoryMatches && searchMatches;
+};
+
+const filteredSources = computed(() =>
+  store.newsArr
+    .filter(sourceMatchesManagerFilter)
+    .sort((a, b) => a.order - b.order),
+);
+
+const filteredUnavailableSources = computed(() =>
+  unavailableCatalogSources.value
+    .filter(sourceMatchesManagerFilter)
+    .sort((a, b) => sourceLabel(a).localeCompare(sourceLabel(b), locale.value)),
+);
+
+const filteredManagerSourceCount = computed(
+  () => filteredSources.value.length + filteredUnavailableSources.value.length,
+);
 const syncSources = () => {
   sortableSources.value = filteredSources.value.slice();
 };
@@ -849,6 +971,49 @@ const restoreDefaults = () => {
 }
 .board-item.disabled {
   opacity: 0.55;
+}
+.manager-unavailable {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--n-border-color, rgba(127, 127, 127, 0.18));
+}
+.manager-unavailable__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.manager-unavailable__head > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.manager-unavailable__head strong {
+  font-size: 12px;
+}
+.manager-unavailable__head span {
+  color: var(--n-text-color-3, #888);
+  font-size: 11px;
+}
+.board-item--unavailable {
+  gap: 5px;
+  padding-block: 8px;
+  background: rgba(127, 127, 127, 0.035);
+}
+.board-item--unavailable:hover {
+  border-color: var(--n-border-color, rgba(127, 127, 127, 0.18));
+}
+.source-drag--placeholder {
+  pointer-events: none;
+  opacity: 0.2;
+}
+.board-unavailable-note {
+  padding-left: 39px;
+  color: var(--n-text-color-3, #888);
+  font-size: 11px;
+  line-height: 1.35;
 }
 .board-main {
   min-width: 0;
