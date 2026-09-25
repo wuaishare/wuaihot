@@ -1,5 +1,6 @@
 const https = require("node:https");
 const { URL } = require("node:url");
+const { gunzipSync } = require("node:zlib");
 
 const siteUrl = (process.env.LIVE_SITE_URL || "https://hot.wuaishare.cn").replace(
   /\/+$/,
@@ -24,6 +25,7 @@ const request = (url, options = {}, redirectCount = 0) =>
         method: options.method || "GET",
         headers: {
           "user-agent": "wuaihot live audit",
+          "accept-encoding": "gzip",
           ...(body
             ? {
                 "content-type": options.contentType || "application/json",
@@ -53,10 +55,24 @@ const request = (url, options = {}, redirectCount = 0) =>
             );
             return;
           }
+          const rawBody = Buffer.concat(chunks);
+          let decodedBody = rawBody;
+          try {
+            if (
+              String(res.headers["content-encoding"] || "")
+                .toLowerCase()
+                .includes("gzip")
+            ) {
+              decodedBody = gunzipSync(rawBody);
+            }
+          } catch (error) {
+            reject(error);
+            return;
+          }
           resolve({
             statusCode: res.statusCode,
             headers: res.headers,
-            body: Buffer.concat(chunks).toString("utf8"),
+            body: decodedBody.toString("utf8"),
           });
         });
       }
