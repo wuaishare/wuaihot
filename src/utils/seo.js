@@ -975,6 +975,10 @@ const ITHOME_ZH_SUBTYPE_SEO = {
 };
 
 const BILIBILI_ZH_SUBTYPE_SEO = {
+  popular: {
+    titleSegment: "综合热门",
+    intent: "全站热视频、UP主内容与流行视频趋势",
+  },
   all: {
     titleSegment: "综合热门",
     intent: "全站热视频、UP主内容与流行视频趋势",

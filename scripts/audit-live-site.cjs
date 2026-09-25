@@ -281,10 +281,10 @@ addCheck("route SEO: designarena base canonicalizes to fullstack", () =>
   })
 );
 
-addCheck("route SEO: bilibili base canonicalizes to popular all", () =>
+addCheck("route SEO: bilibili base canonicalizes to popular", () =>
   assertHtml("/rank/bilibili", {
     titleIncludes: "哔哩哔哩综合热门",
-    canonical: "/rank/bilibili/all",
+    canonical: "/rank/bilibili/popular",
     descriptionIncludes: "全站热视频",
   })
 );
@@ -425,7 +425,7 @@ addCheck("sitemap canonical route set", async () => {
     ["/en/", "hourly", "1.0"],
     ["/category/ai", "hourly", "0.9"],
     ["/en/category/ai", "hourly", "0.9"],
-    ["/rank/bilibili/all", "hourly", "0.6"],
+    ["/rank/bilibili/popular", "hourly", "0.6"],
     ["/ko/rank/clawhub/plugins-recommended", "hourly", "0.6"],
   ];
   const routeDetails = routeExpectations.map(([path, changefreq, priority]) => {
