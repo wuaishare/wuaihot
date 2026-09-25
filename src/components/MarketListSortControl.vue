@@ -1,17 +1,30 @@
 <template>
-  <div v-if="menu" class="market-sort-menu no-card-drag" @click.stop>
+  <div v-if="menu" class="market-sort-menu no-card-drag" :class="{ 'is-expanded': expanded }" @click.stop>
     <button
-      v-for="option in menuOptions"
-      :key="option.key"
+      v-if="!expanded"
       type="button"
-      class="market-sort-menu__option"
-      :class="{ active: option.key === activeMode }"
-      :aria-pressed="option.key === activeMode"
-      @click.stop="selectMode(option.key)"
+      class="ranking-tool-trigger"
+      :title="`${t('hotList.marketSort')}：${activeLabel}`"
+      :aria-label="`${t('hotList.marketSort')}：${activeLabel}`"
+      @click.stop="expanded = true"
     >
-      <n-icon :component="option.icon" />
-      <span>{{ option.label }}</span>
+      <n-icon :component="activeIcon" />
+      <span>{{ activeLabel }}</span>
     </button>
+    <div v-else class="ranking-tool-options">
+      <button
+        v-for="option in menuOptions"
+        :key="option.key"
+        type="button"
+        class="ranking-tool-option"
+        :class="{ active: option.key === activeMode }"
+        :aria-pressed="option.key === activeMode"
+        @click.stop="selectMode(option.key)"
+      >
+        <n-icon :component="option.icon" />
+        <span>{{ option.label }}</span>
+      </button>
+    </div>
   </div>
 
   <n-dropdown v-else trigger="click" :options="options" @select="selectMode">
@@ -36,6 +49,7 @@
 </template>
 
 <script setup>
+import { computed, ref } from "vue";
 import { ArrowDown, ArrowUp, RankingList, SortAmountDown, SortOne } from "@icon-park/vue-next";
 import { useI18n } from "vue-i18n";
 import { dropdownSelectionProps } from "@/utils/dropdownSelection";
@@ -55,6 +69,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n({ useScope: "global" });
+const expanded = ref(false);
 
 const activeMode = computed(() => {
   readMarketListSortMode(props.source);
@@ -82,33 +97,39 @@ const options = computed(() =>
     props: dropdownSelectionProps(key === activeMode.value),
   })),
 );
-const activeLabel = computed(
-  () => baseOptions.value.find((item) => item.key === activeMode.value)?.label || t("hotList.marketSortRank"),
+const activeOption = computed(
+  () => baseOptions.value.find((item) => item.key === activeMode.value) || baseOptions.value[0],
 );
+const activeLabel = computed(() => activeOption.value?.label || t("hotList.marketSortRank"));
+const activeIcon = computed(() => activeOption.value?.icon || SortOne);
 
-const selectMode = (mode) => saveMarketListSortMode(props.source, mode);
+const selectMode = (mode) => {
+  saveMarketListSortMode(props.source, mode);
+  if (props.menu) expanded.value = false;
+};
 </script>
 
 <style scoped>
 .market-sort-trigger,
-.market-sort-menu {
+.market-sort-menu,
+.ranking-tool-options {
   display: inline-flex;
   align-items: center;
 }
 
-.market-sort-menu {
-  flex-wrap: wrap;
-  gap: 2px;
+.ranking-tool-options {
+  gap: 1px;
 }
 
-.market-sort-menu__option {
+.ranking-tool-trigger,
+.ranking-tool-option {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 26px;
-  padding: 3px 7px;
+  min-height: 25px;
+  padding: 3px 5px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 6px;
   background: transparent;
   color: var(--n-text-color-2, var(--n-text-color));
   font: inherit;
@@ -116,16 +137,22 @@ const selectMode = (mode) => saveMarketListSortMode(props.source, mode);
   line-height: 1.15;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease;
+  transition: background 0.14s ease, color 0.14s ease;
 }
 
-.market-sort-menu__option:hover,
-.market-sort-menu__option.active {
-  background: rgba(234, 68, 77, 0.09);
+.ranking-tool-option {
+  padding-inline: 6px;
+}
+
+.ranking-tool-trigger:hover,
+.ranking-tool-option:hover {
   color: var(--n-primary-color, #ea444d);
+  background: rgba(127, 127, 127, 0.06);
 }
 
-.market-sort-menu__option.active {
+.ranking-tool-option.active {
+  color: var(--n-primary-color, #ea444d);
+  background: rgba(234, 68, 77, 0.09);
   font-weight: 650;
 }
 </style>

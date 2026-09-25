@@ -1,7 +1,7 @@
 <template>
   <div
     class="rank-direction-control no-card-drag"
-    :class="{ 'is-menu': menu }"
+    :class="{ 'is-menu': menu, 'is-expanded': menu && expanded }"
     role="group"
     :aria-label="t('hotList.rankOrder')"
     data-no-card-drag
@@ -9,30 +9,67 @@
     @pointerdown.stop
     @mousedown.stop
   >
-    <button
-      type="button"
-      class="direction-option"
-      :class="{ active: direction !== 'reverse' }"
-      :aria-pressed="direction !== 'reverse'"
-      @click="select('normal')"
-    >
-      <n-icon v-if="menu" :component="SortAmountUp" />
-      <span>{{ t("hotList.rankOrderNormal") }}</span>
-    </button>
-    <button
-      type="button"
-      class="direction-option"
-      :class="{ active: direction === 'reverse' }"
-      :aria-pressed="direction === 'reverse'"
-      @click="select('reverse')"
-    >
-      <n-icon v-if="menu" :component="SortAmountDown" />
-      <span>{{ t("hotList.rankOrderReverse") }}</span>
-    </button>
+    <template v-if="menu">
+      <button
+        v-if="!expanded"
+        type="button"
+        class="ranking-tool-trigger"
+        :title="`${t('hotList.rankOrder')}：${activeLabel}`"
+        :aria-label="`${t('hotList.rankOrder')}：${activeLabel}`"
+        @click="expanded = true"
+      >
+        <n-icon :component="activeIcon" />
+        <span>{{ activeLabel }}</span>
+      </button>
+      <div v-else class="ranking-tool-options">
+        <button
+          type="button"
+          class="ranking-tool-option"
+          :class="{ active: direction !== 'reverse' }"
+          :aria-pressed="direction !== 'reverse'"
+          @click="select('normal')"
+        >
+          <n-icon :component="SortAmountUp" />
+          <span>{{ t("hotList.rankOrderNormal") }}</span>
+        </button>
+        <button
+          type="button"
+          class="ranking-tool-option"
+          :class="{ active: direction === 'reverse' }"
+          :aria-pressed="direction === 'reverse'"
+          @click="select('reverse')"
+        >
+          <n-icon :component="SortAmountDown" />
+          <span>{{ t("hotList.rankOrderReverse") }}</span>
+        </button>
+      </div>
+    </template>
+
+    <template v-else>
+      <button
+        type="button"
+        class="direction-option"
+        :class="{ active: direction !== 'reverse' }"
+        :aria-pressed="direction !== 'reverse'"
+        @click="select('normal')"
+      >
+        <span>{{ t("hotList.rankOrderNormal") }}</span>
+      </button>
+      <button
+        type="button"
+        class="direction-option"
+        :class="{ active: direction === 'reverse' }"
+        :aria-pressed="direction === 'reverse'"
+        @click="select('reverse')"
+      >
+        <span>{{ t("hotList.rankOrderReverse") }}</span>
+      </button>
+    </template>
   </div>
 </template>
 
 <script setup>
+import { computed, ref } from "vue";
 import { SortAmountDown, SortAmountUp } from "@icon-park/vue-next";
 import { useI18n } from "vue-i18n";
 
@@ -43,10 +80,19 @@ const props = defineProps({
 
 const emit = defineEmits(["change"]);
 const { t } = useI18n({ useScope: "global" });
+const expanded = ref(false);
+const activeLabel = computed(() =>
+  props.direction === "reverse"
+    ? t("hotList.rankOrderReverse")
+    : t("hotList.rankOrderNormal"),
+);
+const activeIcon = computed(() =>
+  props.direction === "reverse" ? SortAmountDown : SortAmountUp,
+);
 
 const select = (direction) => {
-  if (direction === props.direction) return;
-  emit("change", direction);
+  if (direction !== props.direction) emit("change", direction);
+  if (props.menu) expanded.value = false;
 };
 </script>
 
@@ -62,7 +108,9 @@ const select = (direction) => {
   background: rgba(127, 127, 127, 0.06);
 }
 
-.direction-option {
+.direction-option,
+.ranking-tool-trigger,
+.ranking-tool-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -70,7 +118,7 @@ const select = (direction) => {
   min-height: 24px;
   padding: 3px 7px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 6px;
   background: transparent;
   color: var(--n-text-color-2, var(--n-text-color));
   font: inherit;
@@ -78,32 +126,54 @@ const select = (direction) => {
   line-height: 1.15;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.16s ease, color 0.16s ease;
+  transition: background 0.14s ease, color 0.14s ease;
 }
 
-.direction-option:hover {
-  color: var(--n-primary-color, #ea444d);
+.direction-option {
+  border-radius: 999px;
 }
 
-.direction-option.active {
-  background: rgba(234, 68, 77, 0.1);
+.direction-option:hover,
+.ranking-tool-trigger:hover,
+.ranking-tool-option:hover {
   color: var(--n-primary-color, #ea444d);
+  background: rgba(127, 127, 127, 0.06);
+}
+
+.direction-option.active,
+.ranking-tool-option.active {
+  color: var(--n-primary-color, #ea444d);
+  background: rgba(234, 68, 77, 0.09);
   font-weight: 650;
 }
 
 .rank-direction-control.is-menu {
   padding: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
 }
 
-.is-menu .direction-option {
-  min-height: 26px;
-  padding-inline: 7px;
+.ranking-tool-trigger {
+  min-height: 25px;
+  padding-inline: 5px;
+}
+
+.ranking-tool-options {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.ranking-tool-option {
+  min-height: 25px;
+  padding-inline: 6px;
 }
 
 @media (max-width: 680px) {
-  .direction-option {
+  .direction-option,
+  .ranking-tool-trigger,
+  .ranking-tool-option {
     padding-inline: 6px;
   }
 }

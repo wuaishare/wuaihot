@@ -190,6 +190,9 @@ const compactText = (value = "") =>
   String(value || "")
     .replace(/所有类别/g, "全部")
     .replace(/所有分類/g, "全部")
+    .replace(/所有 App/g, "全部")
+    .replace(/全部 App/g, "全部")
+    .replace(/All Apps/gi, "All")
     .replace(/熱門節目/g, "節目")
     .replace(/热门节目/g, "节目")
     .replace(/熱門單集/g, "單集")
@@ -590,10 +593,11 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 3px 6px;
+  gap: 2px 5px;
   min-width: 0;
-  margin-top: 8px;
-  padding-top: 7px;
+  margin-top: 6px;
+  padding-top: 5px;
+  font-size: 12px;
   border-top: 1px solid var(--menu-border);
 }
 
