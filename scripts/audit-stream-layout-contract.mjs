@@ -495,15 +495,20 @@ assert.match(
   /const cardSubtitle = computed\(\(\) => \{[\s\S]{0,220}isProjectionInstance\.value[\s\S]{0,220}projectionLabel[\s\S]{0,160}return "";/,
   "split projection cards must not inherit a stale base-source subtitle",
 );
-assert.match(
+assert.doesNotMatch(
   hotList,
-  /const categoryScopeFullySplit = computed[\s\S]{0,260}categorySplitVariants\.value\.length === categoryAllProjectionVariants\.value\.length/,
-  "HotList must distinguish partial split from a fully split scope",
+  /const categoryScopeFullySplit = computed/,
+  "fully split platforms must not hide their platform-level merge-all handoff",
 );
 assert.match(
   hotList,
-  /:show-merge-all="[\s\S]{0,160}Boolean\(hotData\.categorySplitPrimary\)[\s\S]{0,120}!categoryScopeFullySplit/,
-  "card-level merge-all must disappear when the page-level scope is already fully split",
+  /:show-merge-all="Boolean\(hotData\.categorySplitPrimary\)"/,
+  "the primary split projection must inherit the platform-level merge-all affordance when the grouped card disappears",
+);
+assert.match(
+  rankingCardOperations,
+  /v-if="isProjection && showMergeAll"[\s\S]{0,420}@click\.stop="mergeAll"/,
+  "the primary projection must expose a one-click merge-all action alongside its individual merge action",
 );
 assert.doesNotMatch(home, /promotedRankings/);
 assert.match(contextToolbar, /const SPLIT_SCOPE_ALL = "__all__"/);
@@ -540,23 +545,60 @@ assert.match(rankingSplitControl, /const mergeCurrent =/);
 assert.match(rankingSplitControl, /const mergeAll =/);
 assert.match(
   rankingCardOperations,
-  /v-if="splitOnly"[\s\S]{0,420}@click\.stop="runSplitAction"/,
-  "split-only cards must expose one direct top-right split or merge action without another popover",
+  /const directSplitOnly = computed\([\s\S]{0,520}isProjection\.value \|\| normalizedVariants\.value\.length === 2/,
+  "exactly two child rankings or an already-split projection must be eligible for one direct action",
 );
 assert.match(
   rankingCardOperations,
-  /t\("hotList\.rankOperations"\)[\s\S]{0,1600}<MarketRankDirectionControl[\s\S]{0,160}inline-menu[\s\S]{0,480}<MarketListSortControl[\s\S]{0,160}inline-menu/,
-  "cards with multiple operation families must use one top-right Actions menu with immediately selectable sort controls",
+  /v-if="directSplitOnly"[\s\S]{0,420}@click\.stop="runDirectSplitAction"/,
+  "direct split-only cards and projection cards must expose one top-right split or merge action",
 );
 assert.match(
   rankingCardOperations,
-  /setCategorySplitVariants[\s\S]{0,1000}const splitAll =[\s\S]{0,600}const mergeCurrent =[\s\S]{0,600}const mergeAll =/,
-  "ranking-card split actions must update split state directly instead of duplicating the subtype list",
+  /const splitMenuOnly = computed\([\s\S]{0,520}!isProjection\.value[\s\S]{0,180}normalizedVariants\.value\.length > 2/,
+  "three-or-more child rankings on the grouped primary card must use the selection-menu path",
 );
+assert.match(
+  rankingCardOperations,
+  /<n-popover[\s\S]{0,900}splitMenuOnly && splitVariantsNormalized\.length/,
+  "multi-ranking split must keep the single top-right popover entry and show split-count state",
+);
+assert.match(rankingCardOperations, /t\("hotList\.rankOperations"\)/);
+assert.match(
+  rankingCardOperations,
+  /<MarketRankDirectionControl[\s\S]{0,180}inline-menu[\s\S]{0,520}<MarketListSortControl[\s\S]{0,180}inline-menu/,
+  "cards with multiple operation families must keep sort controls inside the one top-right Actions menu",
+);
+for (const token of [
+  "variantOptions",
+  "draftVariants",
+  "toggleDraft",
+  "selectAll",
+  "applyDraft",
+  "selectRankingVariants",
+]) {
+  assert.match(
+    rankingCardOperations,
+    new RegExp(token),
+    `multi-ranking split contract is missing ${token}`,
+  );
+}
+assert.match(
+  rankingCardOperations,
+  /const persist = \(variants\)[\s\S]{0,240}setCategorySplitVariants/,
+  "ranking-card split actions must persist through the shared category store",
+);
+for (const action of ["splitAll", "mergeCurrent", "mergeAll"]) {
+  assert.match(
+    rankingCardOperations,
+    new RegExp(`const ${action} =`),
+    `ranking-card operations must keep the ${action} action`,
+  );
+}
 assert.doesNotMatch(
   rankingCardOperations,
-  /RankingSplitControl|variantOptions|draftVariants|manageSplit/,
-  "ranking-card operations must not render a second child-ranking selection list",
+  /import RankingSplitControl/,
+  "ranking-card operations must keep selection inside the single existing top-right menu rather than nesting a second component popover",
 );
 for (const [name, source] of [
   ["native rank order", marketRankDirectionControl],
