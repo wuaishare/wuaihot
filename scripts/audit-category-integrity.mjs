@@ -45,6 +45,32 @@ try {
   const catalogFixture = {
     sources: [
       { key: "apple-music", name: "Apple Music", category: "culture", priorityTier: "A", rankingLabel: "热门歌曲排行", defaultVariant: "songs", publicAvailable: false, displayAvailable: true, variantGroups: [] },
+      {
+        key: "weibo",
+        name: "微博",
+        category: "general",
+        priorityTier: "A",
+        rankingLabel: "热搜",
+        defaultVariant: "hot",
+        publicAvailable: true,
+        displayAvailable: false,
+        variantGroups: [
+          {
+            key: "ranking",
+            label: "榜单",
+            options: [
+              { key: "hot", label: "热搜" },
+              { key: "entertainment", label: "文娱榜" },
+              { key: "life", label: "生活榜" },
+              { key: "social", label: "社会榜" },
+              { key: "tech", label: "科技榜" },
+              { key: "sports", label: "体育榜" },
+              { key: "acg", label: "ACG榜" },
+              { key: "future-auto", label: "未来新榜" },
+            ],
+          },
+        ],
+      },
       { key: "ximalaya-rankings", name: "喜马拉雅排行榜", category: "culture", priorityTier: "A", rankingLabel: "全站 · 热播", defaultVariant: "classic-all-hot", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "apple-podcasts", name: "Apple Podcasts", category: "culture", priorityTier: "A", rankingLabel: "所有类别 · 热门节目", defaultVariant: "shows", publicAvailable: false, displayAvailable: true, variantGroups: [] },
       { key: "china-film-boxoffice", name: "中国电影票房", category: "culture", priorityTier: "A", rankingLabel: "当日实时票房榜", defaultVariant: "realtime", publicAvailable: false, displayAvailable: true, variantGroups: [] },
@@ -270,6 +296,13 @@ try {
     ["xiaomi-app-store", "games", "games-ranking"],
     ["tencent-software-center", "music", "entertainment-music"],
     ["steam", "topselling", "games-ranking"],
+    ["weibo", "entertainment", "entertainment"],
+    ["weibo", "life", "life"],
+    ["weibo", "social", "news-domestic"],
+    ["weibo", "tech", "tech"],
+    ["weibo", "sports", "sports-general"],
+    ["weibo", "acg", "entertainment-video-animation"],
+    ["weibo", "acg", "games-esports"],
   ]) {
     assert.ok(
       projectionCategories(sourceName, variant).includes(categoryId),
@@ -408,6 +441,43 @@ try {
     ),
     ["entertainment"],
     "the entertainment category must expose only QQ News' entertainment projection",
+  );
+
+  const weibo = store.newsArr.find((item) => item.name === "weibo");
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(weibo, "general", store.categories).map(
+      (item) => item.value,
+    ),
+    ["hot", "future-auto"],
+    "new Catalog variants without an explicit cross-category projection must remain automatically visible in Weibo's base selector",
+  );
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(weibo, "tech", store.categories).map(
+      (item) => item.value,
+    ),
+    ["tech"],
+    "Weibo tech must project into the technology category",
+  );
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(weibo, "sports", store.categories).map(
+      (item) => item.value,
+    ),
+    ["sports"],
+    "Weibo sports must project into the sports category",
+  );
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(weibo, "games", store.categories).map(
+      (item) => item.value,
+    ),
+    ["acg"],
+    "Weibo ACG must project into the games category through esports",
+  );
+  assert.deepEqual(
+    getCategoryScopedVariantOptions(weibo, "entertainment", store.categories).map(
+      (item) => item.value,
+    ),
+    ["entertainment", "acg"],
+    "Weibo entertainment must expose its entertainment and ACG projections",
   );
 
   assert.equal(

@@ -131,6 +131,12 @@ export const VARIANT_CATEGORY_PROJECTIONS = [
   { id: "qq-news-sports", sourceName: "qq-news", variant: "sports", label: "体育热点榜", categoryIds: ["sports-general"] },
   { id: "douyin-entertainment", sourceName: "douyin", variant: "entertainment", label: "娱乐榜", categoryIds: ["entertainment"] },
   { id: "douyin-society", sourceName: "douyin", variant: "society", label: "社会榜", categoryIds: ["news-domestic"] },
+  { id: "weibo-entertainment", sourceName: "weibo", variant: "entertainment", label: "文娱榜", categoryIds: ["entertainment"] },
+  { id: "weibo-life", sourceName: "weibo", variant: "life", label: "生活榜", categoryIds: ["life"] },
+  { id: "weibo-social", sourceName: "weibo", variant: "social", label: "社会榜", categoryIds: ["news-domestic"] },
+  { id: "weibo-tech", sourceName: "weibo", variant: "tech", label: "科技榜", categoryIds: ["tech"] },
+  { id: "weibo-sports", sourceName: "weibo", variant: "sports", label: "体育榜", categoryIds: ["sports-general"] },
+  { id: "weibo-acg", sourceName: "weibo", variant: "acg", label: "ACG榜", categoryIds: ["entertainment-video-animation", "games-esports"] },
   { id: "bilibili-music", sourceName: "bilibili", variant: "music", label: "全站音乐榜", categoryIds: ["entertainment-music-songs"] },
   { id: "hongguo-comic-drama", sourceName: "hongguo-rank", variant: "hot-comic-drama", label: "漫剧热播榜", categoryIds: ["entertainment-video-animation"] },
 
