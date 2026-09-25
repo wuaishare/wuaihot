@@ -114,6 +114,11 @@ assert.match(
   /categoryPageHeading\(category\)/,
   "category pages must expose the current category as the breadcrumb H1",
 );
+assert.match(
+  contextToolbarSource,
+  /routeKind === 'category'[\s\S]{0,160}category\.id === currentCategory\?\.id[\s\S]{0,100}\? 'h1'[\s\S]{0,40}: 'span'/,
+  "breadcrumb category labels must become H1 only on category routes, not on ranking detail pages",
+);
 assert.doesNotMatch(
   contextToolbarSource,
   /<span class="context-breadcrumb__section">\{\{ allCategoryLabel \}\}<\/span>/,

@@ -51,13 +51,20 @@
                 :class="{ 'is-current': category.id === currentCategory?.id }"
               >
                 <component
-                  :is="category.id === currentCategory?.id ? 'h1' : 'span'"
+                  :is="
+                    routeKind === 'category' &&
+                    category.id === currentCategory?.id
+                      ? 'h1'
+                      : 'span'
+                  "
                   :class="{
                     'context-breadcrumb__page-title':
+                      routeKind === 'category' &&
                       category.id === currentCategory?.id,
                   }"
                 >
                   {{
+                    routeKind === 'category' &&
                     category.id === currentCategory?.id
                       ? categoryPageHeading(category)
                       : categoryLabel(category)
