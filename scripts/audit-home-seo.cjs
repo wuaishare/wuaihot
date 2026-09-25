@@ -3,11 +3,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const expected = {
-  title: "吾爱热榜 - 今日热榜、全网热搜与实时热点聚合",
+  title: "今日热榜 - 全网热搜与实时热点聚合 | 吾爱热榜",
   description:
-    "wuaihot 吾爱热榜以「一站看全网」为目标，聚合微博、百度、知乎、抖音、B站、头条等平台今日热榜、全网热搜与实时热点，支持分类浏览、榜单切换和自动刷新。",
+    "今日热榜聚合微博、百度、知乎、抖音、B站、头条等平台的全网热搜与实时热点。一站看全网，覆盖新闻、科技、AI、财经、文娱、游戏、体育、生活等分类，支持榜单切换与实时更新。",
   keywords:
-    "wuaihot,吾爱热榜,一站看全网,今日热榜,全网热搜,全网热点,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,B站热榜,头条热榜",
+    "今日热榜,全网热搜,实时热点,热榜聚合,微博热搜,百度热搜,知乎热榜,抖音热榜,吾爱热榜,wuaihot",
   siteName: "吾爱热榜",
   alternateName: "wuaihot",
 };
@@ -51,6 +51,26 @@ assert.match(
   seoSource,
   /locale === "zh-CN"[\s\S]{0,120}categoryMeta\?\.title[\s\S]{0,120}categoryMeta\?\.description/,
   "runtime category SEO must only use a zh-CN specialized entry when title and description both exist",
+);
+
+const contextToolbarSource = fs.readFileSync(
+  path.join(__dirname, "..", "src", "components", "ContextToolbar.vue"),
+  "utf8",
+);
+assert.match(
+  contextToolbarSource,
+  /<h1 class="context-breadcrumb__section context-breadcrumb__page-title">[\s\S]{0,120}\{\{ copy\.homeHeading \}\}/,
+  "homepage must expose a visible semantic H1 inside the existing breadcrumb row",
+);
+assert.match(
+  contextToolbarSource,
+  /categoryPageHeading\(category\)/,
+  "category pages must expose the current category as the breadcrumb H1",
+);
+assert.doesNotMatch(
+  contextToolbarSource,
+  /<span class="context-breadcrumb__section">\{\{ allCategoryLabel \}\}<\/span>/,
+  "homepage breadcrumb must not fall back to the generic all label as its primary heading",
 );
 
 console.log("[home-seo-audit] homepage title, social metadata and WebSite identity are consistent");

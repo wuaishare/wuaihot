@@ -25,7 +25,9 @@
 
         <template v-if="routeKind === 'home'">
           <span class="context-breadcrumb__separator" aria-hidden="true">›</span>
-          <span class="context-breadcrumb__section">{{ allCategoryLabel }}</span>
+          <h1 class="context-breadcrumb__section context-breadcrumb__page-title">
+            {{ copy.homeHeading }}
+          </h1>
         </template>
 
         <template v-for="category in categoryTrail" :key="category.id">
@@ -48,7 +50,19 @@
                 class="context-breadcrumb__item"
                 :class="{ 'is-current': category.id === currentCategory?.id }"
               >
-                <span>{{ categoryLabel(category) }}</span>
+                <component
+                  :is="category.id === currentCategory?.id ? 'h1' : 'span'"
+                  :class="{
+                    'context-breadcrumb__page-title':
+                      category.id === currentCategory?.id,
+                  }"
+                >
+                  {{
+                    category.id === currentCategory?.id
+                      ? categoryPageHeading(category)
+                      : categoryLabel(category)
+                  }}
+                </component>
                 <svg
                   v-if="categoryMenuOptions(category).length > 1"
                   class="context-breadcrumb__caret"
@@ -300,6 +314,8 @@ const store = mainStore();
 const COPY = {
   "zh-CN": {
     home: "首页",
+    homeHeading: "今日热榜",
+    rankingSuffix: "热榜",
     topic: "专题",
     breadcrumb: "当前位置",
     viewMode: "视图",
@@ -332,6 +348,8 @@ const COPY = {
   },
   en: {
     home: "Home",
+    homeHeading: "Trending Rankings",
+    rankingSuffix: " Rankings",
     topic: "Topics",
     breadcrumb: "Current location",
     viewMode: "View",
@@ -364,6 +382,8 @@ const COPY = {
   },
   "zh-TW": {
     home: "首頁",
+    homeHeading: "今日熱榜",
+    rankingSuffix: "熱榜",
     topic: "專題",
     breadcrumb: "目前位置",
     viewMode: "檢視",
@@ -396,6 +416,8 @@ const COPY = {
   },
   ja: {
     home: "ホーム",
+    homeHeading: "今日のトレンド",
+    rankingSuffix: "ランキング",
     topic: "特集",
     breadcrumb: "現在地",
     viewMode: "表示",
@@ -428,6 +450,8 @@ const COPY = {
   },
   ko: {
     home: "홈",
+    homeHeading: "오늘의 인기 랭킹",
+    rankingSuffix: " 랭킹",
     topic: "주제",
     breadcrumb: "현재 위치",
     viewMode: "보기",
@@ -569,7 +593,11 @@ const categoryLabel = (category) =>
   category?.builtin
     ? getCategoryLabel(category.name, locale.value)
     : category?.name || "";
-const allCategoryLabel = computed(() => getCategoryLabel("全部", locale.value));
+const categoryPageHeading = (category) => {
+  const label = categoryLabel(category);
+  if (!label || category?.parentId) return label;
+  return `${label}${copy.value.rankingSuffix}`;
+};
 
 const siblingCategories = (category) =>
   store.categories
@@ -1164,10 +1192,26 @@ watchEffect(() => {
   padding: 0 8px;
 }
 
-.context-breadcrumb__item > span {
+.context-breadcrumb__item > span,
+.context-breadcrumb__item > .context-breadcrumb__page-title {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.context-breadcrumb__page-title {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+.context-breadcrumb__section.context-breadcrumb__page-title {
+  color: var(--n-text-color);
+  font-size: 13px;
+  font-weight: 650;
 }
 
 .context-breadcrumb__home:hover,

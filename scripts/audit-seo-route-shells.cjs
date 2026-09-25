@@ -29,8 +29,10 @@ for (const file of htmlFiles) {
   }
 }
 const expectedCategoryShells = [
-  ["category/entertainment/index.html", "文娱热榜 - 吾爱热榜"],
-  ["category/music/index.html", "音乐热榜 - 吾爱热榜"],
+  ["category/news/index.html", "新闻热榜 - 国内外新闻、社会热点与主流媒体榜单聚合 | 吾爱热榜"],
+  ["category/entertainment/index.html", "文娱热榜 - 娱乐、影视、音乐、短剧与ACG热点聚合 | 吾爱热榜"],
+  ["category/music/index.html", "音乐热榜 - QQ音乐、网易云、酷狗、酷我等榜单聚合 | 吾爱热榜"],
+  ["category/sports/index.html", "体育热榜 - 赛事热点、足球篮球与体育话题聚合 | 吾爱热榜"],
   ["category/games/index.html", "游戏热榜 - 游戏资讯、官方公告与玩家社区讨论聚合 | 吾爱热榜"],
 ];
 const missingOrWrongCategoryShells = [];
