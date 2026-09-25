@@ -646,6 +646,12 @@ const sourceLabel = computed(() => {
 const isIndexOverviewSource = computed(() => props.hotData.name === "global-indexes");
 const isSortableMarketSource = computed(() => isMarketListSortable(props.hotData.name));
 const cardSubtitle = computed(() => {
+  if (
+    isProjectionInstance.value &&
+    String(props.hotData?.projectionLabel || "").trim()
+  ) {
+    return "";
+  }
   const rawSubtitle =
     Object.prototype.hasOwnProperty.call(props.hotData || {}, "subtype")
       ? props.hotData.subtype ?? ""

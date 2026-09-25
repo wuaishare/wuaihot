@@ -441,6 +441,11 @@ assert.match(hotList, /"kuwo-music"/);
 assert.match(hotList, /displayAuthor: MUSIC_FACTUAL_SOURCE_KEYS\.has\(props\.hotData\.name\)/);
 assert.match(hotList, /v-if="item\.displayAuthor"/);
 assert.match(hotList, /class="item-author"/);
+assert.match(
+  hotList,
+  /const cardSubtitle = computed\(\(\) => \{[\s\S]{0,220}isProjectionInstance\.value[\s\S]{0,220}projectionLabel[\s\S]{0,160}return "";/,
+  "split projection cards must not inherit a stale base-source subtitle",
+);
 assert.doesNotMatch(home, /promotedRankings/);
 assert.match(contextToolbar, /const SPLIT_SCOPE_ALL = "__all__"/);
 assert.match(contextToolbar, /const splitScopeRef = computed/);
