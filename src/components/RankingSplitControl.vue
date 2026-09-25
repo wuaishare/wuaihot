@@ -6,67 +6,78 @@
       'is-compact': compact,
       'is-projection': isProjection,
       'is-embedded': embedded,
+      'is-open': embedded && manageOpen,
     }"
     @click.stop
   >
     <template v-if="embedded">
-      <div class="ranking-split-control__inline" @click.stop>
+      <div class="ranking-split-control__embedded" @click.stop>
         <template v-if="isProjection">
-          <n-button
-            class="ranking-split-control__inline-action"
-            text
-            size="tiny"
+          <button
+            type="button"
+            class="ranking-tool-trigger"
+            :title="copy.mergeCurrent"
             @click.stop="mergeCurrent"
           >
-            <template #icon>
-              <n-icon :component="Merge" />
-            </template>
-            {{ copy.mergeCurrentShort }}
-          </n-button>
-          <n-button
+            <n-icon :component="Merge" />
+            <span>{{ copy.mergeCurrentShort }}</span>
+          </button>
+          <button
             v-if="showMergeAll"
-            class="ranking-split-control__inline-action"
-            text
-            size="tiny"
+            type="button"
+            class="ranking-tool-trigger is-secondary"
+            :title="copy.mergeAll"
             @click.stop="mergeAll"
           >
-            {{ copy.mergeAllShort }}
-          </n-button>
+            <span>{{ copy.mergeAllShort }}</span>
+          </button>
         </template>
 
         <template v-else>
-          <n-button
-            v-if="currentVariant && !splitVariantsNormalized.includes(currentVariant)"
-            class="ranking-split-control__inline-action"
-            text
-            size="tiny"
-            @click.stop="splitCurrent"
+          <button
+            type="button"
+            class="ranking-tool-trigger"
+            :class="{ active: manageOpen || splitVariantsNormalized.length }"
+            :title="copy.splitMenu"
+            :aria-expanded="manageOpen ? 'true' : 'false'"
+            @click.stop="toggleManage"
           >
-            <template #icon>
-              <n-icon :component="Split" />
-            </template>
-            {{ copy.splitCurrent }}
-          </n-button>
+            <n-icon :component="Split" />
+            <span>{{ copy.split }}</span>
+            <span v-if="splitVariantsNormalized.length" class="ranking-split-control__count">
+              {{ splitVariantsNormalized.length }}
+            </span>
+          </button>
 
-          <n-popover
-            trigger="click"
-            placement="top-end"
-            :show="manageOpen"
-            :show-arrow="false"
-            @update:show="setManageOpen"
-          >
-            <template #trigger>
-              <n-button
-                class="ranking-split-control__inline-action"
-                text
-                size="tiny"
-                @click.stop
+          <div v-if="manageOpen" class="ranking-split-control__embedded-panel">
+            <div class="ranking-split-control__quick-actions">
+              <button
+                v-if="currentVariant && !splitVariantsNormalized.includes(currentVariant)"
+                type="button"
+                @click.stop="splitCurrent"
               >
+                {{ copy.splitCurrent }}
+              </button>
+              <button type="button" @click.stop="toggleSelection">
                 {{ copy.manageSplit }}
-              </n-button>
-            </template>
+              </button>
+              <button
+                v-if="splitVariantsNormalized.length !== normalizedVariants.length"
+                type="button"
+                @click.stop="splitAll"
+              >
+                {{ copy.splitAllShort }}
+              </button>
+              <button
+                v-if="splitVariantsNormalized.length"
+                type="button"
+                @click.stop="mergeAll"
+              >
+                {{ copy.mergeAllShort }}
+              </button>
+            </div>
 
-            <div class="ranking-split-control__manage" @click.stop>
+            <template v-if="selectionOpen">
               <div class="ranking-split-control__options is-managed">
                 <button
                   v-for="option in variantOptions"
@@ -83,15 +94,9 @@
                   <span>{{ option.label }}</span>
                 </button>
               </div>
-              <div class="ranking-split-control__menu-actions">
+
+              <div class="ranking-split-control__menu-actions is-embedded">
                 <button type="button" @click.stop="selectAll">{{ copy.selectAll }}</button>
-                <button
-                  v-if="splitVariantsNormalized.length"
-                  type="button"
-                  @click.stop="mergeAll"
-                >
-                  {{ copy.mergeAll }}
-                </button>
                 <n-button
                   size="tiny"
                   type="primary"
@@ -101,28 +106,8 @@
                   {{ copy.apply }}
                 </n-button>
               </div>
-            </div>
-          </n-popover>
-
-          <n-button
-            v-if="splitVariantsNormalized.length !== normalizedVariants.length"
-            class="ranking-split-control__inline-action"
-            text
-            size="tiny"
-            @click.stop="splitAll"
-          >
-            {{ copy.splitAllShort }}
-          </n-button>
-          <n-button
-            v-if="splitVariantsNormalized.length"
-            class="ranking-split-control__inline-action"
-            text
-            size="tiny"
-            @click.stop="mergeAll"
-          >
-            {{ copy.mergeAllShort }}
-            <span class="ranking-split-control__count">{{ splitVariantsNormalized.length }}</span>
-          </n-button>
+            </template>
+          </div>
         </template>
       </div>
     </template>
@@ -259,6 +244,7 @@ const { locale: i18nLocale } = useI18n({ useScope: "global" });
 const locale = computed(() => normalizeLocale(i18nLocale.value));
 const menuOpen = ref(false);
 const manageOpen = ref(false);
+const selectionOpen = ref(false);
 const draftVariants = ref([]);
 
 const COPY = {
@@ -276,7 +262,7 @@ const COPY = {
     mergeAllShort: "全合并",
     mergeHint: "把独立榜单收回当前平台卡片",
     splitCurrent: "拆当前",
-    manageSplit: "管理",
+    manageSplit: "多选",
     closeManage: "收起管理",
   },
   "zh-TW": {
@@ -293,7 +279,7 @@ const COPY = {
     mergeAllShort: "全合併",
     mergeHint: "將獨立榜單收回目前平台卡片",
     splitCurrent: "拆目前",
-    manageSplit: "管理",
+    manageSplit: "多選",
     closeManage: "收起管理",
   },
   en: {
@@ -310,7 +296,7 @@ const COPY = {
     mergeAllShort: "Merge all",
     mergeHint: "Return this ranking to the platform card",
     splitCurrent: "Split",
-    manageSplit: "Manage",
+    manageSplit: "Select",
     closeManage: "Close manager",
   },
   ja: {
@@ -327,7 +313,7 @@ const COPY = {
     mergeAllShort: "全統合",
     mergeHint: "独立ランキングをプラットフォームカードに戻す",
     splitCurrent: "現在を分割",
-    manageSplit: "管理",
+    manageSplit: "複数選択",
     closeManage: "管理を閉じる",
   },
   ko: {
@@ -344,7 +330,7 @@ const COPY = {
     mergeAllShort: "전체 합치기",
     mergeHint: "독립 랭킹을 플랫폼 카드로 되돌리기",
     splitCurrent: "현재 분리",
-    manageSplit: "관리",
+    manageSplit: "다중 선택",
     closeManage: "관리 닫기",
   },
 };
@@ -434,22 +420,32 @@ const splitCurrent = () => {
   if (!allowedVariants.value.has(value)) return;
   persist([...new Set([...splitVariantsNormalized.value, value])]);
 };
-const setManageOpen = (show) => {
-  manageOpen.value = Boolean(show);
+const toggleManage = () => {
+  manageOpen.value = !manageOpen.value;
   if (manageOpen.value) syncDraft();
+  else selectionOpen.value = false;
+};
+const toggleSelection = () => {
+  selectionOpen.value = !selectionOpen.value;
+  if (selectionOpen.value) syncDraft();
 };
 const applyDraft = () => {
   persist(draftVariants.value);
   menuOpen.value = false;
+  manageOpen.value = false;
+  selectionOpen.value = false;
 };
 const splitAll = () => {
   persist(normalizedVariants.value);
   menuOpen.value = false;
+  if (props.embedded) syncDraft();
 };
 const mergeAll = () => {
   persist([]);
   draftVariants.value = [];
   menuOpen.value = false;
+  manageOpen.value = false;
+  selectionOpen.value = false;
 };
 const mergeCurrent = () => {
   if (!projectionVariant.value) return;
@@ -476,11 +472,105 @@ watch(
   gap: 2px;
   flex: 0 0 auto;
 }
+
 .ranking-split-control.is-embedded {
   display: inline-flex;
-  width: auto;
   min-width: 0;
 }
+
+.ranking-split-control.is-embedded.is-open {
+  flex: 1 0 100%;
+  width: 100%;
+}
+
+.ranking-split-control__embedded {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: 100%;
+}
+
+.ranking-tool-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 25px;
+  padding: 3px 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--n-text-color-2, var(--n-text-color));
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.ranking-tool-trigger:hover,
+.ranking-tool-trigger.active {
+  color: var(--n-primary-color, #ea444d);
+  background: rgba(127, 127, 127, 0.06);
+}
+
+.ranking-tool-trigger.active {
+  background: rgba(234, 68, 77, 0.09);
+}
+
+.ranking-tool-trigger.is-secondary {
+  color: var(--n-text-color-3, var(--n-text-color-2));
+}
+
+.ranking-split-control__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, 0.1);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ranking-split-control__embedded-panel {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  margin-top: 3px;
+}
+
+.ranking-split-control__quick-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.ranking-split-control__quick-actions > button,
+.ranking-split-control__menu-actions > button:not(.n-button) {
+  min-height: 24px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--n-text-color-2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.15;
+}
+
+.ranking-split-control__quick-actions > button:hover,
+.ranking-split-control__menu-actions > button:not(.n-button):hover {
+  color: var(--n-primary-color);
+  background: rgba(127, 127, 127, 0.06);
+}
+
 .ranking-split-control__trigger,
 .ranking-split-control__merge-all {
   min-height: 24px;
@@ -489,165 +579,110 @@ watch(
   font-size: 11px;
   white-space: nowrap;
 }
+
 .ranking-split-control__trigger:hover,
-.ranking-split-control__merge-all:hover {
-  color: var(--n-primary-color);
-}
-.ranking-split-control__close {
-  color: var(--n-text-color-3);
-}
+.ranking-split-control__merge-all:hover,
 .ranking-split-control__close:hover {
   color: var(--n-primary-color);
 }
+
+.ranking-split-control__close {
+  color: var(--n-text-color-3);
+}
+
 .ranking-split-control__menu {
   width: 244px;
   padding: 4px;
 }
-.ranking-split-control__menu.is-embedded {
-  width: auto;
-  padding: 0;
-}
+
 .ranking-split-control__heading {
   display: grid;
   gap: 3px;
   padding: 4px 5px 9px;
 }
-.ranking-split-control__heading-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+
 .ranking-split-control__heading strong {
   font-size: 13px;
 }
+
 .ranking-split-control__heading span {
   color: var(--n-text-color-3);
   font-size: 11px;
 }
+
 .ranking-split-control__options {
   display: grid;
   gap: 3px;
 }
+
+.ranking-split-control__options.is-managed {
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  max-height: 190px;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+}
+
 .ranking-split-control__option {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
+  grid-template-columns: 18px minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   width: 100%;
-  min-height: 34px;
-  padding: 5px 7px;
+  min-height: 30px;
+  padding: 4px 6px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
   font: inherit;
   font-size: 12px;
+  line-height: 1.2;
   text-align: left;
 }
+
 .ranking-split-control__option:hover,
 .ranking-split-control__option.is-selected {
   background: var(--n-action-color);
 }
+
 .ranking-split-control__check {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border: 1px solid var(--n-border-color);
-  border-radius: 5px;
+  border-radius: 4px;
   color: var(--n-primary-color);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
+
 .ranking-split-control__option.is-selected .ranking-split-control__check {
   border-color: var(--n-primary-color);
 }
+
 .ranking-split-control__menu-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 7px;
-  margin-top: 8px;
-  padding-top: 8px;
+  gap: 5px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--n-border-color);
 }
-.ranking-split-control__menu-actions > button:not(.n-button) {
-  padding: 4px 5px;
-  border: 0;
-  background: transparent;
-  color: var(--n-text-color-2);
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
+
+.ranking-split-control__menu-actions.is-embedded {
+  margin-top: 0;
+  padding-top: 3px;
 }
-.ranking-split-control__menu-actions > button:not(.n-button):hover {
-  color: var(--n-primary-color);
-}
-.ranking-split-control__embedded-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-.ranking-split-control__embedded-actions.is-primary :deep(.n-button) {
-  min-width: 0;
-}
-.ranking-split-control__options.is-managed {
-  max-height: 220px;
-  margin-top: 8px;
-  overflow: auto;
-  padding-right: 2px;
-  scrollbar-width: thin;
-}
+
 .ranking-split-control.is-compact .ranking-split-control__trigger,
 .ranking-split-control.is-compact .ranking-split-control__merge-all {
   min-height: 22px;
   padding-inline: 4px;
   font-size: 11px;
 }
-.ranking-split-control__inline {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px;
-}
-
-.ranking-split-control__inline-action {
-  min-height: 26px;
-  padding-inline: 6px;
-  color: var(--n-text-color-2);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.ranking-split-control__inline-action:hover {
-  color: var(--n-primary-color);
-  background: rgba(234, 68, 77, 0.08);
-}
-
-.ranking-split-control__count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 17px;
-  height: 17px;
-  margin-left: 2px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: rgba(127, 127, 127, 0.1);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.ranking-split-control__manage {
-  width: min(278px, calc(100vw - 32px));
-  padding: 6px;
-}
-
-.ranking-split-control__manage .ranking-split-control__options.is-managed {
-  max-height: 250px;
-  margin-top: 0;
-}
-
 </style>

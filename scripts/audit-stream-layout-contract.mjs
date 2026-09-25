@@ -24,6 +24,14 @@ const directorySourceCard = fs.readFileSync("src/components/DirectorySourceCard.
 const directorySources = fs.readFileSync("src/config/directorySources.js", "utf8");
 const hotList = fs.readFileSync("src/components/HotList.vue", "utf8");
 const rankingSplitControl = fs.readFileSync("src/components/RankingSplitControl.vue", "utf8");
+const marketRankDirectionControl = fs.readFileSync(
+  "src/components/MarketRankDirectionControl.vue",
+  "utf8",
+);
+const marketListSortControl = fs.readFileSync(
+  "src/components/MarketListSortControl.vue",
+  "utf8",
+);
 const contextToolbar = fs.readFileSync("src/components/ContextToolbar.vue", "utf8");
 const listView = fs.readFileSync("src/views/List.vue", "utf8");
 const readableTitles = fs.readFileSync("src/utils/readableTitles.js", "utf8");
@@ -493,6 +501,45 @@ assert.match(rankingSplitControl, /draftVariants/);
 assert.match(rankingSplitControl, /setCategorySplitVariants/);
 assert.match(rankingSplitControl, /const mergeCurrent =/);
 assert.match(rankingSplitControl, /const mergeAll =/);
+assert.match(
+  marketRankDirectionControl,
+  /v-if="!expanded"[\s\S]{0,260}class="ranking-tool-trigger"[\s\S]{0,320}v-else class="ranking-tool-options"/,
+  "native rank order must collapse to one compact trigger until explicitly expanded",
+);
+assert.match(
+  marketListSortControl,
+  /v-if="!expanded"[\s\S]{0,260}class="ranking-tool-trigger"[\s\S]{0,320}v-else class="ranking-tool-options"/,
+  "market sort must collapse to one compact trigger until explicitly expanded",
+);
+const embeddedSplitMarkup = rankingSplitControl.split(
+  '<template v-else-if="isProjection">',
+)[0];
+const embeddedSplitPrimary = embeddedSplitMarkup.split('<template v-else>')[1] || "";
+assert.match(
+  embeddedSplitPrimary,
+  /class="ranking-tool-trigger"/,
+  "embedded split management must expose a compact split trigger",
+);
+assert.match(
+  embeddedSplitPrimary,
+  /\{\{ copy\.split \}\}/,
+  "embedded split trigger must stay concise instead of exposing all actions at once",
+);
+assert.match(
+  embeddedSplitMarkup,
+  /v-if="manageOpen" class="ranking-split-control__embedded-panel"/,
+  "full split management must render only after explicit expansion",
+);
+assert.doesNotMatch(
+  embeddedSplitMarkup,
+  /<n-popover/,
+  "embedded split controls must stay inside the parent mega menu instead of opening a competing teleported popover",
+);
+assert.match(
+  subtypeBar,
+  /\.subtype-menu-tools \{[\s\S]{0,220}font-size: 12px/,
+  "ranking mega-menu first-level tools must share the compact 12px type scale",
+);
 assert.match(component, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(component, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.match(component, /timeout: DETAIL_REQUEST_TIMEOUT_MS/);
