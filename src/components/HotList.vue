@@ -29,47 +29,54 @@
             @click.stop
           />
           <div
-            v-else-if="subtypeGroups.length || isSortableMarketSource"
+            v-else-if="
+              subtypeGroups.length ||
+              showNativeOrderControl ||
+              showMarketSortControl ||
+              hasCategorySplitControl
+            "
             class="header-market-actions"
           >
-            <MarketRankDirectionControl
-              v-if="showNativeOrderControl"
-              class="header-rank-direction"
-              :direction="marketRankDirection"
-              @change="changeMarketRankDirection"
-            />
             <SubtypeBar
-              v-if="subtypeGroups.length"
               class="header-subtype"
               :groups="subtypeGroups"
               :active-value="activeSubType"
+              :fallback-label="t('hotList.rankingOptions')"
               @change="changeSubType"
               @click.stop
-            />
-            <MarketListSortControl
-              v-if="showMarketSortControl"
-              :source="hotData.name"
-              :compact="true"
-              :show-state-label="isDesktop"
-              @click.stop
-            />
+            >
+              <template #actions>
+                <MarketRankDirectionControl
+                  v-if="showNativeOrderControl"
+                  menu
+                  :direction="marketRankDirection"
+                  @change="changeMarketRankDirection"
+                />
+                <MarketListSortControl
+                  v-if="showMarketSortControl"
+                  menu
+                  :source="hotData.name"
+                />
+                <RankingSplitControl
+                  v-if="hasCategorySplitControl"
+                  embedded
+                  :source-name="hotData.name"
+                  :category-ref="hotData.categorySplitRef"
+                  :variants="categoryAllProjectionVariants"
+                  :split-variants="categorySplitVariants"
+                  :current-variant="activeSubType"
+                  :projection-variant="hotData.categorySplitProjection ? projectionVariant : ''"
+                  :show-merge-all="
+                    Boolean(hotData.categorySplitPrimary) && !categoryScopeFullySplit
+                  "
+                />
+              </template>
+            </SubtypeBar>
           </div>
           <n-text v-else-if="cardSubtitle" class="subtitle" :depth="2">
             {{ cardSubtitle }}
           </n-text>
           <n-skeleton v-else-if="!hotListData" width="60px" text round />
-          <RankingSplitControl
-            v-if="hasCategorySplitControl"
-            class="no-card-drag"
-            :source-name="hotData.name"
-            :category-ref="hotData.categorySplitRef"
-            :variants="categoryAllProjectionVariants"
-            :split-variants="categorySplitVariants"
-            :projection-variant="hotData.categorySplitProjection ? projectionVariant : ''"
-            :show-merge-all="
-              Boolean(hotData.categorySplitPrimary) && !categoryScopeFullySplit
-            "
-          />
         </div>
       </div>
     </template>
@@ -1704,26 +1711,17 @@ onBeforeUnmount(() => {
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      gap: 6px;
-      flex: 0 1 auto;
+      flex: 0 1 46%;
       min-width: 0;
-      max-width: 68%;
+      max-width: 46%;
       margin-left: auto;
-    }
-
-    .header-rank-direction {
-      flex: 0 0 auto;
     }
 
     .header-subtype {
       flex: 0 1 auto;
       min-width: 0;
-      max-width: 180px;
+      max-width: 100%;
       margin-left: auto;
-    }
-
-    .header-market-actions .header-subtype {
-      margin-left: 0;
     }
 
     .header-subtype:deep(.subtype-scroll) {

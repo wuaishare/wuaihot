@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { mergeDirectoryAndReadCatalogs } from "../src/utils/trendsCatalogSurfaceMerge.mjs";
 import {
   applyTrendsSourceCatalog,
+  buildSourceSubtypeParams,
   canFallbackTrendsCatalogVariant,
   filterReadableTrendsCatalogManagedSources,
   getDefaultSourceSubtype,
@@ -471,6 +472,74 @@ assert.deepEqual(
 assert.equal(getDefaultSourceSubtype("google-trends"), "us");
 assert.equal(resolveTrendsCatalogVariant("google-trends", { type: "jp" }), "jp");
 assert.equal(canFallbackTrendsCatalogVariant("google-trends", "jp"), false);
+
+const bilibiliStaticValues = getSourceSubtypeGroups("bilibili")
+  .flatMap((group) => group.items.map((item) => item.value));
+assert.deepEqual(
+  bilibiliStaticValues,
+  [
+    "popular", "all", "animation", "music", "game", "entertainment", "tech",
+    "film", "kichiku", "dance", "fashion", "life", "guochuang", "knowledge",
+    "food", "animals", "auto", "sports",
+  ],
+  "Bilibili static fallback must stay aligned with the current governed Directory Catalog",
+);
+assert.deepEqual(
+  buildSourceSubtypeParams("bilibili", "tech"),
+  { type: "188" },
+  "Bilibili semantic fallback variants must preserve the legacy provider transport id",
+);
+const bilibiliCatalog = {
+  version: 1,
+  sources: [
+    {
+      key: "bilibili",
+      name: "哔哩哔哩",
+      category: "culture",
+      defaultVariant: "popular",
+      variantSelectorEnabled: true,
+      variantGroups: [
+        {
+          key: "ranking",
+          label: "分区",
+          options: [
+            { key: "popular", label: "综合热门" },
+            { key: "all", label: "全站排行榜" },
+            { key: "animation", label: "动画" },
+            { key: "music", label: "音乐" },
+            { key: "game", label: "游戏" },
+            { key: "entertainment", label: "娱乐" },
+            { key: "tech", label: "科技" },
+            { key: "film", label: "影视" },
+            { key: "kichiku", label: "鬼畜" },
+            { key: "dance", label: "舞蹈" },
+            { key: "fashion", label: "时尚" },
+            { key: "life", label: "生活" },
+            { key: "guochuang", label: "国创相关" },
+            { key: "knowledge", label: "知识" },
+            { key: "food", label: "美食" },
+            { key: "animals", label: "动物圈" },
+            { key: "auto", label: "汽车" },
+            { key: "sports", label: "运动" },
+          ],
+        },
+      ],
+      publicAvailable: false,
+      displayAvailable: true,
+    },
+  ],
+};
+applyTrendsSourceCatalog(bilibiliCatalog);
+assert.equal(getDefaultSourceSubtype("bilibili"), "popular");
+assert.equal(resolveTrendsCatalogVariant("bilibili", { type: "tech" }), "tech");
+assert.deepEqual(
+  getSourceSubtypeGroups("bilibili").flatMap((group) =>
+    group.items.map((item) => item.value),
+  ),
+  bilibiliStaticValues,
+  "Bilibili live Catalog projection and static fallback must expose the same semantic variants",
+);
+
 console.log("[trends-catalog-contract] dynamic projection, selector gating and fail-closed fallback verified");
 
 const vueFiles = [];

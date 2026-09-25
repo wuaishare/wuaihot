@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="groups.length"
+    v-if="groups.length || hasActions"
     class="subtype-bar no-card-drag"
     data-no-card-drag
     @pointerdown.stop="lockCardDrag"
@@ -22,7 +22,7 @@
         type="button"
         class="subtype-trigger subtype-chip"
         :class="{ active: Boolean(activeItem) }"
-        :title="currentLabel"
+        :title="fullCurrentLabel"
         :aria-expanded="menuOpen ? 'true' : 'false'"
         aria-haspopup="menu"
         @click.stop="toggleMenu"
@@ -60,14 +60,14 @@
           <template v-if="!isMobile">
             <div
               class="desktop-menu-grid"
-              :class="{ 'single-group': groups.length === 1 }"
+              :class="{ 'single-group': displayGroups.length === 1, 'is-mega': isMegaMenu }"
             >
               <section
-                v-for="group in groups"
+                v-for="group in displayGroups"
                 :key="getGroupKey(group)"
                 class="menu-group"
               >
-                <div v-if="groups.length > 1 && group.label" class="menu-group-title">
+                <div v-if="displayGroups.length > 1 && group.label" class="menu-group-title">
                   {{ group.label }}
                 </div>
                 <div class="menu-items">
@@ -77,6 +77,7 @@
                     type="button"
                     class="menu-item"
                     :class="{ active: item.value === activeValue }"
+                    :title="item.fullLabel || item.label"
                     role="menuitemradio"
                     :aria-checked="item.value === activeValue ? 'true' : 'false'"
                     @click="selectItem(item.value)"
@@ -93,7 +94,7 @@
           <template v-else>
             <div class="mobile-accordion-list">
               <section
-                v-for="group in groups"
+                v-for="group in displayGroups"
                 :key="getGroupKey(group)"
                 class="accordion-group"
               >
@@ -117,6 +118,7 @@
                     type="button"
                     class="menu-item"
                     :class="{ active: item.value === activeValue }"
+                    :title="item.fullLabel || item.label"
                     @click="selectItem(item.value)"
                   >
                     <span class="menu-item-main">
@@ -128,6 +130,10 @@
             </div>
           </template>
 
+          <div v-if="hasActions" class="subtype-menu-tools">
+            <slot name="actions" />
+          </div>
+
         </div>
       </Transition>
     </Teleport>
@@ -135,16 +141,18 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { mainStore } from "@/store";
 
 const props = defineProps({
   groups: { type: Array, default: () => [] },
   activeValue: { type: String, default: null },
+  fallbackLabel: { type: String, default: "" },
 });
 
 const emit = defineEmits(["change"]);
+const slots = useSlots();
 const store = mainStore();
 const { t } = useI18n({ useScope: "global" });
 const triggerRef = ref(null);
@@ -162,16 +170,110 @@ const flatItems = computed(() => props.groups.flatMap((group) => group.items || 
 const activeItem = computed(() =>
   flatItems.value.find((item) => item.value === props.activeValue) || flatItems.value[0] || null
 );
-const currentLabel = computed(() => activeItem.value?.label || props.groups[0]?.label || t("hotList.rankOrder"));
+const hasActions = computed(() => Boolean(slots.actions));
 const isDarkTheme = computed(() => store.siteTheme === "dark");
+
+const splitHierarchicalLabel = (label = "") => {
+  const parts = String(label || "")
+    .split(/\s*[·•]\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return null;
+  return {
+    group: parts.slice(0, -1).join(" · "),
+    leaf: parts.at(-1),
+  };
+};
+
+const compactText = (value = "") =>
+  String(value || "")
+    .replace(/所有类别/g, "全部")
+    .replace(/所有分類/g, "全部")
+    .replace(/熱門節目/g, "節目")
+    .replace(/热门节目/g, "节目")
+    .replace(/熱門單集/g, "單集")
+    .replace(/热门单集/g, "单集")
+    .replace(/All Categories/gi, "All")
+    .replace(/Top Shows/gi, "Shows")
+    .replace(/Top Episodes/gi, "Episodes")
+    .trim();
+
+const compactTriggerLabel = (label = "") => {
+  const parsed = splitHierarchicalLabel(label);
+  if (!parsed) return compactText(label);
+  return `${compactText(parsed.group)} · ${compactText(parsed.leaf)}`;
+};
+
+const fullCurrentLabel = computed(
+  () =>
+    activeItem.value?.label ||
+    props.groups[0]?.label ||
+    props.fallbackLabel ||
+    t("hotList.rankOrder"),
+);
+const currentLabel = computed(() => compactTriggerLabel(fullCurrentLabel.value));
+
+const shouldPromoteHierarchy = computed(() => {
+  if (props.groups.length !== 1 || flatItems.value.length < 6) return false;
+  const hierarchicalCount = flatItems.value.filter((item) =>
+    Boolean(splitHierarchicalLabel(item?.label)),
+  ).length;
+  return hierarchicalCount >= Math.max(4, Math.ceil(flatItems.value.length * 0.6));
+});
+
+const displayGroups = computed(() => {
+  if (shouldPromoteHierarchy.value) {
+    const sourceGroup = props.groups[0] || {};
+    const grouped = new Map();
+    for (const item of sourceGroup.items || []) {
+      const parsed = splitHierarchicalLabel(item?.label);
+      const groupLabel = parsed?.group || sourceGroup.label || "";
+      const groupKey = `${sourceGroup.key || "group"}:${groupLabel || "other"}`;
+      if (!grouped.has(groupKey)) {
+        grouped.set(groupKey, {
+          ...sourceGroup,
+          key: groupKey,
+          label: compactText(groupLabel),
+          items: [],
+        });
+      }
+      grouped.get(groupKey).items.push({
+        ...item,
+        fullLabel: item?.label || "",
+        label: compactText(parsed?.leaf || item?.label || ""),
+      });
+    }
+    return [...grouped.values()];
+  }
+
+  return props.groups.map((group) => ({
+    ...group,
+    items: (group.items || []).map((item) => {
+      const parsed = splitHierarchicalLabel(item?.label);
+      const redundantPrefix =
+        parsed &&
+        String(parsed.group || "").trim().toLowerCase() ===
+          String(group.label || "").trim().toLowerCase();
+      return {
+        ...item,
+        fullLabel: item?.label || "",
+        label: compactText(redundantPrefix ? parsed.leaf : item?.label || ""),
+      };
+    }),
+  }));
+});
+
+const isMegaMenu = computed(
+  () => displayGroups.value.length > 2 || flatItems.value.length > 8,
+);
 
 const getGroupKey = (group) => group.key || group.label || group.items?.[0]?.value || "group";
 const isGroupActive = (group) => (group.items || []).some((item) => item.value === props.activeValue);
 const isAccordionOpen = (group) => accordionOpenKeys.value.has(getGroupKey(group));
 
 const syncDefaultAccordion = () => {
-  if (!props.groups.length) return;
-  const activeGroup = props.groups.find(isGroupActive) || props.groups[0];
+  if (!displayGroups.value.length) return;
+  const activeGroup = displayGroups.value.find(isGroupActive) || displayGroups.value[0];
   accordionOpenKeys.value = new Set([getGroupKey(activeGroup)]);
 };
 
@@ -402,14 +504,36 @@ onBeforeUnmount(() => {
 
 .desktop-menu-grid {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(150px, max-content);
   gap: 8px 12px;
 }
 
-.desktop-menu-grid.single-group {
+.desktop-menu-grid:not(.is-mega) {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(150px, max-content);
+}
+
+.desktop-menu-grid.single-group:not(.is-mega) {
   display: block;
   min-width: max-content;
+}
+
+.desktop-menu-grid.is-mega {
+  width: min(620px, calc(100vw - 44px));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  align-items: start;
+}
+
+.desktop-menu-grid.single-group.is-mega {
+  display: block;
+  width: min(520px, calc(100vw - 44px));
+}
+
+.desktop-menu-grid.single-group.is-mega .menu-items {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.menu-group {
+  min-width: 0;
 }
 
 .menu-group-title {
@@ -459,6 +583,15 @@ onBeforeUnmount(() => {
 
 .menu-item.active {
   font-weight: 700;
+}
+
+.subtype-menu-tools {
+  display: grid;
+  gap: 10px;
+  min-width: 240px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--menu-border);
 }
 
 .subtype-menu.is-mobile {
