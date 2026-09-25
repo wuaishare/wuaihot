@@ -38,45 +38,37 @@
             class="header-market-actions"
           >
             <SubtypeBar
+              v-if="subtypeGroups.length"
               class="header-subtype"
               :groups="subtypeGroups"
               :active-value="activeSubType"
               :fallback-label="t('hotList.rankingOptions')"
-              :show-actions="
+              @change="changeSubType"
+              @click.stop
+            />
+            <RankingCardOperations
+              v-if="
                 showNativeOrderControl ||
                 showMarketSortControl ||
                 hasCategorySplitControl
               "
-              @change="changeSubType"
-              @click.stop
-            >
-              <template #actions>
-                <MarketRankDirectionControl
-                  v-if="showNativeOrderControl"
-                  menu
-                  :direction="marketRankDirection"
-                  @change="changeMarketRankDirection"
-                />
-                <MarketListSortControl
-                  v-if="showMarketSortControl"
-                  menu
-                  :source="hotData.name"
-                />
-                <RankingSplitControl
-                  v-if="hasCategorySplitControl"
-                  embedded
-                  :source-name="hotData.name"
-                  :category-ref="hotData.categorySplitRef"
-                  :variants="categoryAllProjectionVariants"
-                  :split-variants="categorySplitVariants"
-                  :current-variant="activeSubType"
-                  :projection-variant="hotData.categorySplitProjection ? projectionVariant : ''"
-                  :show-merge-all="
-                    Boolean(hotData.categorySplitPrimary) && !categoryScopeFullySplit
-                  "
-                />
-              </template>
-            </SubtypeBar>
+              class="header-ranking-operations"
+              :source-name="hotData.name"
+              :show-native-order-control="showNativeOrderControl"
+              :show-market-sort-control="showMarketSortControl"
+              :market-rank-direction="marketRankDirection"
+              :show-split-control="hasCategorySplitControl"
+              :category-ref="hotData.categorySplitRef"
+              :variants="categoryAllProjectionVariants"
+              :split-variants="categorySplitVariants"
+              :projection-variant="
+                hotData.categorySplitProjection ? projectionVariant : ''
+              "
+              :show-merge-all="
+                Boolean(hotData.categorySplitPrimary) && !categoryScopeFullySplit
+              "
+              @change-direction="changeMarketRankDirection"
+            />
           </div>
           <n-text v-else-if="cardSubtitle" class="subtitle" :depth="2">
             {{ cardSubtitle }}
@@ -485,14 +477,12 @@ import {
 import { normalizeRankingBadges } from "@/utils/rankingBadges";
 import UiGlyph from "@/components/ui/UiGlyph.vue";
 import RankingBadgeGroup from "@/components/RankingBadgeGroup.vue";
-import RankingSplitControl from "@/components/RankingSplitControl.vue";
+import RankingCardOperations from "@/components/RankingCardOperations.vue";
 import { mainStore } from "@/store";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import SubtypeBar from "@/components/SubtypeBar.vue";
-import MarketRankDirectionControl from "@/components/MarketRankDirectionControl.vue";
 import GlobalIndexControls from "@/components/GlobalIndexControls.vue";
-import MarketListSortControl from "@/components/MarketListSortControl.vue";
 import {
   buildSourceSubtypeParams,
   getDefaultSourceSubtype,
