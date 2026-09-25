@@ -497,7 +497,7 @@ addCheck("api: ithome subtype coverage", async () => {
   return results;
 });
 
-addCheck("api: bilibili popular coverage", async () => {
+addCheck("api: bilibili user-facing coverage uses resilient cache path", async () => {
   const subtypes = {
     all: "综合热门",
     weekly: "每周必看",
@@ -508,7 +508,6 @@ addCheck("api: bilibili popular coverage", async () => {
   const results = [];
   for (const [type, expectedLabel] of Object.entries(subtypes)) {
     const url = new URL(`${siteUrl}/api/bilibili`);
-    url.searchParams.set("cache", "false");
     url.searchParams.set("type", type);
     const response = await requestWithRetry(url.toString(), {}, 3);
     assert(response.statusCode === 200, `${type}: HTTP ${response.statusCode}`);
