@@ -2,10 +2,111 @@
   <div
     v-if="visible"
     class="ranking-split-control"
-    :class="{ 'is-compact': compact, 'is-projection': isProjection }"
+    :class="{
+      'is-compact': compact,
+      'is-projection': isProjection,
+      'is-embedded': embedded,
+    }"
     @click.stop
   >
-    <template v-if="isProjection">
+    <template v-if="embedded">
+      <div class="ranking-split-control__menu is-embedded" @click.stop>
+        <div class="ranking-split-control__heading">
+          <div class="ranking-split-control__heading-title">
+            <n-icon :component="isProjection ? Merge : Split" />
+            <strong>{{ isProjection ? copy.mergeCurrent : copy.splitMenu }}</strong>
+          </div>
+          <span>{{ isProjection ? copy.mergeHint : copy.splitHint }}</span>
+        </div>
+
+        <template v-if="isProjection">
+          <div class="ranking-split-control__embedded-actions">
+            <n-button size="small" secondary @click.stop="mergeCurrent">
+              <template #icon>
+                <n-icon :component="Merge" />
+              </template>
+              {{ copy.mergeCurrent }}
+            </n-button>
+            <n-button
+              v-if="showMergeAll"
+              size="small"
+              quaternary
+              @click.stop="mergeAll"
+            >
+              {{ copy.mergeAll }}
+            </n-button>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="ranking-split-control__embedded-actions is-primary">
+            <n-button
+              v-if="currentVariant && !splitVariantsNormalized.includes(currentVariant)"
+              size="small"
+              secondary
+              @click.stop="splitCurrent"
+            >
+              <template #icon>
+                <n-icon :component="Split" />
+              </template>
+              {{ copy.splitCurrent }}
+            </n-button>
+            <n-button size="small" quaternary @click.stop="toggleManage">
+              {{ manageOpen ? copy.closeManage : copy.manageSplit }}
+            </n-button>
+            <n-button
+              v-if="splitVariantsNormalized.length !== normalizedVariants.length"
+              size="small"
+              quaternary
+              @click.stop="splitAll"
+            >
+              {{ copy.splitAll }}
+            </n-button>
+            <n-button
+              v-if="splitVariantsNormalized.length"
+              size="small"
+              quaternary
+              @click.stop="mergeAll"
+            >
+              {{ copy.mergeAll }} {{ splitVariantsNormalized.length }}/{{ normalizedVariants.length }}
+            </n-button>
+          </div>
+
+          <template v-if="manageOpen">
+            <div class="ranking-split-control__options is-managed">
+              <button
+                v-for="option in variantOptions"
+                :key="option.value"
+                type="button"
+                class="ranking-split-control__option"
+                :class="{ 'is-selected': draftVariants.includes(option.value) }"
+                :aria-pressed="draftVariants.includes(option.value)"
+                @click.stop="toggleDraft(option.value)"
+              >
+                <span class="ranking-split-control__check" aria-hidden="true">
+                  {{ draftVariants.includes(option.value) ? "✓" : "" }}
+                </span>
+                <span>{{ option.label }}</span>
+              </button>
+            </div>
+
+            <div class="ranking-split-control__menu-actions">
+              <button type="button" @click.stop="selectAll">{{ copy.selectAll }}</button>
+              <n-button
+                size="tiny"
+                type="primary"
+                :disabled="sameSelection"
+                @click.stop="applyDraft"
+              >
+                {{ copy.apply }}
+              </n-button>
+            </div>
+          </template>
+        </template>
+      </div>
+    </template>
+
+    <template v-else-if="isProjection">
       <n-button
         v-if="showMergeAll"
         class="ranking-split-control__merge-all"
@@ -33,7 +134,7 @@
     </template>
 
     <n-button
-      v-else-if="variantOptions.length === 2"
+      v-else-if="!embedded && variantOptions.length === 2"
       class="ranking-split-control__trigger"
       text
       size="tiny"
@@ -45,7 +146,7 @@
     </n-button>
 
     <n-popover
-      v-else
+      v-else-if="!embedded"
       trigger="click"
       placement="bottom-end"
       :show="menuOpen"
@@ -112,8 +213,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { CloseOne } from "@icon-park/vue-next";
+import { computed, ref, watch } from "vue";
+import { CloseOne, Merge, Split } from "@icon-park/vue-next";
 import { useI18n } from "vue-i18n";
 import { mainStore } from "@/store";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
@@ -128,12 +229,15 @@ const props = defineProps({
   projectionVariant: { type: String, default: "" },
   showMergeAll: { type: Boolean, default: false },
   compact: { type: Boolean, default: false },
+  embedded: { type: Boolean, default: false },
+  currentVariant: { type: String, default: "" },
 });
 
 const store = mainStore();
 const { locale: i18nLocale } = useI18n({ useScope: "global" });
 const locale = computed(() => normalizeLocale(i18nLocale.value));
 const menuOpen = ref(false);
+const manageOpen = ref(false);
 const draftVariants = ref([]);
 
 const COPY = {
@@ -146,6 +250,10 @@ const COPY = {
     apply: "应用",
     mergeAll: "全部合并",
     mergeCurrent: "收回当前榜单",
+    mergeHint: "把独立榜单收回当前平台卡片",
+    splitCurrent: "拆分当前",
+    manageSplit: "管理拆分",
+    closeManage: "收起管理",
   },
   "zh-TW": {
     split: "拆分",
@@ -156,6 +264,10 @@ const COPY = {
     apply: "套用",
     mergeAll: "全部合併",
     mergeCurrent: "收回目前榜單",
+    mergeHint: "將獨立榜單收回目前平台卡片",
+    splitCurrent: "拆分目前榜單",
+    manageSplit: "管理拆分",
+    closeManage: "收起管理",
   },
   en: {
     split: "Split",
@@ -166,6 +278,10 @@ const COPY = {
     apply: "Apply",
     mergeAll: "Merge all",
     mergeCurrent: "Merge this ranking",
+    mergeHint: "Return this ranking to the platform card",
+    splitCurrent: "Split current",
+    manageSplit: "Manage split",
+    closeManage: "Close manager",
   },
   ja: {
     split: "分割",
@@ -176,6 +292,10 @@ const COPY = {
     apply: "適用",
     mergeAll: "すべて統合",
     mergeCurrent: "このランキングを戻す",
+    mergeHint: "独立ランキングをプラットフォームカードに戻す",
+    splitCurrent: "現在を分割",
+    manageSplit: "分割を管理",
+    closeManage: "管理を閉じる",
   },
   ko: {
     split: "분리",
@@ -186,6 +306,10 @@ const COPY = {
     apply: "적용",
     mergeAll: "모두 합치기",
     mergeCurrent: "현재 랭킹 합치기",
+    mergeHint: "독립 랭킹을 플랫폼 카드로 되돌리기",
+    splitCurrent: "현재 분리",
+    manageSplit: "분리 관리",
+    closeManage: "관리 닫기",
   },
 };
 const copy = computed(() => COPY[locale.value] || COPY["zh-CN"]);
@@ -269,6 +393,15 @@ const toggleDraft = (variant) => {
 const selectAll = () => {
   draftVariants.value = normalizedVariants.value.slice();
 };
+const splitCurrent = () => {
+  const value = String(props.currentVariant || "").trim();
+  if (!allowedVariants.value.has(value)) return;
+  persist([...new Set([...splitVariantsNormalized.value, value])]);
+};
+const toggleManage = () => {
+  manageOpen.value = !manageOpen.value;
+  if (manageOpen.value) syncDraft();
+};
 const applyDraft = () => {
   persist(draftVariants.value);
   menuOpen.value = false;
@@ -290,6 +423,14 @@ const mergeCurrent = () => {
     ),
   );
 };
+
+watch(
+  splitVariantsNormalized,
+  () => {
+    if (props.embedded) syncDraft();
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
@@ -298,6 +439,10 @@ const mergeCurrent = () => {
   align-items: center;
   gap: 2px;
   flex: 0 0 auto;
+}
+.ranking-split-control.is-embedded {
+  display: block;
+  width: 100%;
 }
 .ranking-split-control__trigger,
 .ranking-split-control__merge-all {
@@ -321,10 +466,19 @@ const mergeCurrent = () => {
   width: 244px;
   padding: 4px;
 }
+.ranking-split-control__menu.is-embedded {
+  width: auto;
+  padding: 0;
+}
 .ranking-split-control__heading {
   display: grid;
   gap: 3px;
   padding: 4px 5px 9px;
+}
+.ranking-split-control__heading-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .ranking-split-control__heading strong {
   font-size: 13px;
@@ -393,6 +547,21 @@ const mergeCurrent = () => {
 }
 .ranking-split-control__menu-actions > button:not(.n-button):hover {
   color: var(--n-primary-color);
+}
+.ranking-split-control__embedded-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.ranking-split-control__embedded-actions.is-primary :deep(.n-button) {
+  min-width: 0;
+}
+.ranking-split-control__options.is-managed {
+  max-height: 220px;
+  margin-top: 8px;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
 }
 .ranking-split-control.is-compact .ranking-split-control__trigger,
 .ranking-split-control.is-compact .ranking-split-control__merge-all {
