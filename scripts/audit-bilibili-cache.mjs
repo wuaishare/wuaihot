@@ -33,8 +33,12 @@ const route = fs.readFileSync(new URL("../api/[...path].js", import.meta.url), "
 assert.doesNotMatch(route, /from\s+["\'][^"\']+\.mjs["\']/, "Vercel CommonJS serverless entry must not statically import .mjs helpers");
 assert.match(route, /const forceNoCache =[\s\S]*?req\.query\.cache/);
 assert.match(route, /if \(!forceNoCache\) \{[\s\S]*?resolveBilibiliCacheEntry\(cached\)/);
-assert.match(route, /if \(!forceNoCache\) \{[\s\S]*?resolveBilibiliCacheEntry\(cached, \{ allowStale: true \}\)/);
-assert.match(route, /res\.setHeader\("cache-control", "no-store"\);[\s\S]*?forceNoCache \? "bypass" : "miss"/);
+assert.match(route, /const fallback = resolveBilibiliCacheEntry\(cached, \{ allowStale: true \}\)/);
+assert.match(route, /after forced refresh/);
+assert.match(route, /memory-refresh-fallback-\$\{fallback\.freshness\}/);
+assert.match(route, /bypass-fresh-fallback/);
+assert.match(route, /bypass-stale-fallback/);
+assert.match(route, /res\.setHeader\("cache-control", "no-store"\)/);
 assert.match(route, /cache\.set\(type, \{ cachedAt: Date\.now\(\), value: response \}\)/);
 assert.match(route, /response has no usable items/);
 console.log("[bilibili-cache] route bypass, stale fallback and cache refresh contract verified");

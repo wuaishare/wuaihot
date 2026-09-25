@@ -1262,7 +1262,13 @@ const setBilibiliCacheHeaders = (res, { forceNoCache, cacheState }) => {
   if (forceNoCache) {
     res.setHeader("cache-control", "no-store");
     res.setHeader("vercel-cdn-cache-control", "no-store");
-    res.setHeader("x-dailyhot-bilibili-cache", "bypass");
+    const refreshState =
+      cacheState === "memory-refresh-fallback-fresh"
+        ? "bypass-fresh-fallback"
+        : cacheState === "memory-refresh-fallback-stale"
+          ? "bypass-stale-fallback"
+          : "bypass";
+    res.setHeader("x-dailyhot-bilibili-cache", refreshState);
     return;
   }
   res.setHeader("cache-control", "public, max-age=0, must-revalidate");
@@ -1355,12 +1361,18 @@ const fetchBilibiliRanking = async (type, { forceNoCache = false } = {}) => {
     cache.set(type, { cachedAt: Date.now(), value: response });
     return { ...response, cacheState: "direct" };
   } catch (error) {
-    if (!forceNoCache) {
-      const stale = resolveBilibiliCacheEntry(cached, { allowStale: true });
-      if (stale?.freshness === "stale") {
-        console.warn(`Bilibili ${type} direct fetch failed; serving stale cache`, error);
-        return { ...stale.value, cacheState: "memory-stale" };
-      }
+    const fallback = resolveBilibiliCacheEntry(cached, { allowStale: true });
+    if (fallback) {
+      console.warn(
+        `Bilibili ${type} direct fetch failed; serving ${fallback.freshness} cache${forceNoCache ? " after forced refresh" : ""}`,
+        error,
+      );
+      return {
+        ...fallback.value,
+        cacheState: forceNoCache
+          ? `memory-refresh-fallback-${fallback.freshness}`
+          : "memory-stale",
+      };
     }
     throw error;
   }
