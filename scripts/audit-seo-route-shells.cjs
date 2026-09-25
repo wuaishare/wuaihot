@@ -73,11 +73,22 @@ const expectedSitemapPaths = [
   "/rank/douyin/entertainment",
 ];
 const sitemapPath = path.join(distRoot, "sitemap.xml");
+const productionSitemapFloor = process.env.VERCEL_ENV === "production" ? 5000 : 0;
+const sitemapMinUrlCount = Number.parseInt(
+  process.env.SEO_SITEMAP_MIN_URLS || String(productionSitemapFloor),
+  10,
+);
 const missingSitemapPaths = [];
+let sitemapUrlCount = 0;
+let sitemapCountError = "";
 if (!fs.existsSync(sitemapPath)) {
   missingSitemapPaths.push("(sitemap.xml missing)");
 } else {
   const sitemapXml = fs.readFileSync(sitemapPath, "utf8");
+  sitemapUrlCount = sitemapXml.match(/<url>/g)?.length || 0;
+  if (sitemapMinUrlCount > 0 && sitemapUrlCount < sitemapMinUrlCount) {
+    sitemapCountError = `sitemap URL count ${sitemapUrlCount} is below production floor ${sitemapMinUrlCount}`;
+  }
   const sitemapPaths = new Set(
     [...sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g)]
       .map((match) => {
@@ -129,7 +140,8 @@ if (
   malformed.length ||
   missingOrWrongCategoryShells.length ||
   missingOrWrongBreadcrumbShells.length ||
-  missingSitemapPaths.length
+  missingSitemapPaths.length ||
+  Boolean(sitemapCountError)
 ) {
   if (malformed.length) {
     console.error("[seo-shell-audit] malformed generated titles detected:");
@@ -159,9 +171,12 @@ if (
       console.error(`- ${pathname}`);
     }
   }
+  if (sitemapCountError) {
+    console.error(`[seo-shell-audit] ${sitemapCountError}`);
+  }
   process.exitCode = 1;
 } else {
   console.log(
-    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}; breadcrumb shells: ${expectedBreadcrumbShells.length}; sitemap routes: ${expectedSitemapPaths.length}`,
+    `[seo-shell-audit] checked ${titledFiles} titled HTML files; malformed suffix fragments: 0; category fallback shells: ${expectedCategoryShells.length}; breadcrumb shells: ${expectedBreadcrumbShells.length}; sitemap routes: ${expectedSitemapPaths.length}; sitemap URLs: ${sitemapUrlCount}`,
   );
 }

@@ -435,7 +435,14 @@ addCheck("sitemap canonical route set", async () => {
     "missing sitemap xsl declaration"
   );
   const count = xml.match(/<url>/g)?.length || 0;
-  assert(count >= 1500, `unexpected sitemap url count: ${count}`);
+  const minUrlCount = Number.parseInt(
+    process.env.LIVE_SITEMAP_MIN_URLS || "5000",
+    10,
+  );
+  assert(
+    count >= minUrlCount,
+    `unexpected sitemap url count: ${count} (minimum ${minUrlCount})`,
+  );
   const routeExpectations = [
     ["/", "hourly", "1.0"],
     ["/en/", "hourly", "1.0"],
