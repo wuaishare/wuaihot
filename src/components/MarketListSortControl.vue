@@ -1,7 +1,7 @@
 <template>
   <div v-if="menu" class="market-sort-menu no-card-drag" :class="{ 'is-expanded': expanded }" @click.stop>
     <button
-      v-if="!expanded"
+      v-if="!inlineMenu && !expanded"
       type="button"
       class="ranking-tool-trigger"
       :title="`${t('hotList.marketSort')}：${activeLabel}`"
@@ -66,6 +66,7 @@ const props = defineProps({
   compact: { type: Boolean, default: true },
   showStateLabel: { type: Boolean, default: false },
   menu: { type: Boolean, default: false },
+  inlineMenu: { type: Boolean, default: false },
 });
 
 const { t } = useI18n({ useScope: "global" });
@@ -105,7 +106,7 @@ const activeIcon = computed(() => activeOption.value?.icon || SortOne);
 
 const selectMode = (mode) => {
   saveMarketListSortMode(props.source, mode);
-  if (props.menu) expanded.value = false;
+  if (props.menu && !props.inlineMenu) expanded.value = false;
 };
 </script>
 

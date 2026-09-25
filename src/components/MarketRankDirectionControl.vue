@@ -11,7 +11,7 @@
   >
     <template v-if="menu">
       <button
-        v-if="!expanded"
+        v-if="!inlineMenu && !expanded"
         type="button"
         class="ranking-tool-trigger"
         :title="`${t('hotList.rankOrder')}：${activeLabel}`"
@@ -76,6 +76,7 @@ import { useI18n } from "vue-i18n";
 const props = defineProps({
   direction: { type: String, default: "normal" },
   menu: { type: Boolean, default: false },
+  inlineMenu: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["change"]);
@@ -92,7 +93,7 @@ const activeIcon = computed(() =>
 
 const select = (direction) => {
   if (direction !== props.direction) emit("change", direction);
-  if (props.menu) expanded.value = false;
+  if (props.menu && !props.inlineMenu) expanded.value = false;
 };
 </script>
 

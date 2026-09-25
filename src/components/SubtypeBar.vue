@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="groups.length || hasActions"
+    v-if="groups.length"
     class="subtype-bar no-card-drag"
     data-no-card-drag
     @pointerdown.stop="lockCardDrag"
@@ -130,10 +130,6 @@
             </div>
           </template>
 
-          <div v-if="hasActions" class="subtype-menu-tools">
-            <slot name="actions" />
-          </div>
-
         </div>
       </Transition>
     </Teleport>
@@ -141,7 +137,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { mainStore } from "@/store";
 
@@ -149,11 +145,9 @@ const props = defineProps({
   groups: { type: Array, default: () => [] },
   activeValue: { type: String, default: null },
   fallbackLabel: { type: String, default: "" },
-  showActions: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["change"]);
-const slots = useSlots();
 const store = mainStore();
 const { t } = useI18n({ useScope: "global" });
 const triggerRef = ref(null);
@@ -171,7 +165,6 @@ const flatItems = computed(() => props.groups.flatMap((group) => group.items || 
 const activeItem = computed(() =>
   flatItems.value.find((item) => item.value === props.activeValue) || flatItems.value[0] || null
 );
-const hasActions = computed(() => props.showActions && Boolean(slots.actions));
 const isDarkTheme = computed(() => store.siteTheme === "dark");
 
 const splitHierarchicalLabel = (label = "") => {
@@ -587,18 +580,6 @@ onBeforeUnmount(() => {
 
 .menu-item.active {
   font-weight: 700;
-}
-
-.subtype-menu-tools {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 2px 5px;
-  min-width: 0;
-  margin-top: 6px;
-  padding-top: 5px;
-  font-size: 12px;
-  border-top: 1px solid var(--menu-border);
 }
 
 .subtype-menu.is-mobile {

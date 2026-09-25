@@ -23,6 +23,7 @@ const categoryRail = fs.readFileSync("src/components/CategorySourceRail.vue", "u
 const directorySourceCard = fs.readFileSync("src/components/DirectorySourceCard.vue", "utf8");
 const directorySources = fs.readFileSync("src/config/directorySources.js", "utf8");
 const hotList = fs.readFileSync("src/components/HotList.vue", "utf8");
+const rankingCardOperations = fs.readFileSync("src/components/RankingCardOperations.vue", "utf8");
 const rankingSplitControl = fs.readFileSync("src/components/RankingSplitControl.vue", "utf8");
 const marketRankDirectionControl = fs.readFileSync(
   "src/components/MarketRankDirectionControl.vue",
@@ -527,7 +528,8 @@ assert.match(categoryRail, /if \(source\?\.directoryOnly\) return/);
 assert.match(categoryRail, /!source\?\.directoryOnly/);
 assert.match(categoryRail, /getDirectoryOnlySourceDetails/);
 assert.match(categoryRail, /viewOfficialRanking/);
-assert.match(hotList, /import RankingSplitControl/);
+assert.match(hotList, /import RankingCardOperations/);
+assert.doesNotMatch(hotList, /import RankingSplitControl/);
 assert.match(hotList, /categoryAllProjectionVariants/);
 assert.match(hotList, /return itemCount > 1 \? groups : \[\]/);
 assert.doesNotMatch(hotList, /promoteCurrentRanking|removeProjectionInstance|toggleCategorySplit/);
@@ -537,44 +539,46 @@ assert.match(rankingSplitControl, /setCategorySplitVariants/);
 assert.match(rankingSplitControl, /const mergeCurrent =/);
 assert.match(rankingSplitControl, /const mergeAll =/);
 assert.match(
-  marketRankDirectionControl,
-  /v-if="!expanded"[\s\S]{0,260}class="ranking-tool-trigger"[\s\S]{0,320}v-else class="ranking-tool-options"/,
-  "native rank order must collapse to one compact trigger until explicitly expanded",
+  rankingCardOperations,
+  /v-if="splitOnly"[\s\S]{0,420}@click\.stop="runSplitAction"/,
+  "split-only cards must expose one direct top-right split or merge action without another popover",
 );
 assert.match(
-  marketListSortControl,
-  /v-if="!expanded"[\s\S]{0,260}class="ranking-tool-trigger"[\s\S]{0,320}v-else class="ranking-tool-options"/,
-  "market sort must collapse to one compact trigger until explicitly expanded",
-);
-const embeddedSplitMarkup = rankingSplitControl.split(
-  '<template v-else-if="isProjection">',
-)[0];
-const embeddedSplitPrimary = embeddedSplitMarkup.split('<template v-else>')[1] || "";
-assert.match(
-  embeddedSplitPrimary,
-  /class="ranking-tool-trigger"/,
-  "embedded split management must expose a compact split trigger",
+  rankingCardOperations,
+  /t\("hotList\.rankOperations"\)[\s\S]{0,1600}<MarketRankDirectionControl[\s\S]{0,160}inline-menu[\s\S]{0,480}<MarketListSortControl[\s\S]{0,160}inline-menu/,
+  "cards with multiple operation families must use one top-right Actions menu with immediately selectable sort controls",
 );
 assert.match(
-  embeddedSplitPrimary,
-  /\{\{ copy\.split \}\}/,
-  "embedded split trigger must stay concise instead of exposing all actions at once",
-);
-assert.match(
-  embeddedSplitMarkup,
-  /v-if="manageOpen" class="ranking-split-control__embedded-panel"/,
-  "full split management must render only after explicit expansion",
+  rankingCardOperations,
+  /setCategorySplitVariants[\s\S]{0,1000}const splitAll =[\s\S]{0,600}const mergeCurrent =[\s\S]{0,600}const mergeAll =/,
+  "ranking-card split actions must update split state directly instead of duplicating the subtype list",
 );
 assert.doesNotMatch(
-  embeddedSplitMarkup,
-  /<n-popover/,
-  "embedded split controls must stay inside the parent mega menu instead of opening a competing teleported popover",
+  rankingCardOperations,
+  /RankingSplitControl|variantOptions|draftVariants|manageSplit/,
+  "ranking-card operations must not render a second child-ranking selection list",
 );
-assert.match(
-  subtypeBar,
-  /\.subtype-menu-tools \{[\s\S]{0,220}font-size: 12px/,
-  "ranking mega-menu first-level tools must share the compact 12px type scale",
-);
+for (const [name, source] of [
+  ["native rank order", marketRankDirectionControl],
+  ["market sorting", marketListSortControl],
+]) {
+  assert.match(
+    source,
+    /inlineMenu: \{ type: Boolean, default: false \}/,
+    `${name} must expose an explicit inline-menu mode`,
+  );
+  assert.match(
+    source,
+    /v-if="!inlineMenu && !expanded"/,
+    `${name} must keep the old compact trigger outside the shared Actions menu`,
+  );
+  assert.match(
+    source,
+    /class="ranking-tool-options"/,
+    `${name} must expose directly selectable options inside the shared Actions menu`,
+  );
+}
+assert.doesNotMatch(subtypeBar, /subtype-menu-tools|showActions|#actions/);
 assert.match(component, /DETAIL_REQUEST_TIMEOUT_MS = 6000/);
 assert.match(component, /DETAIL_FALLBACK_DELAY_MS = 600/);
 assert.match(component, /timeout: DETAIL_REQUEST_TIMEOUT_MS/);
