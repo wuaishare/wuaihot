@@ -64,9 +64,7 @@
               :projection-variant="
                 hotData.categorySplitProjection ? projectionVariant : ''
               "
-              :show-merge-all="
-                Boolean(hotData.categorySplitPrimary) && !categoryScopeFullySplit
-              "
+              :show-merge-all="Boolean(hotData.categorySplitPrimary)"
               @change-direction="changeMarketRankDirection"
             />
           </div>
@@ -854,11 +852,6 @@ const hasCategorySplitControl = computed(
   () =>
     Boolean(props.hotData?.categorySplitRef) &&
     categoryAllProjectionVariants.value.length > 1,
-);
-const categoryScopeFullySplit = computed(
-  () =>
-    categoryAllProjectionVariants.value.length > 1 &&
-    categorySplitVariants.value.length === categoryAllProjectionVariants.value.length,
 );
 const subtypeOptions = computed(() => {
   subtypeCatalogRevision.value;
