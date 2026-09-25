@@ -150,16 +150,20 @@ const fetchJson = async (url, attempts = 3) => {
 };
 
 const flattenSubtypeOptions = (groups, sourceName = "") =>
-  (groups[sourceName] || []).flatMap((group) =>
-    (group.items || []).map((item) => ({
+  (groups[sourceName] || []).flatMap((group) => {
+    const param = group.param || "type";
+    return (group.items || []).map((item) => ({
       source: sourceName,
       group: group.key,
       label: item.label,
       value: item.value,
-      param: group.param || "type",
-      apiValue: item.apiValue || item.value,
-    }))
-  );
+      param,
+      apiValue:
+        item.apiParams && Object.prototype.hasOwnProperty.call(item.apiParams, param)
+          ? item.apiParams[param]
+          : item.apiValue || item.value,
+    }));
+  });
 
 const buildFrontendParamMap = (groups, sourceName) => {
   const map = new Map();
