@@ -99,27 +99,27 @@ const TRENDS_SOURCE_PRESENTATION = {
     categoryIds: ["entertainment-reading-novels"],
     order: 17.4,
   },
-  "apple-music": {
+  "qq-music": {
     category: "音乐",
     categoryIds: ["entertainment-music"],
     order: 17.45,
   },
-  "qq-music": {
+  "netease-music": {
     category: "音乐",
     categoryIds: ["entertainment-music"],
     order: 17.5,
   },
-  "netease-music": {
+  "kugou-music": {
     category: "音乐",
     categoryIds: ["entertainment-music"],
     order: 17.6,
   },
-  "kugou-music": {
+  "kuwo-music": {
     category: "音乐",
     categoryIds: ["entertainment-music"],
     order: 17.7,
   },
-  "kuwo-music": {
+  "apple-music": {
     category: "音乐",
     categoryIds: ["entertainment-music"],
     order: 17.8,

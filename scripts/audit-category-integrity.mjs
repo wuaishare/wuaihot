@@ -3,6 +3,23 @@ import fs from "node:fs";
 import { createPinia, setActivePinia } from "pinia";
 import { createServer } from "vite";
 
+const storeSource = fs.readFileSync("src/store/index.js", "utf8");
+const sourceOrder = (sourceName) => {
+  const match = storeSource.match(
+    new RegExp(`"${sourceName}": \\{[\\s\\S]{0,180}?order:\\s*([0-9.]+)`),
+  );
+  assert.ok(match, `missing presentation order for ${sourceName}`);
+  return Number(match[1]);
+};
+assert.ok(
+  sourceOrder("qq-music") <
+    sourceOrder("netease-music") &&
+    sourceOrder("netease-music") < sourceOrder("kugou-music") &&
+    sourceOrder("kugou-music") < sourceOrder("kuwo-music") &&
+    sourceOrder("kuwo-music") < sourceOrder("apple-music"),
+  "mainland music platforms must keep the domestic-first presentation order before Apple Music",
+);
+
 const memory = new Map();
 globalThis.localStorage = {
   getItem: (key) => (memory.has(key) ? memory.get(key) : null),
