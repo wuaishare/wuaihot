@@ -624,14 +624,19 @@ const categoryPathForItem = (item) => {
 const compareCategoryPaths = (left, right) => {
   const a = categoryPathForItem(left);
   const b = categoryPathForItem(right);
+  const aGroupOrder = Number(a[1]?.order ?? 9999);
+  const bGroupOrder = Number(b[1]?.order ?? 9999);
+  if (aGroupOrder !== bGroupOrder) return aGroupOrder - bGroupOrder;
+
+  const orderDiff = Number(left.order || 0) - Number(right.order || 0);
+  if (orderDiff) return orderDiff;
+
   const depth = Math.max(a.length, b.length);
-  for (let index = 1; index < depth; index += 1) {
+  for (let index = 2; index < depth; index += 1) {
     const aOrder = Number(a[index]?.order ?? 9999);
     const bOrder = Number(b[index]?.order ?? 9999);
     if (aOrder !== bOrder) return aOrder - bOrder;
   }
-  const orderDiff = Number(left.order || 0) - Number(right.order || 0);
-  if (orderDiff) return orderDiff;
   return String(left.projectionLabel || left.label || left.name).localeCompare(
     String(right.projectionLabel || right.label || right.name),
     locale.value,

@@ -419,6 +419,11 @@ assert.match(home, /const allCategorySections = computed/);
 assert.match(home, /class="all-category-toc"/);
 assert.match(home, /category\?\.navOrder \?\? category\?\.order/);
 assert.match(home, /compareCategoryPaths/);
+assert.match(
+  home,
+  /const aGroupOrder = Number\(a\[1\]\?\.order \?\? 9999\)[\s\S]{0,280}const orderDiff = Number\(left\.order \|\| 0\) - Number\(right\.order \|\| 0\)[\s\S]{0,260}for \(let index = 2;/,
+  "all-split sections must group by second-level category, then source priority, then deeper category detail",
+);
 assert.doesNotMatch(home, /category-split-toolbar/);
 assert.doesNotMatch(home, /toggleAllCategorySplits/);
 assert.doesNotMatch(home, /music-platform-strip/);
