@@ -153,11 +153,12 @@
 
     <n-popover
       v-else-if="!embedded"
-      trigger="click"
+      :trigger="triggerMode"
       placement="bottom-end"
       :show="menuOpen"
       :show-arrow="false"
       @update:show="setMenuOpen"
+      @clickoutside="closeMenu"
     >
       <template #trigger>
         <n-button
@@ -166,13 +167,24 @@
           size="tiny"
           :title="copy.splitMenu"
           :aria-label="copy.splitMenu"
-          @click.stop
+          :aria-expanded="menuOpen ? 'true' : 'false'"
+          @mouseenter="handleTriggerEnter"
+          @mouseleave="handleTriggerLeave"
+          @focus="handleTriggerFocus"
+          @click.stop="handleTriggerClick"
+          @keydown.esc.stop.prevent="closeMenu"
         >
           {{ triggerLabel }}
         </n-button>
       </template>
 
-      <div class="ranking-split-control__menu" @click.stop>
+      <div
+        class="ranking-split-control__menu"
+        @mouseenter="cancelMenuClose"
+        @mouseleave="scheduleMenuClose"
+        @focusin="cancelMenuClose"
+        @click.stop
+      >
         <div class="ranking-split-control__heading">
           <strong>{{ copy.splitMenu }}</strong>
           <span>{{ copy.splitHint }}</span>
@@ -219,13 +231,14 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { CloseOne, Merge, Split } from "@icon-park/vue-next";
 import { useI18n } from "vue-i18n";
 import { mainStore } from "@/store";
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { getSubtypeLabel } from "@/utils/sourceLabels";
 import { normalizeLocale } from "@/utils/locale";
+import { HOVER_MENU_OPEN_EVENT, announceHoverMenuOpen } from "@/utils/hoverMenu";
 
 const props = defineProps({
   sourceName: { type: String, required: true },
@@ -246,6 +259,10 @@ const menuOpen = ref(false);
 const manageOpen = ref(false);
 const selectionOpen = ref(false);
 const draftVariants = ref([]);
+const hoverCapable = ref(false);
+const menuId = `ranking-split-control:${getCurrentInstance()?.uid ?? Math.random().toString(36).slice(2)}`;
+let hoverMediaQuery;
+let closeTimer;
 
 const COPY = {
   "zh-CN": {
@@ -400,10 +417,65 @@ const persist = (variants) =>
 const syncDraft = () => {
   draftVariants.value = splitVariantsNormalized.value.slice();
 };
-const setMenuOpen = (show) => {
-  menuOpen.value = Boolean(show);
-  if (menuOpen.value) syncDraft();
+const updateHoverCapability = (event) => {
+  hoverCapable.value = Boolean(event?.matches ?? hoverMediaQuery?.matches);
 };
+const cancelMenuClose = () => {
+  clearTimeout(closeTimer);
+  closeTimer = undefined;
+};
+const closeMenu = () => {
+  cancelMenuClose();
+  menuOpen.value = false;
+};
+const openMenu = () => {
+  cancelMenuClose();
+  if (!menuOpen.value) syncDraft();
+  menuOpen.value = true;
+  announceHoverMenuOpen(menuId);
+};
+const scheduleMenuClose = () => {
+  if (!hoverCapable.value) return;
+  cancelMenuClose();
+  closeTimer = setTimeout(closeMenu, 140);
+};
+const handleTriggerEnter = () => {
+  if (hoverCapable.value) openMenu();
+};
+const handleTriggerLeave = () => {
+  if (hoverCapable.value) scheduleMenuClose();
+};
+const handleTriggerFocus = () => {
+  if (hoverCapable.value) openMenu();
+};
+const handleTriggerClick = () => {
+  if (!hoverCapable.value) return;
+  if (menuOpen.value) closeMenu();
+  else openMenu();
+};
+const handleForeignMenuOpen = (event) => {
+  if (event?.detail?.id !== menuId) closeMenu();
+};
+const triggerMode = computed(() => (hoverCapable.value ? "manual" : "click"));
+const setMenuOpen = (show) => {
+  if (hoverCapable.value) return;
+  menuOpen.value = Boolean(show);
+  if (menuOpen.value) {
+    syncDraft();
+    announceHoverMenuOpen(menuId);
+  }
+};
+onMounted(() => {
+  hoverMediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+  updateHoverCapability(hoverMediaQuery);
+  hoverMediaQuery.addEventListener?.("change", updateHoverCapability);
+  window.addEventListener(HOVER_MENU_OPEN_EVENT, handleForeignMenuOpen);
+});
+onBeforeUnmount(() => {
+  cancelMenuClose();
+  hoverMediaQuery?.removeEventListener?.("change", updateHoverCapability);
+  window.removeEventListener(HOVER_MENU_OPEN_EVENT, handleForeignMenuOpen);
+});
 const toggleDraft = (variant) => {
   const value = String(variant || "");
   if (!allowedVariants.value.has(value)) return;
