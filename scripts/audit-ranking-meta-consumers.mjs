@@ -73,6 +73,16 @@ assert.match(
 );
 assert.doesNotMatch(
   hotList,
+  /previewIsMediaOnly\s*&&\s*previewItem\.hot(?=\s*")/,
+  "media-only hover previews must not use a truthy heat check that drops zero",
+);
+assert.match(
+  hotList,
+  /previewIsMediaOnly[\s\S]{0,180}previewItem\.hot !== null[\s\S]{0,180}previewItem\.hot !== undefined[\s\S]{0,180}previewItem\.hot !== ['"]{2}/,
+  "media-only hover previews must preserve an explicit zero heat value",
+);
+assert.doesNotMatch(
+  hotList,
   /\.preview-metric\.is-primary/,
   "HotList hover preview must not inherit card-level primary metric emphasis",
 );

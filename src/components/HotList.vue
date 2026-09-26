@@ -445,7 +445,15 @@
             @error="handlePreviewCoverError(previewItem.cover)"
           />
         </button>
-        <div v-if="previewIsMediaOnly && previewItem.hot" class="preview-meta preview-media-meta">
+        <div
+          v-if="
+            previewIsMediaOnly &&
+            previewItem.hot !== null &&
+            previewItem.hot !== undefined &&
+            previewItem.hot !== ''
+          "
+          class="preview-meta preview-media-meta"
+        >
           <n-icon class="preview-hot-icon" :component="Fire" />
           <span>{{ formatPreviewHot(previewItem.hot) }}</span>
         </div>
