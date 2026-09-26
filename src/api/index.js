@@ -207,6 +207,58 @@ const getTrendsShadowVariant = (source, params = {}) => {
   return legacyVariant === legacyDefault ? trendsVariant : null;
 };
 
+const TRENDS_CANONICAL_METRIC_KEYS = new Set(["views", "likes", "comments", "collects"]);
+
+const normalizeTrendsDisplayMetric = (item = {}) => {
+  const metric = item?.metric;
+  const numeric = Number(metric?.value);
+  if (!metric || !Number.isFinite(numeric) || numeric < 0) return item;
+  const kind = String(metric?.kind || "").trim().toLowerCase();
+  if (!kind) return item;
+
+  if (kind === "heat") {
+    return {
+      ...item,
+      hot:
+        item?.hot === null || item?.hot === undefined || item?.hot === ""
+          ? numeric
+          : item.hot,
+    };
+  }
+
+  if (TRENDS_CANONICAL_METRIC_KEYS.has(kind)) {
+    const currentMetrics =
+      item?.metrics && typeof item.metrics === "object" ? item.metrics : {};
+    return {
+      ...item,
+      metrics: {
+        ...currentMetrics,
+        [kind]:
+          currentMetrics[kind] === null ||
+          currentMetrics[kind] === undefined ||
+          currentMetrics[kind] === ""
+            ? numeric
+            : currentMetrics[kind],
+      },
+    };
+  }
+
+  return item;
+};
+
+const normalizeTrendsRankingItem = (item, index, sourceKey, updateTime) => {
+  const normalizedItem = normalizeTrendsDisplayMetric(item);
+  return {
+    ...normalizedItem,
+    id:
+      normalizedItem?.id ||
+      normalizedItem?.url ||
+      [sourceKey || "item", index + 1].join("-"),
+    desc: normalizedItem?.desc || normalizedItem?.summary || "",
+    timestamp: getRankingItemTimestamp(normalizedItem, updateTime),
+  };
+};
+
 const normalizeTrendsRankingResult = (payload, readSurface = "public") => {
   const feed = payload?.data || {};
   const source = feed?.source || {};
@@ -228,12 +280,9 @@ const normalizeTrendsRankingResult = (payload, readSurface = "public") => {
     centralized: true,
     readSurface,
     observationId: payload?.observation?.id || null,
-    data: items.map((item, index) => ({
-      ...item,
-      id: item?.id || item?.url || `${source?.key || "item"}-${index + 1}`,
-      desc: item?.desc || item?.summary || "",
-      timestamp: getRankingItemTimestamp(item, updateTime),
-    })),
+    data: items.map((item, index) =>
+      normalizeTrendsRankingItem(item, index, source?.key, updateTime),
+    ),
   };
 };
 

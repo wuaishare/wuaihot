@@ -103,6 +103,47 @@ assert.equal(
   "neutral preview must not mark any metric as primary",
 );
 
+const displayHeat = getRankingItemMeta(
+  { metric: { label: "热度", kind: "heat", value: 0 } },
+  "zh-CN",
+  { variant: "hot" },
+);
+assert.equal(displayHeat.primaryMetric?.key, "hot", "Display heat must map onto the canonical hot metric");
+assert.equal(displayHeat.primaryMetric?.numeric, 0, "Display heat must preserve a real zero value");
+
+const displayViews = getRankingItemMeta(
+  { metric: { label: "阅读", kind: "views", value: 1234 } },
+  "zh-CN",
+  { variant: "read-7d" },
+);
+assert.equal(displayViews.primaryMetric?.key, "views", "Display views must satisfy a read-* primary metric");
+assert.equal(displayViews.primaryMetric?.numeric, 1234, "Display views must preserve its numeric value");
+
+const neutralDisplayViews = getRankingItemMeta(
+  { metric: { label: "阅读", kind: "views", value: 1234 } },
+  "zh-CN",
+  { variant: "read-7d", promotePrimary: false },
+);
+assert.equal(neutralDisplayViews.primaryMetric, null, "neutral Display metadata must not promote its metric");
+assert.deepEqual(
+  neutralDisplayViews.metrics.map(({ key, numeric, isPrimary }) => [key, numeric, isPrimary]),
+  [["views", 1234, false]],
+  "neutral Display metadata must still expose canonical engagement metrics",
+);
+
+const genericDisplayMetric = getRankingItemMeta(
+  { metric: { label: "在线人数", kind: "online", value: 9876 } },
+  "zh-CN",
+  { variant: "hot" },
+);
+assert.equal(
+  genericDisplayMetric.primaryMetric?.key,
+  "display:online",
+  "unknown Display metric kinds must stay visible instead of being discarded",
+);
+assert.equal(genericDisplayMetric.primaryMetric?.label, "在线人数");
+assert.equal(genericDisplayMetric.primaryMetric?.numeric, 9876);
+
 for (const [locale, label] of [
   ["zh-CN", "阅读"], ["zh-TW", "閱讀"], ["en", "Views"], ["ja", "閲覧"], ["ko", "조회"],
 ]) {

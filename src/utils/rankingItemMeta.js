@@ -37,6 +37,21 @@ const buildMetric = (key, numeric, labels, locale, isPrimary = false) => ({
   isPrimary,
 });
 
+const buildDisplayMetric = (metric = {}, locale = "zh-CN", isPrimary = false) => {
+  const numeric = normalizeMetric(metric?.value);
+  if (numeric === null) return null;
+  const kind = String(metric?.kind || "value").trim().toLowerCase() || "value";
+  const label = String(metric?.label || "").trim();
+  return {
+    key: `display:${kind}`,
+    label: label || kind,
+    value: formatCompactMetric(numeric, locale),
+    numeric,
+    isPrimary,
+  };
+};
+
+
 export const getRankingPrimaryMetricKey = (variant = "") => {
   const normalized = String(variant || "").trim().toLowerCase();
   return PRIMARY_METRIC_PREFIXES.find(([prefix]) => normalized.startsWith(prefix))?.[1] || "hot";
@@ -76,29 +91,80 @@ export const getRankingItemMeta = (item = {}, locale = "zh-CN", context = {}) =>
   if (published) metadataContext.push({ key: "published", label: labels.published, value: published });
   const metricOrder = ["views", "likes", "comments", "collects"];
   const promotePrimary = context?.promotePrimary !== false;
-  const primaryMetricKey = promotePrimary ? getRankingPrimaryMetricKey(context?.variant) : null;
-  const primaryNumeric = primaryMetricKey === null
-    ? null
-    : normalizeMetric(primaryMetricKey === "hot" ? item?.hot : item?.metrics?.[primaryMetricKey]);
-  const fallbackNumeric = primaryMetricKey && primaryMetricKey !== "hot" ? normalizeMetric(item?.hot) : null;
-  const resolvedPrimaryNumeric = primaryNumeric ?? fallbackNumeric;
-  const primaryMetric = primaryMetricKey && resolvedPrimaryNumeric !== null
-    ? buildMetric(primaryMetricKey, resolvedPrimaryNumeric, labels, normalized, true)
+  const requestedPrimaryMetricKey = promotePrimary
+    ? getRankingPrimaryMetricKey(context?.variant)
     : null;
+  const displayMetricKind = String(item?.metric?.kind || "").trim().toLowerCase();
+  const displayMetricNumeric = normalizeMetric(item?.metric?.value);
+  const displayMetricMatches = (key) =>
+    displayMetricNumeric !== null && displayMetricKind === key;
+  const primaryNumeric =
+    requestedPrimaryMetricKey === null
+      ? null
+      : normalizeMetric(
+          requestedPrimaryMetricKey === "hot"
+            ? item?.hot
+            : item?.metrics?.[requestedPrimaryMetricKey],
+        ) ??
+        (displayMetricMatches(requestedPrimaryMetricKey)
+          ? displayMetricNumeric
+          : null) ??
+        (requestedPrimaryMetricKey === "hot" && displayMetricMatches("heat")
+          ? displayMetricNumeric
+          : null);
+  const fallbackNumeric =
+    requestedPrimaryMetricKey && requestedPrimaryMetricKey !== "hot"
+      ? normalizeMetric(item?.hot) ??
+        (displayMetricMatches("heat") ? displayMetricNumeric : null)
+      : null;
+  const resolvedPrimaryNumeric = primaryNumeric ?? fallbackNumeric;
+  const legacyPrimaryMetric =
+    requestedPrimaryMetricKey && resolvedPrimaryNumeric !== null
+      ? buildMetric(
+          requestedPrimaryMetricKey,
+          resolvedPrimaryNumeric,
+          labels,
+          normalized,
+          true,
+        )
+      : null;
+  const genericDisplayMetric =
+    displayMetricNumeric !== null &&
+    !["heat", ...metricOrder].includes(displayMetricKind)
+      ? buildDisplayMetric(item.metric, normalized, promotePrimary)
+      : null;
+  const primaryMetric = promotePrimary
+    ? legacyPrimaryMetric ?? genericDisplayMetric
+    : null;
+  const primaryMetricKey = primaryMetric?.key ?? requestedPrimaryMetricKey;
+
+  const metricValue = (key) =>
+    normalizeMetric(item?.metrics?.[key]) ??
+    (displayMetricMatches(key) ? displayMetricNumeric : null);
+
+  const secondaryMetrics = metricOrder
+    .filter((key) => key !== requestedPrimaryMetricKey)
+    .flatMap((key) => {
+      const numeric = metricValue(key);
+      return numeric === null
+        ? []
+        : [buildMetric(key, numeric, labels, normalized)];
+    });
+
   const metrics = promotePrimary
-    ? [
-        ...(primaryMetric ? [primaryMetric] : []),
-        ...metricOrder
-          .filter((key) => key !== primaryMetricKey)
-          .flatMap((key) => {
-            const numeric = normalizeMetric(item?.metrics?.[key]);
-            return numeric === null ? [] : [buildMetric(key, numeric, labels, normalized)];
-          }),
-      ]
-    : metricOrder.flatMap((key) => {
-        const numeric = normalizeMetric(item?.metrics?.[key]);
-        return numeric === null ? [] : [buildMetric(key, numeric, labels, normalized)];
-      });
+    ? [...(primaryMetric ? [primaryMetric] : []), ...secondaryMetrics]
+    : [
+        ...metricOrder.flatMap((key) => {
+          const numeric = metricValue(key);
+          return numeric === null
+            ? []
+            : [buildMetric(key, numeric, labels, normalized)];
+        }),
+        ...(genericDisplayMetric
+          ? [{ ...genericDisplayMetric, isPrimary: false }]
+          : []),
+      ];
+
 
   return {
     context: metadataContext,
