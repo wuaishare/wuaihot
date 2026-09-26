@@ -14,6 +14,26 @@ assert.match(
   /variant:\s*feed\?\.variant\s*\|\|\s*["']{2}/,
   "normalized Trends results must preserve the API-returned variant",
 );
+assert.match(
+  api,
+  /const normalizeTrendsDisplayMetric = \(item = \{\}\) => \{/,
+  "Trends Display items must pass through a dedicated metric compatibility normalizer",
+);
+assert.match(
+  api,
+  /kind === ["']heat["'][\s\S]{0,260}\bhot:/,
+  "Display heat must be projected onto the canonical hot field for legacy consumers",
+);
+assert.match(
+  api,
+  /TRENDS_CANONICAL_METRIC_KEYS[\s\S]{0,420}\bmetrics:\s*\{[\s\S]{0,220}\[kind\]:/,
+  "Display engagement metrics must be projected onto the canonical metrics bag",
+);
+assert.match(
+  api,
+  /const normalizeTrendsRankingItem = [\s\S]{0,180}normalizeTrendsDisplayMetric\(item\)/,
+  "every normalized Trends ranking item must apply Display metric compatibility",
+);
 
 for (const [name, source] of Object.entries({ stream, rail, hotList, list })) {
   assert.match(source, /getRankingItemMeta\(/, `${name} must use the shared ranking metadata resolver`);
@@ -45,6 +65,11 @@ assert.match(
   hotList,
   /promotePrimary:\s*false/,
   "HotList hover preview must preserve its neutral metadata contract",
+);
+assert.match(
+  hotList,
+  /previewItem\.hot !== null[\s\S]{0,180}previewItem\.hot !== undefined[\s\S]{0,180}previewItem\.hot !== ['"]{2}/,
+  "HotList hover preview must render a real zero heat value instead of treating it as missing",
 );
 assert.doesNotMatch(
   hotList,
