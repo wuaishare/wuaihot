@@ -12,6 +12,7 @@ const ENTITY_TITLE_SOURCE_NAMES = new Set([
   "openrouter-rankings",
   "artificialanalysis",
   "arena-ai",
+  "bilibili-ai-arena",
   "lmarena",
   "designarena",
   "aicpb-rankings",
