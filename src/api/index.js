@@ -23,6 +23,10 @@ const SAME_ORIGIN_API_SOURCES = new Set([
   "chigua-topic",
   "ai-topic",
 ]);
+const LOCAL_RANKING_ADAPTER_SOURCES = new Set([
+  "bilibili",
+]);
+
 const DIRECT_PUBLIC_API_SOURCES = new Set([
   "super-deals",
   "0818tuan",
@@ -123,7 +127,7 @@ const TRENDS_SHADOW_SOURCES = new Set(
     .map((value) => value.trim())
     .filter(Boolean),
 );
-const DEFAULT_TRENDS_READ_SOURCES = import.meta.env.PROD ? "github,36kr,baidu,zhihu,bilibili,weibo,ithome,douyin,xiaohongshu,kuaishou,toutiao,qq-news,sina-news,thepaper,netease-news,tieba,smzdm,juejin,huxiu,sspai,geekpark,ifanr,52pojie,51cto,csdn,dgtle,v2ex,nodeseek,hackernews,guokr,hellogithub,newsmth,ngabbs,zhihu-daily,producthunt,history,earthquake,weatheralarm,yystv,sina,douban-group,gameres,ithome-xijiayi,nytimes,acfun,google-trends" : "";
+const DEFAULT_TRENDS_READ_SOURCES = import.meta.env.PROD ? "github,36kr,baidu,zhihu,weibo,ithome,douyin,xiaohongshu,kuaishou,toutiao,qq-news,sina-news,thepaper,netease-news,tieba,smzdm,juejin,huxiu,sspai,geekpark,ifanr,52pojie,51cto,csdn,dgtle,v2ex,nodeseek,hackernews,guokr,hellogithub,newsmth,ngabbs,zhihu-daily,producthunt,history,earthquake,weatheralarm,yystv,sina,douban-group,gameres,ithome-xijiayi,nytimes,acfun,google-trends" : "";
 const TRENDS_READ_SOURCES = new Set(
   String(import.meta.env.VITE_TRENDS_READ_SOURCES || DEFAULT_TRENDS_READ_SOURCES)
     .split(",")
@@ -559,10 +563,13 @@ export const getHotListsWithFallback = async (
   params,
   options = {},
 ) => {
-  const catalogReadSurface = getTrendsCatalogReadSurface(type);
-  const readSurface = TRENDS_READ_SOURCES.has(type)
-    ? "public"
-    : catalogReadSurface;
+  const useLocalRankingAdapter = LOCAL_RANKING_ADAPTER_SOURCES.has(type);
+  const catalogReadSurface = useLocalRankingAdapter
+    ? null
+    : getTrendsCatalogReadSurface(type);
+  const readSurface = useLocalRankingAdapter
+    ? null
+    : catalogReadSurface || (TRENDS_READ_SOURCES.has(type) ? "public" : null);
   if (readSurface) {
     const startedAt = performance.now();
     try {

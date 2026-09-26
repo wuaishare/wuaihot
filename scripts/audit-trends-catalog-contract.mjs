@@ -477,18 +477,18 @@ const bilibiliStaticValues = getSourceSubtypeGroups("bilibili")
   .flatMap((group) => group.items.map((item) => item.value));
 assert.deepEqual(
   bilibiliStaticValues,
-  [
-    "popular", "all", "animation", "music", "game", "entertainment", "tech",
-    "film", "kichiku", "dance", "fashion", "life", "guochuang", "knowledge",
-    "food", "animals", "auto", "sports",
-  ],
-  "Bilibili static fallback must stay aligned with the current governed Directory Catalog",
+  ["popular", "weekly", "history", "rank", "music"],
+  "Bilibili user-facing ranking variants must stay owned by the same-origin adapter",
 );
 assert.deepEqual(
-  buildSourceSubtypeParams("bilibili", "tech"),
-  { type: "188" },
-  "Bilibili semantic fallback variants must preserve the legacy provider transport id",
+  buildSourceSubtypeParams("bilibili", "popular"),
+  { type: "all" },
+  "Bilibili popular route must preserve its SEO slug while using the same-origin all transport",
 );
+assert.deepEqual(buildSourceSubtypeParams("bilibili", "weekly"), { type: "weekly" });
+assert.deepEqual(buildSourceSubtypeParams("bilibili", "history"), { type: "history" });
+assert.deepEqual(buildSourceSubtypeParams("bilibili", "rank"), { type: "rank" });
+assert.deepEqual(buildSourceSubtypeParams("bilibili", "music"), { type: "music" });
 const bilibiliCatalog = {
   version: 1,
   sources: [
@@ -531,13 +531,17 @@ const bilibiliCatalog = {
 };
 applyTrendsSourceCatalog(bilibiliCatalog);
 assert.equal(getDefaultSourceSubtype("bilibili"), "popular");
-assert.equal(resolveTrendsCatalogVariant("bilibili", { type: "tech" }), "tech");
+assert.equal(
+  resolveTrendsCatalogVariant("bilibili", { type: "weekly" }),
+  undefined,
+  "Bilibili user-facing variants must not be interpreted through the Trends partition namespace",
+);
 assert.deepEqual(
   getSourceSubtypeGroups("bilibili").flatMap((group) =>
     group.items.map((item) => item.value),
   ),
   bilibiliStaticValues,
-  "Bilibili live Catalog projection and static fallback must expose the same semantic variants",
+  "Bilibili remote partition Catalog must not override the five user-facing same-origin rankings",
 );
 
 console.log("[trends-catalog-contract] dynamic projection, selector gating and fail-closed fallback verified");
@@ -642,6 +646,16 @@ assert.match(
   taxonomySource,
   /"steam":\s*\["games-deals",\s*"life-deals"\]/,
   "canonical Steam must project to game deals and life deals",
+);
+assert.match(
+  apiSource,
+  /const LOCAL_RANKING_ADAPTER_SOURCES = new Set\(\[[\s\S]{0,160}"bilibili"[\s\S]{0,80}\]\);/,
+  "Bilibili user-facing rankings must remain owned by the same-origin adapter",
+);
+assert.match(
+  apiSource,
+  /const useLocalRankingAdapter = LOCAL_RANKING_ADAPTER_SOURCES\.has\(type\)[\s\S]{0,420}catalogReadSurface \|\| \(TRENDS_READ_SOURCES\.has\(type\) \? "public" : null\)/,
+  "catalog-declared read surfaces must outrank the legacy Public Feed allowlist, while local adapters bypass both",
 );
 assert.match(apiSource, /getTrendsCatalogReadSurface\(type\)/, "catalog-managed sources must resolve an explicit readable surface");
 assert.match(apiSource, /readSurface === "display"/, "Display-only reads must fail closed instead of falling back to legacy full-data endpoints");

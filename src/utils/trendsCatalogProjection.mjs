@@ -1,6 +1,10 @@
 export const flattenSubtypeOptions = (groups = []) =>
   groups.flatMap((group) => group.items || []);
 
+const LOCAL_VARIANT_CONTRACT_SOURCES = new Set([
+  "bilibili",
+]);
+
 const findTransportGroup = (staticGroups = [], remoteOptions = []) => {
   const remoteValues = new Set(remoteOptions.map((item) => item.value));
   let best = null;
@@ -61,6 +65,7 @@ export const projectTrendsCatalog = (catalog = {}, staticGroupsBySource = {}) =>
   for (const source of Array.isArray(catalog?.sources) ? catalog.sources : []) {
     const sourceName = String(source?.key || "").trim();
     if (!sourceName) continue;
+    if (LOCAL_VARIANT_CONTRACT_SOURCES.has(sourceName)) continue;
     const groups = normalizeRemoteGroups(sourceName, source?.variantGroups || [], staticGroupsBySource);
     if (!groups.length || !canProjectSource(staticGroupsBySource[sourceName] || [], groups)) continue;
     const options = flattenSubtypeOptions(groups);
