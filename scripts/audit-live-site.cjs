@@ -8,6 +8,11 @@ const siteUrl = (process.env.LIVE_SITE_URL || "https://hot.wuaishare.cn").replac
 );
 const verify = process.env.VERIFY || process.env.VITE_BUILD_NUMBER || "";
 const timeoutMs = Number(process.env.AUDIT_TIMEOUT_MS || 20000);
+const trendsDisplayBaseUrl = (
+  process.env.TRENDS_DISPLAY_BASE_URL ||
+  "https://api.wpbetter.cn/trends/display/v1"
+).replace(/\/+$/, "");
+const trendsReadSurfaceContract = "catalog-first-v1";
 
 const withVerify = (path) => {
   if (!verify) return `${siteUrl}${path}`;
@@ -273,6 +278,51 @@ addCheck("deployment assets resolve with correct MIME types", async () => {
     `missing asset incorrectly fell back to HTML: ${missingType}`
   );
   results.push(`missing-asset:${missingAsset.statusCode}:${missingType || "none"}`);
+  return results;
+});
+
+addCheck("production bundle carries catalog-first Trends read-surface contract", async () => {
+  const shell = await assertHtml("/", {
+    titleIncludes: "吾爱热榜",
+    canonical: "/",
+  });
+  const asset = await requestWithRetry(`${siteUrl}${shell.asset}`);
+  assert(asset.statusCode === 200, `bundle: HTTP ${asset.statusCode}`);
+  assert(
+    asset.body.includes(trendsReadSurfaceContract),
+    `deployed bundle missing ${trendsReadSurfaceContract}`
+  );
+  return { asset: shell.asset, contract: trendsReadSurfaceContract };
+});
+
+addCheck("first-party Display critical sources stay live", async () => {
+  const cases = [
+    ["weibo", "hot"],
+    ["thepaper", ""],
+    ["xiaohongshu", "hot"],
+    ["xiaohongshu", "read-7d"],
+    ["zhihu", "hot"],
+    ["zhihu", "search"],
+    ["kuaishou", "hot"],
+    ["kuaishou", "entertainment"],
+  ];
+  const results = [];
+  for (const [source, variant] of cases) {
+    const url = new URL(`${trendsDisplayBaseUrl}/rankings/${source}`);
+    url.searchParams.set("limit", "10");
+    url.searchParams.set("_audit", String(Date.now()));
+    if (variant) url.searchParams.set("variant", variant);
+    const response = await requestWithRetry(url.toString(), {}, 3);
+    assert(response.statusCode === 200, `${source}/${variant || "<default>"}: HTTP ${response.statusCode}`);
+    const payload = JSON.parse(response.body);
+    assert(payload?.data?.profile === "public-display-v1", `${source}: unexpected Display profile`);
+    assert(payload?.data?.source?.key === source, `${source}: source mismatch`);
+    assert(
+      Array.isArray(payload?.data?.items) && payload.data.items.length > 0,
+      `${source}/${variant || "<default>"}: empty Display data`
+    );
+    results.push(`${source}/${variant || "<default>"}:${payload.data.items.length}`);
+  }
   return results;
 });
 
