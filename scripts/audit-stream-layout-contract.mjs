@@ -50,6 +50,18 @@ const aiTopic = fs.readFileSync("src/views/AiTopic.vue", "utf8");
 const gameDealsTopic = fs.readFileSync("src/views/GameDealsTopic.vue", "utf8");
 const template = component.split("<script setup>")[0];
 
+assert.doesNotMatch(store, /成功更新 \${updatedNum} 个榜单数据/, "boot source migration must stay silent instead of impersonating ranking-data refresh");
+assert.match(rankingCardOperations, /:trigger="triggerMode"/);
+assert.match(rankingCardOperations, /\(hover: hover\) and \(pointer: fine\)/);
+assert.match(rankingCardOperations, /@mouseenter="handleTriggerEnter"/);
+assert.match(rankingCardOperations, /@clickoutside="closeMenu"/);
+assert.match(rankingCardOperations, /ranking-card-operations__selection-link/);
+assert.doesNotMatch(rankingCardOperations, /ranking-card-operations__selection-actions button \{/);
+assert.match(rankingSplitControl, /:trigger="triggerMode"/);
+assert.match(rankingSplitControl, /\(hover: hover\) and \(pointer: fine\)/);
+assert.match(rankingSplitControl, /@mouseenter="handleTriggerEnter"/);
+assert.match(rankingSplitControl, /@clickoutside="closeMenu"/);
+
 assert.match(store, /siteContainerWidth: 1400/);
 assert.match(store, /focusContainerWidth: 1360/);
 assert.match(store, /"siteContainerWidth"/);

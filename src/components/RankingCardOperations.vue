@@ -29,11 +29,12 @@
 
   <n-popover
     v-else-if="visible"
-    trigger="click"
+    :trigger="triggerMode"
     placement="bottom-end"
     :show="menuOpen"
     :show-arrow="false"
     @update:show="setMenuOpen"
+    @clickoutside="closeMenu"
   >
     <template #trigger>
       <button
@@ -44,7 +45,11 @@
         :aria-label="triggerTitle"
         aria-haspopup="menu"
         data-no-card-drag
-        @click.stop
+        @mouseenter="handleTriggerEnter"
+        @mouseleave="handleTriggerLeave"
+        @focus="handleTriggerFocus"
+        @click.stop="handleTriggerClick"
+        @keydown.esc.stop.prevent="closeMenu"
         @pointerdown.stop
       >
         <span>{{ triggerLabel }}</span>
@@ -63,6 +68,9 @@
       role="group"
       :aria-label="triggerTitle"
       data-no-card-drag
+      @mouseenter="cancelMenuClose"
+      @mouseleave="scheduleMenuClose"
+      @focusin="cancelMenuClose"
       @click.stop
       @pointerdown.stop
     >
@@ -134,7 +142,7 @@
           </div>
 
           <div class="ranking-card-operations__selection-actions">
-            <button type="button" @click.stop="selectAll">
+            <button type="button" class="ranking-card-operations__selection-link" @click.stop="selectAll">
               {{ t("hotList.selectAllRankings") }}
             </button>
             <n-button
@@ -166,7 +174,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, getCurrentInstance, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { mainStore } from "@/store";
 import MarketListSortControl from "@/components/MarketListSortControl.vue";
@@ -174,6 +182,7 @@ import MarketRankDirectionControl from "@/components/MarketRankDirectionControl.
 import { getSourceVariantOptions } from "@/utils/sourceSubtypes";
 import { getSubtypeLabel } from "@/utils/sourceLabels";
 import { normalizeLocale } from "@/utils/locale";
+import { HOVER_MENU_OPEN_EVENT, announceHoverMenuOpen } from "@/utils/hoverMenu";
 
 defineEmits(["change-direction"]);
 
@@ -196,6 +205,10 @@ const { t, locale: i18nLocale } = useI18n({ useScope: "global" });
 const locale = computed(() => normalizeLocale(i18nLocale.value));
 const menuOpen = ref(false);
 const draftVariants = ref([]);
+const hoverCapable = ref(false);
+const menuId = `ranking-card-operations:${getCurrentInstance()?.uid ?? Math.random().toString(36).slice(2)}`;
+let hoverMediaQuery;
+let closeTimer;
 
 const hasSortOperations = computed(
   () => props.showNativeOrderControl || props.showMarketSortControl,
@@ -300,10 +313,65 @@ const persist = (variants) =>
 const syncDraft = () => {
   draftVariants.value = splitVariantsNormalized.value.slice();
 };
-const setMenuOpen = (show) => {
-  menuOpen.value = Boolean(show);
-  if (menuOpen.value) syncDraft();
+const updateHoverCapability = (event) => {
+  hoverCapable.value = Boolean(event?.matches ?? hoverMediaQuery?.matches);
 };
+const cancelMenuClose = () => {
+  clearTimeout(closeTimer);
+  closeTimer = undefined;
+};
+const closeMenu = () => {
+  cancelMenuClose();
+  menuOpen.value = false;
+};
+const openMenu = () => {
+  cancelMenuClose();
+  if (!menuOpen.value) syncDraft();
+  menuOpen.value = true;
+  announceHoverMenuOpen(menuId);
+};
+const scheduleMenuClose = () => {
+  if (!hoverCapable.value) return;
+  cancelMenuClose();
+  closeTimer = setTimeout(closeMenu, 140);
+};
+const handleTriggerEnter = () => {
+  if (hoverCapable.value) openMenu();
+};
+const handleTriggerLeave = () => {
+  if (hoverCapable.value) scheduleMenuClose();
+};
+const handleTriggerFocus = () => {
+  if (hoverCapable.value) openMenu();
+};
+const handleTriggerClick = () => {
+  if (!hoverCapable.value) return;
+  if (menuOpen.value) closeMenu();
+  else openMenu();
+};
+const handleForeignMenuOpen = (event) => {
+  if (event?.detail?.id !== menuId) closeMenu();
+};
+const triggerMode = computed(() => (hoverCapable.value ? "manual" : "click"));
+const setMenuOpen = (show) => {
+  if (hoverCapable.value) return;
+  menuOpen.value = Boolean(show);
+  if (menuOpen.value) {
+    syncDraft();
+    announceHoverMenuOpen(menuId);
+  }
+};
+onMounted(() => {
+  hoverMediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+  updateHoverCapability(hoverMediaQuery);
+  hoverMediaQuery.addEventListener?.("change", updateHoverCapability);
+  window.addEventListener(HOVER_MENU_OPEN_EVENT, handleForeignMenuOpen);
+});
+onBeforeUnmount(() => {
+  cancelMenuClose();
+  hoverMediaQuery?.removeEventListener?.("change", updateHoverCapability);
+  window.removeEventListener(HOVER_MENU_OPEN_EVENT, handleForeignMenuOpen);
+});
 const toggleDraft = (variant) => {
   const value = String(variant || "").trim();
   if (!allowedVariants.value.has(value)) return;
@@ -360,7 +428,7 @@ watch(
 .ranking-card-operations__trigger,
 .ranking-card-operations__action,
 .ranking-card-operations__option,
-.ranking-card-operations__selection-actions button {
+.ranking-card-operations__selection-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -390,8 +458,8 @@ watch(
 .ranking-card-operations__option:hover,
 .ranking-card-operations__option:focus-visible,
 .ranking-card-operations__option.is-selected,
-.ranking-card-operations__selection-actions button:hover,
-.ranking-card-operations__selection-actions button:focus-visible {
+.ranking-card-operations__selection-link:hover,
+.ranking-card-operations__selection-link:focus-visible {
   color: var(--n-primary-color, #ea444d);
   background: rgba(127, 127, 127, 0.06);
 }
@@ -399,7 +467,7 @@ watch(
 .ranking-card-operations__trigger:focus-visible,
 .ranking-card-operations__action:focus-visible,
 .ranking-card-operations__option:focus-visible,
-.ranking-card-operations__selection-actions button:focus-visible {
+.ranking-card-operations__selection-link:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--n-primary-color, #ea444d) 35%, transparent);
   outline-offset: 1px;
 }
@@ -509,7 +577,7 @@ watch(
   .ranking-card-operations__trigger,
   .ranking-card-operations__action,
   .ranking-card-operations__option,
-  .ranking-card-operations__selection-actions button {
+  .ranking-card-operations__selection-link {
     min-height: 24px;
     padding-inline: 6px;
     font-size: 11px;

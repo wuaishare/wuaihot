@@ -2275,12 +2275,11 @@ export const mainStore = defineStore("mainData", {
       this.newsArr = this.dedupeNewsList(this.newsArr);
       if (typeof localStorage === "undefined") {
         this.ensureNewsList();
-        return false;
+        return 0;
       }
-      const mainData = JSON.parse(localStorage.getItem("mainData"));
+      const mainData = localStorage.getItem("mainData");
       let updatedNum = 0;
-      if (!mainData) return false;
-      console.log("列表尝试更新", this.defaultNewsArr, this.newsArr);
+      if (!mainData) return 0;
       // 执行比较并迁移
       if (this.newsArr.length > 0) {
         for (const newItem of this.defaultNewsArr) {
@@ -2288,17 +2287,15 @@ export const mainStore = defineStore("mainData", {
             (news) => newItem.name === news.name,
           );
           if (!exists) {
-            console.log("列表有更新：", newItem);
             updatedNum++;
             this.newsArr.push(newItem);
           }
         }
         this.newsArr = this.dedupeNewsList(this.newsArr);
-        if (updatedNum) $message.success(`成功更新 ${updatedNum} 个榜单数据`);
       } else {
-        console.log("列表无内容，写入默认");
         this.newsArr = this.defaultNewsArr;
       }
+      return updatedNum;
     },
   },
   persist: [
