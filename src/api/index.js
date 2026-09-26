@@ -134,6 +134,7 @@ const TRENDS_READ_SOURCES = new Set(
     .map((value) => value.trim())
     .filter(Boolean),
 );
+const TRENDS_READ_SURFACE_CONTRACT = "catalog-first-v1";
 const TRENDS_SHADOW_DEFAULT_VARIANTS = {
   douyin: {
     param: "type",
@@ -581,6 +582,7 @@ export const getHotListsWithFallback = async (
           event: "trends_read_success",
           source: type,
           meta: {
+            contract: TRENDS_READ_SURFACE_CONTRACT,
             surface: readSurface,
             observationId: result.observationId,
             itemCount: result.total,
@@ -605,6 +607,7 @@ export const getHotListsWithFallback = async (
           event: "trends_read_fallback",
           source: type,
           meta: {
+            contract: TRENDS_READ_SURFACE_CONTRACT,
             surface: readSurface,
             kind: error?.message || "request_failed",
             latencyMs: Math.round(performance.now() - startedAt),
