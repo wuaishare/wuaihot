@@ -37,7 +37,7 @@ const TRENDS_CATEGORY_DEFAULTS = {
 };
 
 const TRENDS_SOURCE_PRESENTATION = {
-  "douyin-live": { category: "综合", categoryIds: ["general"], order: 0.2 },
+  "douyin-live": { category: "文娱", categoryIds: ["entertainment"], order: 16.45 },
   "autohome-sales": { category: "生活", categoryIds: ["life"], order: 10.5 },
   "china-film-boxoffice": {
     category: "电影",
@@ -202,6 +202,7 @@ const trendsCatalogSourceToNewsItem = (source, order) => {
 
 const BUILTIN_CATEGORY_MIGRATIONS = {
   xueqiu: { from: "综合", to: "财经" },
+  "douyin-live": { from: "综合", to: "文娱" },
 };
 
 const LEGACY_BUILTIN_CATEGORY_ALIASES = {
@@ -301,6 +302,7 @@ const BUILTIN_CATEGORY_ID_RESETS = new Set([
 ]);
 
 const BUILTIN_ORDER_MIGRATIONS = {
+  "douyin-live": { from: 0.2, to: 16.45 },
   "global-indexes": { from: 7.95, to: 7.45 },
   nyse: { from: 7.91, to: 19.5 },
   twse: { from: 7.92, to: 34.5 },
