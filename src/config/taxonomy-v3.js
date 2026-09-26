@@ -79,6 +79,7 @@ export const SOURCE_CATEGORY_PROJECTIONS = {
   weread: single("entertainment-reading-books"),
   bilibili: single("entertainment-video"),
   acfun: single("entertainment-video"),
+  "douyin-live": single("entertainment"),
 
   // 游戏：来源平台按职责落位，折扣同时投影到生活优惠。
   gameres: single("games-content"),

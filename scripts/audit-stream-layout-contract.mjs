@@ -108,6 +108,26 @@ assert.match(taxonomyV3, /"steam"[\s\S]{0,160}"topselling"[\s\S]{0,160}"games-ra
 assert.match(store, /"ximalaya-rankings": \{[\s\S]{0,160}categoryIds: \["entertainment-audio"\]/);
 assert.match(store, /"china-film-boxoffice": \{[\s\S]{0,160}categoryIds: \["entertainment-video-movie"\]/);
 assert.match(store, /"hotbook-discovery": \{[\s\S]{0,160}categoryIds: \["entertainment-reading-books"\]/);
+assert.match(
+  store,
+  /"douyin-live": \{[\s\S]{0,120}category: "文娱"[\s\S]{0,120}categoryIds: \["entertainment"\][\s\S]{0,80}order: 16\.45/,
+  "Douyin Live must remain a vertical entertainment source instead of outranking the main Douyin hot list",
+);
+assert.match(
+  store,
+  /"douyin-live": \{ from: "综合", to: "文娱" \}/,
+  "legacy default Douyin Live category must migrate out of general without overriding custom categories",
+);
+assert.match(
+  store,
+  /"douyin-live": \{ from: 0\.2, to: 16\.45 \}/,
+  "legacy default Douyin Live order must migrate to the entertainment extension slot",
+);
+assert.match(
+  taxonomyV3,
+  /"douyin-live": single\("entertainment"\)/,
+  "taxonomy v3 must keep Douyin Live in the entertainment domain",
+);
 assert.doesNotMatch(store, /categoryIds: \["media-/);
 assert.doesNotMatch(home, /@media \(min-width: 1100px\)[\s\S]{0,160}--home-grid-columns/);
 assert.equal(resolveResponsiveCardColumns({ width: 1600, requested: 5, compact: true }), 5);
