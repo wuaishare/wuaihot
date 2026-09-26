@@ -259,6 +259,11 @@ assert.match(
   /ENTITY_TITLE_SOURCE_NAMES[\s\S]{0,800}"vscode-marketplace"/,
   "VS Code Marketplace extension names must stay protected as entity titles",
 );
+assert.match(
+  readableTitles,
+  /ENTITY_TITLE_SOURCE_NAMES[\s\S]{0,800}"bilibili-ai-arena"/,
+  "Bilibili AI Arena model names must stay protected as entity titles instead of entering readable translation",
+);
 assert.match(component, /const minimalMode = computed\(\(\) => !showImages\.value && !showDescriptions\.value\)/);
 assert.match(component, /const PAGE_SIZE_VALUES = \[20, 30, 50, 100\]/);
 assert.match(component, /grid-template-columns: 280px minmax\(520px, 720px\) 280px;[\s\S]{0,120}gap: 16px/);
