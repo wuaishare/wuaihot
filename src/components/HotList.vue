@@ -485,6 +485,7 @@ import {
   buildSourceSubtypeParams,
   getDefaultSourceSubtype,
   getSourceSubtypeControlGroups,
+  getSourceVariantOption,
   getSourceVariantOptions,
   persistSourceSubtype,
   readSourceSubtype,
@@ -506,6 +507,7 @@ import { getRankingItemMeta } from "@/utils/rankingItemMeta";
 import {
   getSourceDisplayLabel,
   getSourceSubtitleLabel,
+  getSubtypeLabel,
   isGenericSourceSubtitleLabel,
   localizeSubtypeGroups,
 } from "@/utils/sourceLabels";
@@ -634,6 +636,7 @@ const API_LOCALIZED_SOURCE_NAMES = new Set([
 const shouldReloadForLocaleChange = (name = "") =>
   API_LOCALIZED_SOURCE_NAMES.has(name);
 const READABLE_TRANSLATION_FALLBACK_MS = 3000;
+const subtypeCatalogRevision = useTrendsCatalogRevision();
 const sourceLabel = computed(() => {
   const base = getSourceDisplayLabel(
     props.hotData.name,
@@ -654,11 +657,15 @@ const cardSubtitle = computed(() => {
   ) {
     return "";
   }
+  subtypeCatalogRevision.value;
   const rawSubtitle =
     Object.prototype.hasOwnProperty.call(props.hotData || {}, "subtype")
       ? props.hotData.subtype ?? ""
       : hotListData.value?.type || "";
-  const subtitle = getSourceSubtitleLabel(rawSubtitle, locale.value);
+  const variantOption = getSourceVariantOption(props.hotData.name, rawSubtitle);
+  const subtitle = variantOption
+    ? getSubtypeLabel(variantOption, locale.value)
+    : getSourceSubtitleLabel(rawSubtitle, locale.value);
   if (
     isGenericSourceSubtitleLabel(subtitle, locale.value) &&
     !hotListData.value?.centralized
@@ -820,7 +827,6 @@ const syncReadableTitleDom = (items = []) => {
     });
   });
 };
-const subtypeCatalogRevision = useTrendsCatalogRevision();
 const categoryProjectionVariants = computed(() =>
   [...new Set(
     (Array.isArray(props.hotData?.categoryProjectionVariants)

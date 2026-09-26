@@ -163,18 +163,34 @@ const catalog = {
         },
       ],
     },
+    {
+      key: "douyin-live",
+      name: "抖音直播",
+      defaultVariant: "hot",
+      variantSelectorEnabled: false,
+      variantGroups: [
+        {
+          key: "ranking",
+          label: "榜单",
+          options: [
+            { key: "hot", label: "热门直播榜" },
+          ],
+        },
+      ],
+      displayAvailable: true,
+    },
   ],
 };
 
 const revisionBeforeInitialCatalog = getTrendsSourceCatalogRevision();
-assert.equal(applyTrendsSourceCatalog(catalog), 4);
+assert.equal(applyTrendsSourceCatalog(catalog), 5);
 assert.equal(
   getTrendsSourceCatalogRevision(),
   revisionBeforeInitialCatalog + 1,
   "a changed remote Catalog must advance the global revision exactly once",
 );
 const revisionAfterInitialCatalog = getTrendsSourceCatalogRevision();
-assert.equal(applyTrendsSourceCatalog(catalog), 4);
+assert.equal(applyTrendsSourceCatalog(catalog), 5);
 assert.equal(
   getTrendsSourceCatalogRevision(),
   revisionAfterInitialCatalog,
@@ -197,6 +213,11 @@ assert.deepEqual(
 assert.equal(hasTrendsPublicCatalogSource("modeldial-radar"), true);
 assert.equal(hasTrendsDisplayCatalogSource("modeldial-radar"), true);
 assert.equal(getTrendsCatalogReadSurface("modeldial-radar"), "public");
+assert.deepEqual(
+  getSourceVariantOption("douyin-live", "hot"),
+  { value: "hot", label: "热门直播榜" },
+  "single-variant sources must preserve their canonical Catalog label for card subtitles",
+);
 assert.equal(hasTrendsCatalogSource("bilibili-ai-arena"), true);
 assert.equal(hasTrendsPublicCatalogSource("bilibili-ai-arena"), false);
 assert.equal(hasTrendsDisplayCatalogSource("bilibili-ai-arena"), true);

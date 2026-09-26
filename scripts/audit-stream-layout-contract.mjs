@@ -51,6 +51,16 @@ const gameDealsTopic = fs.readFileSync("src/views/GameDealsTopic.vue", "utf8");
 const template = component.split("<script setup>")[0];
 
 assert.doesNotMatch(store, /成功更新 \${updatedNum} 个榜单数据/, "boot source migration must stay silent instead of impersonating ranking-data refresh");
+assert.match(
+  hotList,
+  /getSourceVariantOption\(props\.hotData\.name, rawSubtitle\)/,
+  "single-ranking cards must resolve the canonical Catalog variant label before falling back to technical subtype keys",
+);
+assert.match(
+  hotList,
+  /getSubtypeLabel\(variantOption, locale\.value\)/,
+  "single-ranking Catalog labels must use the existing localized subtype label resolver",
+);
 assert.match(rankingCardOperations, /:trigger="triggerMode"/);
 assert.match(rankingCardOperations, /\(hover: hover\) and \(pointer: fine\)/);
 assert.match(rankingCardOperations, /@mouseenter="handleTriggerEnter"/);
